@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -105,53 +106,25 @@
     .save-panel{background:#1a2a1a;border:1px solid #2a5a2a;border-radius:4px;padding:1.2rem;margin-top:1rem}
     .save-panel h3{color:#5aff7a;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem}
     .uploading{color:#ffaa5a;font-size:.78rem;margin-top:.3rem}
+    .crop-wrap{
+      width:210mm;height:297mm;
+      display:flex;align-items:center;justify-content:center;
+      position:relative;background:#fff;margin:1rem auto;
+    }
+    .crop-mark{
+      position:absolute;background:#000;display:none;
+    }
+    .crop-mark.h{height:.3px}
+    .crop-mark.v{width:.3px}
     @media print{
       body{background:#fff}
       .no-print{display:none!important}
-      .poster-wrap{page-break-after:always}
-    }
-function CropMarks({posterW, posterH}){
-  // Parse mm values to numbers
-  const pw = parseFloat(posterW);
-  const ph = parseFloat(posterH);
-  // A4 is 210 x 297mm. Poster is centred. Gap from poster edge to crop mark: 3mm
-  const left  = (210 - pw) / 2 - 3;   // mm from A4 left edge to start of crop mark
-  const right = (210 - pw) / 2 - 3;   // mm from A4 right edge
-  const top   = (297 - ph) / 2 - 3;   // mm from A4 top edge
-  const bot   = (297 - ph) / 2 - 3;   // mm from A4 bottom edge
-
-  const marks = [
-    // Top-left
-    {cls:'h', style:{top:`${top}mm`, left:0, width:`${(210-pw)/2-5}mm`}},
-    {cls:'v', style:{left:`${left}mm`, top:0, height:`${(297-ph)/2-5}mm`}},
-    // Top-right
-    {cls:'h', style:{top:`${top}mm`, right:0, width:`${(210-pw)/2-5}mm`}},
-    {cls:'v', style:{right:`${right}mm`, top:0, height:`${(297-ph)/2-5}mm`}},
-    // Bottom-left
-    {cls:'h', style:{bottom:`${bot}mm`, left:0, width:`${(210-pw)/2-5}mm`}},
-    {cls:'v', style:{left:`${left}mm`, bottom:0, height:`${(297-ph)/2-5}mm`}},
-    // Bottom-right
-    {cls:'h', style:{bottom:`${bot}mm`, right:0, width:`${(210-pw)/2-5}mm`}},
-    {cls:'v', style:{right:`${right}mm`, bottom:0, height:`${(297-ph)/2-5}mm`}},
-  ];
-
-  return (
-    <>
-      {marks.map((m,i)=>(
-        <div key={i} className={`crop-mark ${m.cls}`} style={m.style}/>
-      ))}
-    </>
-  );
-}
-    @media print{
-@media print{
-      .crop-wrap{margin:0;width:210mm;height:297mm}
-      .no-print{display:none!important}
       .poster-wrap{page-break-after:avoid}
+      .crop-wrap{margin:0;width:210mm;height:297mm}
       .crop-mark{display:block!important}
     }
     @media screen{
-      .crop-mark{display:none}
+      .crop-mark{display:none!important}
     }
   </style>
 </head>
@@ -196,6 +169,8 @@ const CHANNELS = {
   'social-tiktok':{label:'TikTok',section:'Social'},
 };
 const CHANNEL_SECTIONS = ['Physical','Screens','Messaging','Social'];
+const SCREEN_FORMATS = ['instagram-feed','instagram-story','facebook-post','facebook-link','x-twitter','tablet-portrait','tablet-landscape','tv-landscape'];
+const SMALL_PHYSICAL = ['business-card','playing-card','tarot-card','beer-mat','third-a4','a5-portrait'];
 
 const BLANK_POSTER = {
   title:'', subtitle:'', dateText:'', price:'',
@@ -204,6 +179,9 @@ const BLANK_POSTER = {
   bgImage:null, bgImageUrl:null,
   overlayOpacity:0.5, overlayColor:'#000000', textColor:'#111111',
 };
+
+function isScreenFormat(id){ return SCREEN_FORMATS.includes(id); }
+function filenamify(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 
 async function supabase(path, method='GET', body=null, prefer=null) {
   const res = await fetch('/api/supabase', {
@@ -259,15 +237,45 @@ function hasDestinationWarning(code){
   return lastChange>new Date(lastAction);
 }
 
-// ── POSTER EDITOR ─────────────────────────────────────────
-const SCREEN_FORMATS = ['instagram-feed','instagram-story','facebook-post','facebook-link','x-twitter','tablet-portrait','tablet-landscape','tv-landscape'];
-
-function isScreenFormat(formatId){ return SCREEN_FORMATS.includes(formatId); }
-
-function filenamify(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
-
+// ── CROP MARKS ────────────────────────────────────────────
 function CropMarks({posterW, posterH}){
+  const pw = parseFloat(posterW);
+  const ph = parseFloat(posterH);
+  // A4 = 210 x 297mm. Poster centred. Arm = 5mm, gap from poster = 3mm.
+  const hGap = (210 - pw) / 2;
+  const vGap = (297 - ph) / 2;
+  const arm = 5;
+  const gap = 3;
 
+  const marks = [
+    // Top-left horizontal
+    {cls:'h', style:{top:`${vGap - gap}mm`, left:0, width:`${hGap - gap}mm`}},
+    // Top-left vertical
+    {cls:'v', style:{left:`${hGap - gap}mm`, top:0, height:`${vGap - gap}mm`}},
+    // Top-right horizontal
+    {cls:'h', style:{top:`${vGap - gap}mm`, right:0, width:`${hGap - gap}mm`}},
+    // Top-right vertical
+    {cls:'v', style:{right:`${hGap - gap}mm`, top:0, height:`${vGap - gap}mm`}},
+    // Bottom-left horizontal
+    {cls:'h', style:{bottom:`${vGap - gap}mm`, left:0, width:`${hGap - gap}mm`}},
+    // Bottom-left vertical
+    {cls:'v', style:{left:`${hGap - gap}mm`, bottom:0, height:`${vGap - gap}mm`}},
+    // Bottom-right horizontal
+    {cls:'h', style:{bottom:`${vGap - gap}mm`, right:0, width:`${hGap - gap}mm`}},
+    // Bottom-right vertical
+    {cls:'v', style:{right:`${hGap - gap}mm`, bottom:0, height:`${vGap - gap}mm`}},
+  ];
+
+  return (
+    <>
+      {marks.map((m,i)=>(
+        <div key={i} className={`crop-mark ${m.cls}`} style={m.style}/>
+      ))}
+    </>
+  );
+}
+
+// ── POSTER EDITOR ─────────────────────────────────────────
 function PosterEditor({code, templates, designs, onClose, onSaved}){
   const [poster,setPoster]=useState({...BLANK_POSTER,title:code?.label||''});
   const [uploading,setUploading]=useState({fg:false,bg:false});
@@ -282,9 +290,6 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
   const fmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
   const codeDesigns=(designs||[]).filter(d=>d.qr_code_id===code?.id);
   const isScreen=isScreenFormat(poster.format);
-
-  // For small physical formats that need crop marks
-  const SMALL_PHYSICAL=['business-card','playing-card','tarot-card','beer-mat','third-a4','a5-portrait'];
   const needsCropMarks=SMALL_PHYSICAL.includes(poster.format);
 
   function applyDesign(d){
@@ -380,7 +385,7 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
     color:poster.textColor,
     padding:fmt.small?'4mm':'10mm',
     display:'flex', flexDirection:'column',
-    alignItems:'center', justifyContent:'space-between',
+    alignItems:'center',
     fontFamily:'Georgia,serif', position:'relative', overflow:'hidden',
     border: needsCropMarks ? 'none' : '1px solid #ddd',
     margin: needsCropMarks ? '0' : '1rem auto',
@@ -417,7 +422,6 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
           {onClose&&<button className="btn btn-secondary btn-small" onClick={onClose}>← Back</button>}
         </div>
 
-        {/* Load template / design */}
         <div className="form-grid" style={{marginBottom:'1rem',paddingBottom:'1rem',borderBottom:'1px solid #222'}}>
           {templates.length>0&&(
             <div className="form-group">
@@ -548,7 +552,6 @@ function Templates({templates, designs, codes, onRefresh}){
     await supabase(`/rest/v1/poster_designs?id=eq.${id}`,'DELETE');
     onRefresh();
   }
-
   return (
     <div>
       <div className="card">
@@ -568,7 +571,6 @@ function Templates({templates, designs, codes, onRefresh}){
           </div>
         ))}
       </div>
-
       <div className="card">
         <h2>Per-Code Designs ({designs.length})</h2>
         {!designs.length&&<div className="empty" style={{padding:'1.5rem'}}>No designs saved yet</div>}
