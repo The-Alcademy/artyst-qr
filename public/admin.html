@@ -267,29 +267,6 @@ function isScreenFormat(formatId){ return SCREEN_FORMATS.includes(formatId); }
 function filenamify(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 
 function CropMarks({posterW, posterH}){
-  // Convert mm to mm string for CSS custom properties
-  // Arm length 5mm, gap from poster 3mm
-  const arm = '5mm';
-  const gapH = `calc((297mm - ${posterH}) / 2 - 3mm)`;
-  const gapW = `calc((210mm - ${posterW}) / 2 - 3mm)`;
-  const style = {
-    '--arm': arm,
-    '--y': gapH,
-    '--x': gapW,
-  };
-  return (
-    <>
-      <div className="crop-mark tl-h" style={style}/>
-      <div className="crop-mark tl-v" style={style}/>
-      <div className="crop-mark tr-h" style={style}/>
-      <div className="crop-mark tr-v" style={style}/>
-      <div className="crop-mark bl-h" style={style}/>
-      <div className="crop-mark bl-v" style={style}/>
-      <div className="crop-mark br-h" style={style}/>
-      <div className="crop-mark br-v" style={style}/>
-    </>
-  );
-}
 
 function PosterEditor({code, templates, designs, onClose, onSaved}){
   const [poster,setPoster]=useState({...BLANK_POSTER,title:code?.label||''});
