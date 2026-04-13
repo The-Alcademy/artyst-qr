@@ -110,6 +110,28 @@
       .no-print{display:none!important}
       .poster-wrap{page-break-after:always}
     }
+    .crop-wrap{
+      width:210mm; height:297mm;
+      display:flex; align-items:center; justify-content:center;
+      position:relative; background:#fff; margin:1rem auto;
+    }
+    .crop-mark{position:absolute;background:#000}
+    .crop-mark.tl-h{top:var(--y);left:0;width:var(--arm);height:.25mm}
+    .crop-mark.tl-v{top:0;left:var(--x);width:.25mm;height:var(--arm)}
+    .crop-mark.tr-h{top:var(--y);right:0;width:var(--arm);height:.25mm}
+    .crop-mark.tr-v{top:0;right:var(--x);width:.25mm;height:var(--arm)}
+    .crop-mark.bl-h{bottom:var(--y);left:0;width:var(--arm);height:.25mm}
+    .crop-mark.bl-v{bottom:0;left:var(--x);width:.25mm;height:var(--arm)}
+    .crop-mark.br-h{bottom:var(--y);right:0;width:var(--arm);height:.25mm}
+    .crop-mark.br-v{bottom:0;right:var(--x);width:.25mm;height:var(--arm)}
+    @media print{
+      .crop-wrap{margin:0;width:210mm;height:297mm}
+      .no-print{display:none!important}
+      .poster-wrap{page-break-after:always}
+    }
+    @media screen{
+      .crop-mark{display:none}
+    }
   </style>
 </head>
 <body>
