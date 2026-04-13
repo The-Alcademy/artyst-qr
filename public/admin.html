@@ -118,11 +118,12 @@
     .crop-mark.v{width:.3px}
 @page{size:A4 portrait;margin:0}
     @media print{
-      html,body{height:auto!important;background:#fff}
-      .no-print{display:none!important}
-      .poster-wrap{page-break-after:auto;page-break-inside:avoid}
-      .crop-wrap{margin:0;width:210mm;height:297mm;page-break-after:auto;page-break-inside:avoid}
-      .crop-mark{display:block!important;background:#000!important}
+      body *{visibility:hidden}
+      .poster-wrap,.poster-wrap *{visibility:visible}
+      .poster-wrap{position:fixed;top:0;left:0;width:210mm}
+      .crop-mark{visibility:visible;background:#000!important}
+      .crop-mark.h{display:block!important;width:8mm;height:0.5mm}
+      .crop-mark.v{display:block!important;width:0.5mm;height:8mm}
     }
     @media screen{
       .crop-mark{display:none!important}
