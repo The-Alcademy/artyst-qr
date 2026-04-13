@@ -409,21 +409,15 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
       <div className="poster-wrap" style={posterStyle}>
         {poster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${poster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}
         {poster.bgImage&&<div style={{position:'absolute',inset:0,background:poster.overlayColor,opacity:poster.overlayOpacity,zIndex:1}}/>}
-        <div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:fmt.small?'2mm':'4mm'}}>
+<div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:fmt.small?'2mm':'3mm',flex:1}}>
           {!fmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}
           <div style={{width:'100%',height:'3px',background:'#c0392b'}}/>
-          {poster.fgImage&&<img src={poster.fgImage} style={{maxWidth:'100%',maxHeight:fmt.small?'20mm':'60mm',objectFit:'contain'}}/>}
+          {poster.fgImage&&<img src={poster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}
           <div style={{fontSize:fmt.small?'10pt':'20pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{poster.title}</div>
           {poster.subtitle&&<div style={{fontSize:fmt.small?'7pt':'9pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{poster.subtitle}</div>}
           {poster.dateText&&<div style={{fontSize:fmt.small?'7pt':'9pt',textAlign:'center'}}>{poster.dateText}</div>}
           {poster.price&&<div style={{fontSize:fmt.small?'9pt':'12pt',fontWeight:'bold',textAlign:'center'}}>{poster.price}</div>}
         </div>
-        {code&&(
-          <div style={{position:'relative',zIndex:2,display:'flex',flexDirection:'column',alignItems:'center',gap:'2mm',marginTop:fmt.small?'2mm':'4mm'}}>
-            <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?60:140}/>
-            <div style={{fontSize:fmt.small?'6pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',opacity:.6,textAlign:'center'}}>{poster.cta}</div>
-            <div style={{fontSize:'6pt',fontFamily:'monospace',opacity:.4,textAlign:'center'}}>{BASE_URL}/e/{code.slug}</div>
-          </div>
         )}
       </div>
     </div>
