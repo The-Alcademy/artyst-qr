@@ -110,20 +110,39 @@
       .no-print{display:none!important}
       .poster-wrap{page-break-after:always}
     }
-    .crop-wrap{
-      width:210mm; height:297mm;
-      display:flex; align-items:center; justify-content:center;
-      position:relative; background:#fff; margin:1rem auto;
-    }
-    .crop-mark{position:absolute;background:#000}
-    .crop-mark.tl-h{top:var(--y);left:0;width:var(--arm);height:.25mm}
-    .crop-mark.tl-v{top:0;left:var(--x);width:.25mm;height:var(--arm)}
-    .crop-mark.tr-h{top:var(--y);right:0;width:var(--arm);height:.25mm}
-    .crop-mark.tr-v{top:0;right:var(--x);width:.25mm;height:var(--arm)}
-    .crop-mark.bl-h{bottom:var(--y);left:0;width:var(--arm);height:.25mm}
-    .crop-mark.bl-v{bottom:0;left:var(--x);width:.25mm;height:var(--arm)}
-    .crop-mark.br-h{bottom:var(--y);right:0;width:var(--arm);height:.25mm}
-    .crop-mark.br-v{bottom:0;right:var(--x);width:.25mm;height:var(--arm)}
+function CropMarks({posterW, posterH}){
+  // Parse mm values to numbers
+  const pw = parseFloat(posterW);
+  const ph = parseFloat(posterH);
+  // A4 is 210 x 297mm. Poster is centred. Gap from poster edge to crop mark: 3mm
+  const left  = (210 - pw) / 2 - 3;   // mm from A4 left edge to start of crop mark
+  const right = (210 - pw) / 2 - 3;   // mm from A4 right edge
+  const top   = (297 - ph) / 2 - 3;   // mm from A4 top edge
+  const bot   = (297 - ph) / 2 - 3;   // mm from A4 bottom edge
+
+  const marks = [
+    // Top-left
+    {cls:'h', style:{top:`${top}mm`, left:0, width:`${(210-pw)/2-5}mm`}},
+    {cls:'v', style:{left:`${left}mm`, top:0, height:`${(297-ph)/2-5}mm`}},
+    // Top-right
+    {cls:'h', style:{top:`${top}mm`, right:0, width:`${(210-pw)/2-5}mm`}},
+    {cls:'v', style:{right:`${right}mm`, top:0, height:`${(297-ph)/2-5}mm`}},
+    // Bottom-left
+    {cls:'h', style:{bottom:`${bot}mm`, left:0, width:`${(210-pw)/2-5}mm`}},
+    {cls:'v', style:{left:`${left}mm`, bottom:0, height:`${(297-ph)/2-5}mm`}},
+    // Bottom-right
+    {cls:'h', style:{bottom:`${bot}mm`, right:0, width:`${(210-pw)/2-5}mm`}},
+    {cls:'v', style:{right:`${right}mm`, bottom:0, height:`${(297-ph)/2-5}mm`}},
+  ];
+
+  return (
+    <>
+      {marks.map((m,i)=>(
+        <div key={i} className={`crop-mark ${m.cls}`} style={m.style}/>
+      ))}
+    </>
+  );
+}
     @media print{
 @media print{
       .crop-wrap{margin:0;width:210mm;height:297mm}
