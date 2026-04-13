@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Engine — The Artyst</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; min-height: 100vh; }
+    .app { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem; }
+    header h1 { font-size: 1.2rem; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; }
+    header span { font-size: 0.75rem; color: #666; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+    .tab { padding: 0.5rem 1.2rem; border: 1px solid #333; background: none; color: #888; cursor: pointer; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 2px; transition: all 0.15s; }
+    .tab.active { background: #c0392b; border-color: #c0392b; color: #fff; }
+    .tab:hover:not(.active) { border-color: #555; color: #ccc; }
+    .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 1.2rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #666; }
+    input, select, textarea { background: #111; border: 1px solid #333; color: #eee; padding: 0.6rem 0.8rem; font-size: 0.9rem; border-radius: 2px; width: 100%; outline: none; transition: border-color 0.15s; }
+    input:focus, select:focus, textarea:focus { border-color: #c0392b; }
+    select option { background: #1a1a1a; }
+    .btn { padding: 0.6rem 1.4rem; border: none; cursor: pointer; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 2px; transition: all 0.15s; }
+    .btn-primary { background: #c0392b; color: #fff; }
+    .btn-primary:hover { background: #e74c3c; }
+    .btn-secondary { background: #2a2a2a; color: #aaa; border: 1px solid #333; }
+    .btn-secondary:hover { background: #333; color: #eee; }
+    .btn-small { padding: 0.35rem 0.8rem; font-size: 0.75rem; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 0.6rem 0.8rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #555; border-bottom: 1px solid #2a2a2a; }
+    td { padding: 0.7rem 0.8rem; border-bottom: 1px solid #1e1e1e; vertical-align: middle; }
+    tr:hover td { background: #1e1e1e; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 2px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-event { background: #1a3a5c; color: #5aafff; }
+    .badge-opportunity { background: #1a3a1a; color: #5aff7a; }
+    .badge-enrolment { background: #3a1a5c; color: #c07aff; }
+    .badge-bene { background: #3a2a1a; color: #ffaa5a; }
+    .badge-menu { background: #2a2a1a; color: #ffee5a; }
+    .badge-generic { background: #2a2a2a; color: #aaa; }
+    .badge-active { background: #1a3a1a; color: #5aff7a; }
+    .badge-inactive { background: #3a1a1a; color: #ff5a5a; }
+    .scan-count { font-size: 1.1rem; font-weight: bold; color: #fff; }
+    .slug-display { font-family: monospace; color: #888; font-size: 0.8rem; }
+    .actions { display: flex; gap: 0.4rem; }
+    .empty { text-align: center; padding: 3rem; color: #444; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .success { background: #1a3a1a; border: 1px solid #2a5a2a; color: #5aff7a; padding: 0.8rem 1rem; border-radius: 2px; font-size: 0.85rem; margin-bottom: 1rem; }
+    .error { background: #3a1a1a; border: 1px solid #5a2a2a; color: #ff7a7a; padding: 0.8rem 1rem; border-radius: 2px; font-size: 0.85rem; margin-bottom: 1rem; }
+    .print-queue-item { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: #111; border: 1px solid #2a2a2a; border-radius: 2px; margin-bottom: 0.5rem; }
+    .print-queue-item .info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .print-queue-item .info strong { font-size: 0.9rem; }
+    .print-queue-item .info span { font-size: 0.75rem; color: #666; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; padding: 1.2rem; text-align: center; }
+    .stat .number { font-size: 2rem; font-weight: bold; color: #fff; }
+    .stat .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-top: 0.3rem; }
+
+    @media print {
+      body { background: #fff; color: #000; }
+      .no-print { display: none !important; }
+      .poster { page-break-after: always; }
+    }
+
+    .poster {
+      width: 148mm;
+      min-height: 210mm;
+      background: #fff;
+      color: #111;
+      padding: 12mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #ddd;
+      margin: 1rem auto;
+      font-family: Georgia, serif;
+    }
+    .poster .venue { font-size: 9pt; letter-spacing: 0.2em; text-transform: uppercase; color: #888; width: 100%; }
+    .poster .event-title { font-size: 22pt; font-weight: bold; text-align: center; line-height: 1.2; margin: 6mm 0; }
+    .poster .event-desc { font-size: 10pt; text-align: center; color: #444; line-height: 1.5; }
+    .poster .event-meta { font-size: 10pt; text-align: center; margin: 4mm 0; }
+    .poster .event-price { font-size: 13pt; font-weight: bold; text-align: center; }
+    .poster .qr-wrap { margin: 6mm 0; }
+    .poster .cta { font-size: 8pt; letter-spacing: 0.15em; text-transform: uppercase; color: #888; text-align: center; }
+    .poster .accent { width: 100%; height: 4px; background: #c0392b; margin-bottom: 4mm; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const PLACEMENTS = ['window-left', 'window-right', 'bar', 'table', 'door', 'ambulance', 'tour-flyer', 'other'];
+const TYPES = ['event', 'opportunity', 'enrolment', 'bene', 'menu', 'generic'];
+const BASE_URL = window.location.origin;
+
+async function supabase(path, method = 'GET', body = null, prefer = null) {
+  const res = await fetch('/api/supabase', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, method, body, prefer })
+  });
+  return res.json();
+}
+
+function generateSlug(label) {
+  return label.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 40);
+}
+
+function TypeBadge({ type }) {
+  return <span className={`badge badge-${type}`}>{type}</span>;
+}
+
+function QRCodeWidget({ url, size = 128 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !url) return;
+    ref.current.innerHTML = '';
+    new QRCode(ref.current, { text: url, width: size, height: size, colorDark: '#111111', colorLight: '#ffffff' });
+  }, [url, size]);
+  return <div ref={ref} />;
+}
+
+function CreateForm({ onCreate }) {
+  const [form, setForm] = useState({ label: '', type: 'generic', destination_url: '', placement: '', slug: '' });
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  function set(k, v) {
+    setForm(f => {
+      const next = { ...f, [k]: v };
+      if (k === 'label' && !f._slugEdited) next.slug = generateSlug(v);
+      return next;
+    });
+  }
+
+  async function submit() {
+    if (!form.label || !form.destination_url || !form.slug) {
+      setStatus({ type: 'error', msg: 'Label, slug, and destination URL are required.' });
+      return;
+    }
+    setLoading(true);
+    setStatus(null);
+    const res = await supabase('/rest/v1/qr_codes', 'POST',
+      { slug: form.slug, type: form.type, label: form.label, destination_url: form.destination_url, placement: form.placement || null },
+      'return=representation'
+    );
+    setLoading(false);
+    if (res.error || (Array.isArray(res) && res[0]?.code)) {
+      setStatus({ type: 'error', msg: res.message || res[0]?.message || 'Error creating code.' });
+    } else {
+      setStatus({ type: 'success', msg: `Code created: ${BASE_URL}/e/${form.slug}` });
+      setForm({ label: '', type: 'generic', destination_url: '', placement: '', slug: '' });
+      onCreate();
+    }
+  }
+
+  return (
+    <div className="card">
+      <h2>New QR Code</h2>
+      {status && <div className={status.type === 'error' ? 'error' : 'success'}>{status.msg}</div>}
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Label</label>
+          <input value={form.label} onChange={e => set('label', e.target.value)} placeholder="e.g. Wine Tasting April" />
+        </div>
+        <div className="form-group">
+          <label>Type</label>
+          <select value={form.type} onChange={e => set('type', e.target.value)}>
+            {TYPES.map(t => <option key={t}>{t}</option>)}
+          </select>
+        </div>
+        <div className="form-group full">
+          <label>Destination URL</label>
+          <input value={form.destination_url} onChange={e => set('destination_url', e.target.value)} placeholder="https://..." />
+        </div>
+        <div className="form-group">
+          <label>Slug (auto-generated)</label>
+          <input value={form.slug} onChange={e => { setForm(f => ({ ...f, slug: e.target.value, _slugEdited: true })); }} placeholder="e.g. wine-tasting-april" />
+        </div>
+        <div className="form-group">
+          <label>Placement (optional)</label>
+          <select value={form.placement} onChange={e => set('placement', e.target.value)}>
+            <option value="">— select —</option>
+            {PLACEMENTS.map(p => <option key={p}>{p}</option>)}
+          </select>
+        </div>
+        {form.slug && (
+          <div className="form-group full" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
+            <QRCodeWidget url={`${BASE_URL}/e/${form.slug}`} size={80} />
+            <span className="slug-display">{BASE_URL}/e/{form.slug}</span>
+          </div>
+        )}
+        <div className="form-group full" style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <button className="btn btn-primary" onClick={submit} disabled={loading}>
+            {loading ? 'Creating...' : 'Create Code'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Library({ codes, onRefresh, onAddToPrintQueue }) {
+  async function toggleActive(code) {
+    await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`, 'PATCH', { active: !code.active });
+    onRefresh();
+  }
+
+  if (!codes.length) return <div className="empty">No QR codes yet</div>;
+
+  return (
+    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <table>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Type</th>
+            <th>Slug</th>
+            <th>Scans</th>
+            <th>Placement</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {codes.map(c => (
+            <tr key={c.id}>
+              <td><strong>{c.label}</strong></td>
+              <td><TypeBadge type={c.type} /></td>
+              <td><span className="slug-display">/e/{c.slug}</span></td>
+              <td><span className="scan-count">{c.scan_count}</span></td>
+              <td><span style={{ color: '#666', fontSize: '0.8rem' }}>{c.placement || '—'}</span></td>
+              <td><span className={`badge badge-${c.active ? 'active' : 'inactive'}`}>{c.active ? 'active' : 'inactive'}</span></td>
+              <td>
+                <div className="actions">
+                  <button className="btn btn-secondary btn-small" onClick={() => onAddToPrintQueue(c)}>Print</button>
+                  <button className="btn btn-secondary btn-small" onClick={() => toggleActive(c)}>{c.active ? 'Deactivate' : 'Activate'}</button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PrintQueue({ queue, onRemove, onClear }) {
+  const [printing, setPrinting] = useState(false);
+
+  function printPosters() {
+    setPrinting(true);
+    setTimeout(() => { window.print(); setPrinting(false); }, 100);
+  }
+
+  return (
+    <div>
+      <div className="no-print">
+        <div className="card">
+          <h2>Print Queue ({queue.length})</h2>
+          {!queue.length && <div className="empty" style={{ padding: '1.5rem' }}>No codes in queue — add from the Library tab</div>}
+          {queue.map(c => (
+            <div className="print-queue-item" key={c.id}>
+              <div className="info">
+                <strong>{c.label}</strong>
+                <span>/e/{c.slug} · {c.type}{c.placement ? ` · ${c.placement}` : ''}</span>
+              </div>
+              <button className="btn btn-secondary btn-small" onClick={() => onRemove(c.id)}>Remove</button>
+            </div>
+          ))}
+          {queue.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={onClear}>Clear Queue</button>
+              <button className="btn btn-primary" onClick={printPosters} disabled={printing}>
+                {printing ? 'Preparing...' : `Print ${queue.length} Poster${queue.length > 1 ? 's' : ''}`}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Print output */}
+      {queue.map(c => (
+        <div className="poster" key={c.id}>
+          <div style={{ width: '100%' }}>
+            <div className="accent" />
+            <div className="venue">The Artyst · Cambridge</div>
+          </div>
+          <div className="event-title">{c.label}</div>
+          {c.description && <div className="event-desc">{c.description}</div>}
+          <div className="qr-wrap">
+            <QRCodeWidget url={`${BASE_URL}/e/${c.slug}`} size={160} />
+          </div>
+          <div>
+            <div className="cta">Scan to find out more</div>
+            <div className="slug-display" style={{ textAlign: 'center', fontSize: '7pt', marginTop: '3mm', color: '#bbb' }}>{BASE_URL}/e/{c.slug}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [tab, setTab] = useState('library');
+  const [codes, setCodes] = useState([]);
+  const [printQueue, setPrintQueue] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  async function loadCodes() {
+    setLoading(true);
+    const data = await supabase('/rest/v1/qr_codes?order=created_at.desc');
+    setCodes(Array.isArray(data) ? data : []);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadCodes(); }, []);
+
+  function addToPrintQueue(code) {
+    if (!printQueue.find(c => c.id === code.id)) {
+      setPrintQueue(q => [...q, code]);
+    }
+    setTab('print');
+  }
+
+  const totalScans = codes.reduce((sum, c) => sum + c.scan_count, 0);
+  const activeCodes = codes.filter(c => c.active).length;
+
+  return (
+    <div className="app">
+      <header>
+        <h1>QR Engine — The Artyst</h1>
+        <span>CA-022</span>
+      </header>
+
+      <div className="stats-grid no-print">
+        <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
+        <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
+        <div className="stat"><div className="number">{totalScans}</div><div className="label">Total Scans</div></div>
+        <div className="stat"><div className="number">{printQueue.length}</div><div className="label">In Print Queue</div></div>
+      </div>
+
+      <div className="tabs no-print">
+        {[['library', 'Library'], ['create', 'New Code'], ['print', `Print Queue${printQueue.length ? ` (${printQueue.length})` : ''}`]].map(([id, label]) => (
+          <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>{label}</button>
+        ))}
+      </div>
+
+      {tab === 'library' && (
+        loading ? <div className="empty">Loading...</div> :
+        <Library codes={codes} onRefresh={loadCodes} onAddToPrintQueue={addToPrintQueue} />
+      )}
+      {tab === 'create' && <CreateForm onCreate={() => { loadCodes(); setTab('library'); }} />}
+      {tab === 'print' && <PrintQueue queue={printQueue} onRemove={id => setPrintQueue(q => q.filter(c => c.id !== id))} onClear={() => setPrintQueue([])} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
