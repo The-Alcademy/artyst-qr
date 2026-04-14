@@ -1366,7 +1366,7 @@ function App(){
     ['templates',`Templates (${templates.length+designs.length})`],
     ['history','History'],
     ['reports','Reports'],
-    ['applications',`Applications${newApplications?` (${newApplications} new)`:''}`],
+    ['applications', newApplications ? 'Applications (' + newApplications + ' new)' : 'Applications'],
   ];
 
   return (
