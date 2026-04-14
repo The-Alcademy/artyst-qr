@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA-025 · Job Description Engine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0c0a;
+    --surface: #161310;
+    --surface2: #1d1a16;
+    --border: rgba(255,255,255,0.07);
+    --gold: #c8a96e;
+    --gold-dim: #8a7048;
+    --cream: #ede8df;
+    --muted: #7a6e5f;
+    --danger: #c84040;
+    --success: #4a8c5c;
+  }
+
+  body { background: var(--bg); color: var(--cream); font-family: 'Crimson Pro', Georgia, serif; min-height: 100vh; padding: 0; }
+
+  .header { border-bottom: 1px solid var(--border); padding: 24px 32px; display: flex; align-items: baseline; gap: 16px; }
+  .header-ca { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); font-family: 'Crimson Pro', serif; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--cream); }
+  .header-sub { font-size: 14px; color: var(--muted); font-style: italic; margin-left: auto; }
+
+  .main { padding: 32px; max-width: 1100px; margin: 0 auto; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .fg-full { grid-column: 1 / -1; }
+  .fg { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-dim); font-family: 'Crimson Pro', serif; }
+  input, select, textarea { background: var(--surface); border: 1px solid var(--border); color: var(--cream); padding: 10px 14px; font-family: 'Crimson Pro', serif; font-size: 16px; border-radius: 3px; outline: none; width: 100%; transition: border-color 0.15s; }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold-dim); }
+  select option { background: #1d1a16; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .form-actions { grid-column: 1/-1; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; }
+  .btn { border: 1px solid var(--border); background: transparent; color: var(--cream); padding: 11px 24px; font-family: 'Crimson Pro', serif; font-size: 15px; cursor: pointer; border-radius: 3px; transition: background 0.15s, border-color 0.15s; letter-spacing: 0.05em; }
+  .btn:hover { background: var(--surface2); border-color: var(--muted); }
+  .btn-primary { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
+  .btn-primary:hover { background: #d9bc80; border-color: #d9bc80; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-publish { background: var(--success); color: #fff; border-color: var(--success); font-weight: 600; }
+  .btn-publish:hover { background: #5aaa70; border-color: #5aaa70; }
+  .btn-publish:disabled { opacity: 0.4; cursor: not-allowed; }
+  .err { font-size: 14px; color: var(--danger); }
+
+  .generating { text-align: center; padding: 80px 0; }
+  .gen-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold); margin-bottom: 12px; }
+  .gen-sub { font-size: 16px; color: var(--muted); font-style: italic; }
+  .spinner { width: 40px; height: 40px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 24px auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .preview-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; }
+
+  /* JD panel */
+  .jd-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 32px; }
+  .jd-role { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .jd-property { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .jd-meta { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 20px; font-size: 14px; color: var(--muted); }
+  .jd-meta strong { color: var(--cream); }
+  .jd-section { margin-bottom: 24px; }
+  .jd-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .jd-section p { font-size: 16px; line-height: 1.75; color: #c8c0b0; }
+  .jd-section ul { list-style: none; padding: 0; }
+  .jd-section li { padding-left: 22px; position: relative; font-size: 16px; line-height: 1.65; color: #c8c0b0; margin-bottom: 6px; }
+  .jd-section li::before { content: '—'; position: absolute; left: 0; color: var(--gold); }
+
+  /* Poster panel */
+  .poster-sticky { position: sticky; top: 24px; }
+  .poster-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-align: center; margin-bottom: 10px; }
+  .poster { background: #fff; color: #111; border: 1px solid #bbb; border-radius: 4px; padding: 26px 22px; font-family: 'Playfair Display', Georgia, serif; position: relative; overflow: hidden; }
+  .poster::before { content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px; border: 0.5px solid #ddd; border-radius: 3px; pointer-events: none; }
+  .pp-prop { font-family: 'Crimson Pro', serif; font-size: 10px; letter-spacing: 0.45em; text-transform: uppercase; color: #444; text-align: center; margin-bottom: 6px; }
+  .pp-rule { height: 1px; background: #bbb; margin: 6px 0; }
+  .pp-seek { font-family: 'Crimson Pro', serif; font-size: 11px; font-style: italic; color: #999; text-align: center; margin-bottom: 6px; }
+  .pp-title { font-size: 28px; font-weight: 900; text-align: center; line-height: 1.1; color: #000; margin-bottom: 3px; }
+  .pp-type { font-family: 'Crimson Pro', serif; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #555; text-align: center; margin-bottom: 10px; }
+  .pp-dets { display: flex; justify-content: center; background: #f4f4f4; padding: 7px; margin-bottom: 10px; }
+  .pp-det { flex: 1; text-align: center; font-family: 'Crimson Pro', serif; font-size: 11px; color: #777; }
+  .pp-det strong { display: block; font-size: 12px; color: #111; font-weight: 600; }
+  .pp-det + .pp-det { border-left: 0.5px solid #ddd; }
+  .pp-ov { font-family: 'Crimson Pro', serif; font-size: 12px; font-style: italic; color: #555; text-align: center; line-height: 1.6; margin-bottom: 10px; }
+  .pp-bullets { margin-bottom: 12px; }
+  .pp-b { font-family: 'Crimson Pro', serif; font-size: 11px; color: #555; padding: 2px 0 2px 14px; position: relative; line-height: 1.5; }
+  .pp-b::before { content: '·'; color: #333; position: absolute; left: 3px; font-size: 14px; top: -2px; }
+  .pp-talk { font-family: 'Crimson Pro', serif; font-size: 11px; font-style: italic; color: #777; text-align: center; padding: 8px 0 10px; }
+  .pp-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 0.5px solid #ccc; }
+  .pp-scan { font-family: 'Crimson Pro', serif; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #bbb; margin-bottom: 4px; }
+  .pp-url { font-family: 'Courier New', monospace; font-size: 8px; color: #333; word-break: break-all; max-width: 160px; line-height: 1.4; }
+  #qrc { width: 76px; height: 76px; background: white; padding: 3px; }
+  #qrc canvas, #qrc img { width: 70px !important; height: 70px !important; display: block; }
+
+  .preview-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .qr-note { font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; letter-spacing: 0.04em; }
+
+  /* Published state */
+  .published-banner {
+    background: rgba(74,140,92,0.15);
+    border: 1px solid rgba(74,140,92,0.4);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .pub-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #6acc84; margin-bottom: 8px; }
+  .pub-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; color: var(--muted); }
+  .pub-row a { color: var(--gold); word-break: break-all; }
+  .pub-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); min-width: 80px; }
+
+  .hidden { display: none !important; }
+
+  @media print {
+    body { background: white; }
+    .header, #st-form, #st-gen, .preview-actions, .qr-note, .poster-label, .published-banner, .jd-panel { display: none !important; }
+    .main { padding: 0; max-width: 100%; }
+    .preview-layout { display: block; }
+    .poster-sticky { position: static; }
+    .poster { border: 1px solid #999 !important; padding: 40px 36px !important; page-break-inside: avoid; }
+    .pp-title { font-size: 40px !important; }
+  }
+
+  @media (max-width: 800px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .fg-full { grid-column: 1; }
+    .preview-layout { grid-template-columns: 1fr; }
+    .poster-sticky { position: static; }
+    .header { flex-wrap: wrap; gap: 8px; }
+    .header-sub { margin-left: 0; }
+    .preview-actions { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-ca">CA-025</span>
+  <span class="header-title">Job Description Engine</span>
+  <span class="header-sub">Fill in the role · Claude writes the description · Publish to CA-022</span>
+</div>
+
+<div class="main">
+
+  <!-- ── FORM ── -->
+  <div id="st-form">
+    <div class="form-grid">
+      <div class="fg">
+        <label>Property</label>
+        <select id="f-prop">
+          <option value="artyst|The Artyst|theartyst.co.uk">The Artyst</option>
+          <option value="alcademy|The Alcademy|alcademy.co.uk">The Alcademy</option>
+          <option value="ic|Invysible College|invysiblecollege.net">Invysible College</option>
+          <option value="othersyde|OtherSyde|othersyde.co.uk">OtherSyde</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Employment type</label>
+        <select id="f-type">
+          <option>Part-time</option><option>Full-time</option>
+          <option>Freelance / Sessional</option><option>Voluntary</option>
+          <option>Zero-hours</option><option>Contract</option>
+        </select>
+      </div>
+      <div class="fg fg-full">
+        <label>Role title *</label>
+        <input type="text" id="f-title" placeholder="e.g. Bar Manager, Tarot Reader, Events Coordinator">
+      </div>
+      <div class="fg">
+        <label>Hours</label>
+        <input type="text" id="f-hours" placeholder="e.g. 20 hrs/week, evenings & weekends">
+      </div>
+      <div class="fg">
+        <label>Pay / rate</label>
+        <input type="text" id="f-pay" placeholder="e.g. £12.50/hr">
+      </div>
+      <div class="fg fg-full">
+        <label>Key responsibilities *</label>
+        <textarea id="f-resp" rows="4" placeholder="What will they actually do? A few lines or bullet points is fine."></textarea>
+      </div>
+      <div class="fg fg-full">
+        <label>What we're looking for</label>
+        <textarea id="f-req" rows="3" placeholder="Skills, experience, qualities."></textarea>
+      </div>
+      <div class="fg">
+        <label>Apply to (email)</label>
+        <input type="text" id="f-email" value="jobs@theartyst.co.uk">
+      </div>
+      <div class="fg">
+        <label>Extra context for Claude</label>
+        <input type="text" id="f-ctx" placeholder="Start date, tone, anything else">
+      </div>
+      <div class="form-actions">
+        <span class="err" id="f-err"></span>
+        <button class="btn btn-primary" onclick="generate()">Generate description →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GENERATING ── -->
+  <div id="st-gen" class="hidden">
+    <div class="generating">
+      <div class="gen-title">Writing your job description…</div>
+      <div class="spinner"></div>
+      <div class="gen-sub">Claude is drafting something worth reading.</div>
+    </div>
+  </div>
+
+  <!-- ── PREVIEW ── -->
+  <div id="st-prev" class="hidden">
+    <div class="preview-layout">
+
+      <!-- JD -->
+      <div class="jd-panel">
+        <div class="jd-role" id="p-role"></div>
+        <div class="jd-property" id="p-prop"></div>
+        <div class="jd-meta" id="p-meta"></div>
+        <div id="p-body"></div>
+      </div>
+
+      <!-- Poster + actions -->
+      <div class="poster-sticky">
+        <div class="poster-label">Poster preview</div>
+        <div class="poster">
+          <div class="pp-prop" id="pp-prop"></div>
+          <div class="pp-rule"></div>
+          <div class="pp-seek">now seeking</div>
+          <div class="pp-title" id="pp-title"></div>
+          <div class="pp-type" id="pp-type"></div>
+          <div class="pp-dets" id="pp-dets"></div>
+          <div class="pp-rule"></div>
+          <div class="pp-ov" id="pp-ov"></div>
+          <div class="pp-bullets" id="pp-buls"></div>
+          <div class="pp-rule"></div>
+          <div class="pp-talk">Or come in and talk to us — The Artyst, 54–56 Chesterton Road, Cambridge.</div>
+          <div class="pp-foot">
+            <div>
+              <div class="pp-scan">Scan to apply</div>
+              <div class="pp-url" id="pp-url"></div>
+            </div>
+            <div id="qrc"></div>
+          </div>
+        </div>
+
+        <div class="preview-actions">
+          <button class="btn" onclick="backToForm()">← Edit</button>
+          <button class="btn" onclick="copyJD(event)">Copy JD</button>
+          <button class="btn" onclick="window.print()">Print poster</button>
+          <button class="btn btn-publish" id="publish-btn" onclick="publish()">Publish to CA-022 →</button>
+        </div>
+        <div class="qr-note" id="qr-note"></div>
+
+        <!-- Published confirmation -->
+        <div class="published-banner hidden" id="pub-banner">
+          <div class="pub-title">Published to CA-022 ✓</div>
+          <div class="pub-row"><span class="pub-label">Live page</span><a id="pub-page-url" href="#" target="_blank"></a></div>
+          <div class="pub-row"><span class="pub-label">Redirect</span><a id="pub-redirect-url" href="#" target="_blank"></a></div>
+          <div class="pub-row" style="margin-top:8px;font-size:13px;font-style:italic;">The QR code and distribution options are now available in the CA-022 admin library.</div>
+        </div>
+        <div class="err" id="pub-err" style="margin-top:8px;text-align:center;"></div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  let JD = '';
+  let currentSlug = '';
+  let published = false;
+
+  function show(id) {
+    ['st-form','st-gen','st-prev'].forEach(s => {
+      document.getElementById(s).classList.toggle('hidden', s !== id);
+    });
+  }
+
+  function getProp() {
+    const parts = document.getElementById('f-prop').value.split('|');
+    return { id: parts[0], name: parts[1], url: parts[2] };
+  }
+
+  function toSlug(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  async function generate() {
+    const title = document.getElementById('f-title').value.trim();
+    const resp  = document.getElementById('f-resp').value.trim();
+    const errEl = document.getElementById('f-err');
+    if (!title) { errEl.textContent = 'Please enter a role title.'; return; }
+    if (!resp)  { errEl.textContent = 'Please add some responsibilities.'; return; }
+    errEl.textContent = '';
+    published = false;
+    document.getElementById('pub-banner').classList.add('hidden');
+    document.getElementById('pub-err').textContent = '';
+
+    const prop  = getProp();
+    const type  = document.getElementById('f-type').value;
+    const hours = document.getElementById('f-hours').value.trim();
+    const pay   = document.getElementById('f-pay').value.trim();
+    const req   = document.getElementById('f-req').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const ctx   = document.getElementById('f-ctx').value.trim();
+
+    show('st-gen');
+
+    try {
+      const res = await fetch('/api/generate-jd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title, property: prop.name, employment_type: type,
+          hours, pay, responsibilities: resp,
+          requirements: req, apply_email: email, context: ctx
+        })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      JD = data.description || '';
+      if (!JD) throw new Error('empty');
+      currentSlug = toSlug(title);
+      renderPreview(title, prop, type, hours, pay);
+    } catch (e) {
+      document.getElementById('f-err').textContent = 'Generation failed — please try again.';
+      show('st-form');
+    }
+  }
+
+  function parseSections(text) {
+    const lines = text.split('\n');
+    const sections = [];
+    let cur = null;
+    for (const line of lines) {
+      if (line.startsWith('## ')) {
+        if (cur) sections.push(cur);
+        cur = { title: line.replace('## ', '').trim(), lines: [] };
+      } else if (cur && line.trim()) {
+        cur.lines.push(line.trim());
+      }
+    }
+    if (cur) sections.push(cur);
+    return sections;
+  }
+
+  function renderPreview(title, prop, type, hours, pay) {
+    document.getElementById('p-role').textContent = title;
+    document.getElementById('p-prop').textContent = prop.name.toUpperCase();
+    const meta = [type, hours, pay].filter(Boolean);
+    document.getElementById('p-meta').innerHTML = meta.map(m => `<span><strong>${m}</strong></span>`).join('');
+
+    const sections = parseSections(JD);
+    let bodyHtml = '';
+    for (const sec of sections) {
+      if (sec.title.toLowerCase().includes('poster')) continue;
+      const hasBullets = sec.lines.some(l => l.startsWith('-'));
+      bodyHtml += `<div class="jd-section"><div class="jd-section-title">${sec.title}</div>`;
+      if (hasBullets) {
+        bodyHtml += '<ul>';
+        for (const l of sec.lines) {
+          if (l.startsWith('-')) bodyHtml += `<li>${l.replace(/^-\s*/, '')}</li>`;
+          else if (l.trim()) bodyHtml += `<p>${l}</p>`;
+        }
+        bodyHtml += '</ul>';
+      } else {
+        bodyHtml += `<p>${sec.lines.join(' ')}</p>`;
+      }
+      bodyHtml += '</div>';
+    }
+    document.getElementById('p-body').innerHTML = bodyHtml;
+
+    // Poster — QR points to CA-022 redirect
+    const redirectUrl = `https://artyst-qr.vercel.app/e/${currentSlug}`;
+    document.getElementById('pp-prop').textContent  = prop.name.toUpperCase();
+    document.getElementById('pp-title').textContent = title;
+    document.getElementById('pp-type').textContent  = type;
+
+    const dets = [
+      hours && { label: 'hours', value: hours },
+      pay   && { label: 'pay',   value: pay },
+      { label: 'location', value: 'Cambridge' }
+    ].filter(Boolean);
+    document.getElementById('pp-dets').innerHTML =
+      dets.map(d => `<div class="pp-det"><strong>${d.value}</strong>${d.label}</div>`).join('');
+
+    const posterLine = sections.find(s => s.title.toLowerCase().includes('poster'));
+    const ov         = sections.find(s => s.title.toLowerCase().includes('overview'));
+    const posterText = posterLine ? posterLine.lines.join(' ') : (ov ? ov.lines.join(' ') : '');
+    if (posterText) document.getElementById('pp-ov').textContent = posterText;
+
+    const role = sections.find(s => s.title.toLowerCase() === 'the role');
+    if (role) {
+      const bullets = role.lines.filter(l => l.startsWith('-')).slice(0, 3);
+      document.getElementById('pp-buls').innerHTML =
+        bullets.map(b => `<div class="pp-b">${b.replace(/^-\s*/, '')}</div>`).join('');
+    }
+
+    document.getElementById('pp-url').textContent  = redirectUrl;
+    document.getElementById('qr-note').textContent = `QR → ${redirectUrl}`;
+
+    const qrcEl = document.getElementById('qrc');
+    qrcEl.innerHTML = '';
+    if (window.QRCode) {
+      try {
+        new QRCode(qrcEl, {
+          text: redirectUrl, width: 76, height: 76,
+          colorDark: '#000000', colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        qrcEl.innerHTML = '<div style="width:70px;height:70px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;font-size:9px;color:#999">QR</div>';
+      }
+    }
+
+    show('st-prev');
+  }
+
+  async function publish() {
+    if (published) return;
+    const btn    = document.getElementById('publish-btn');
+    const errEl  = document.getElementById('pub-err');
+    const banner = document.getElementById('pub-banner');
+    btn.disabled = true;
+    btn.textContent = 'Publishing…';
+    errEl.textContent = '';
+
+    const prop  = getProp();
+    const type  = document.getElementById('f-type').value;
+    const title = document.getElementById('p-role').textContent;
+
+    try {
+      const res = await fetch('/api/create-opportunity-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-ca022-secret': '__CA022_SECRET__'   // injected at build — see note below
+        },
+        body: JSON.stringify({
+          title,
+          slug:                currentSlug,
+          property:            prop.name,
+          employment_type:     type,
+          hours:               document.getElementById('f-hours').value.trim(),
+          pay:                 document.getElementById('f-pay').value.trim(),
+          description:         JD,
+          apply_email:         document.getElementById('f-email').value.trim(),
+          ca025_opportunity_id: null
+        })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data.success) throw new Error('not ok');
+
+      published = true;
+      btn.textContent = 'Published ✓';
+
+      document.getElementById('pub-page-url').textContent = data.destination_url;
+      document.getElementById('pub-page-url').href        = data.destination_url;
+      document.getElementById('pub-redirect-url').textContent = data.redirect_url;
+      document.getElementById('pub-redirect-url').href        = data.redirect_url;
+      banner.classList.remove('hidden');
+
+    } catch (e) {
+      errEl.textContent = 'Publish failed — check the console or try again.';
+      btn.disabled = false;
+      btn.textContent = 'Publish to CA-022 →';
+    }
+  }
+
+  function backToForm() {
+    published = false;
+    document.getElementById('pub-banner').classList.add('hidden');
+    document.getElementById('publish-btn').disabled = false;
+    document.getElementById('publish-btn').textContent = 'Publish to CA-022 →';
+    show('st-form');
+  }
+
+  function copyJD(e) {
+    const btn  = e.target;
+    const done = () => { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = 'Copy JD', 2000); };
+    if (navigator.clipboard) { navigator.clipboard.writeText(JD).then(done); }
+    else {
+      const ta = document.createElement('textarea');
+      ta.value = JD; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); done();
+    }
+  }
+</script>
+
+</body>
+</html>
