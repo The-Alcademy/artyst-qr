@@ -1193,7 +1193,111 @@ function Reports({codes,scanEvents}){
     </div>
   );
 }
+// ── APPLICATIONS ──────────────────────────────────────────
+function Applications({applications, onRefresh}){
+  const [filterStatus,setFilterStatus]=useState('all');
+  const [filterSlug,setFilterSlug]=useState('all');
+  const [updating,setUpdating]=useState(null);
+  const [expanded,setExpanded]=useState(null);
 
+  const STATUSES=['new','reviewed','shortlisted','rejected'];
+  const STATUS_BG={new:'#1a3a5c',reviewed:'#2a2a1a',shortlisted:'#1a3a1a',rejected:'#3a1a1a'};
+  const STATUS_FG={new:'#5aafff',reviewed:'#ffee5a',shortlisted:'#5aff7a',rejected:'#ff5a5a'};
+
+  async function updateStatus(id,status){
+    setUpdating(id);
+    await supabase('/rest/v1/applications?id=eq.'+id,'PATCH',{status});
+    await onRefresh();
+    setUpdating(null);
+  }
+
+  const slugs=[...new Set(applications.map(a=>a.opportunity_slug))];
+  const filtered=applications.filter(a=>{
+    if(filterStatus!=='all'&&a.status!==filterStatus) return false;
+    if(filterSlug!=='all'&&a.opportunity_slug!==filterSlug) return false;
+    return true;
+  });
+  const newCount=applications.filter(a=>a.status==='new').length;
+  const bySlug=slugs.reduce((acc,s)=>{acc[s]=applications.filter(a=>a.opportunity_slug===s).length;return acc;},{});
+
+  return (
+    <div>
+      <div className="stats-grid" style={{marginBottom:'1.5rem'}}>
+        <div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div>
+        <div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div>
+        <div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div>
+        <div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div>
+      </div>
+      <div className="card">
+        <div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}>
+          <div className="form-group" style={{flex:1,minWidth:'160px'}}>
+            <label>Filter by Role</label>
+            <select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}>
+              <option value="all">All roles ({applications.length})</option>
+              {slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{flex:1,minWidth:'160px'}}>
+            <label>Filter by Status</label>
+            <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
+              <option value="all">All statuses</option>
+              {STATUSES.map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        {!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}
+        {filtered.map(a=>(
+          <div key={a.id} style={{background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}}
+              onClick={()=>setExpanded(expanded===a.id?null:a.id)}>
+              <div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div>
+                  <div style={{fontSize:'.78rem',color:'#555',marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+                </div>
+                <span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span>
+              </div>
+              <span style={{color:'#444',fontSize:'.8rem',marginLeft:'1rem'}}>{expanded===a.id?'▲':'▼'}</span>
+            </div>
+            {expanded===a.id&&(
+              <div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}>
+                <div className="form-grid" style={{marginBottom:'1rem'}}>
+                  <div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Email</div>
+                    <a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a>
+                  </div>
+                  {a.phone&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Phone</div>
+                    <div style={{fontSize:'.88rem'}}>{a.phone}</div>
+                  </div>}
+                  {a.cv_url&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>CV</div>
+                    <a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a>
+                  </div>}
+                </div>
+                {a.message&&<div style={{marginBottom:'1rem'}}>
+                  <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Message</div>
+                  <div style={{background:'#1a1a1a',border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',color:'#aaa',lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div>
+                </div>}
+                <div>
+                  <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Update Status</div>
+                  <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+                    {STATUSES.map(s=>(
+                      <button key={s} className="btn btn-small"
+                        style={{background:a.status===s?STATUS_BG[s]:'#1a1a1a',color:a.status===s?STATUS_FG[s]:'#555',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}}
+                        disabled={updating===a.id||a.status===s}
+                        onClick={()=>updateStatus(a.id,s)}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 // ── APP ───────────────────────────────────────────────────
 function App(){
   const [tab,setTab]=useState('library');
