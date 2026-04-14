@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/e/:slug", "destination": "/api/redirect?slug=:slug" },
-    { "source": "/display/:zone", "destination": "/api/display?zone=:zone" }
+    { "source": "/display/:zone", "destination": "/api/display?zone=:zone" },
+    { "source": "/opportunity/:slug", "destination": "/api/opportunity" }
   ]
 }
