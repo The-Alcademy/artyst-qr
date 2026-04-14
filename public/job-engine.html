@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -436,12 +437,9 @@
     const title = document.getElementById('p-role').textContent;
 
     try {
-      const res = await fetch('/api/create-opportunity-code', {
+      const res = await fetch('/api/publish-opportunity', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-ca022-secret': '__CA022_SECRET__'   // injected at build — see note below
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
           slug:                currentSlug,
