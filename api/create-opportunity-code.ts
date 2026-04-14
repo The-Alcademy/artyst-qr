@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase  = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
-const BASE_URL  = 'https://artyst-qr.vercel.app'; // interim — update to go.theartyst.co.uk once DNS is live
+const BASE_URL  = 'https://go.theartyst.co.uk'; // was artyst-qr.vercel.app during interim period
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 
