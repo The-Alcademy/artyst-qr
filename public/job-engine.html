@@ -295,7 +295,7 @@
         <div class="published-banner hidden" id="pub-banner">
           <div class="pub-title">Published to CA-022 ✓</div>
           <div class="pub-row"><span class="pub-label">Live page</span><a id="pub-page-url" href="#" target="_blank"></a></div>
-          <div class="pub-row"><span class="pub-label">Redirect</span><a id="pub-redirect-url" href="#" target="_blank"></a></div>
+          <div class="pub-row"><span class="pub-label">QR redirect</span><span id="pub-redirect-url" style="color:var(--muted);font-size:13px;font-family:'Courier New',monospace;word-break:break-all;"></span></div>
           <div class="pub-row" style="margin-top:8px;font-size:13px;font-style:italic;">The QR code and distribution options are now available in the CA-022 admin library.</div>
         </div>
         <div class="err" id="pub-err" style="margin-top:8px;text-align:center;"></div>
@@ -498,7 +498,6 @@
       document.getElementById('pub-page-url').textContent = data.destination_url;
       document.getElementById('pub-page-url').href        = data.destination_url;
       document.getElementById('pub-redirect-url').textContent = data.redirect_url;
-      document.getElementById('pub-redirect-url').href        = data.redirect_url;
       banner.classList.remove('hidden');
 
     } catch (e) {
