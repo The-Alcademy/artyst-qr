@@ -11,8 +11,9 @@ const resend = new Resend(process.env.RESEND_API_KEY!);
 // Group slugs — must match names in distribution_groups table
 const LIST_SLUGS: Record<string, string> = {
   artyst: 'All subscribers',
-  tours:  'Mailchimp mailing list',
-  ic:     'All subscribers', // IC members also go into all subscribers for now
+  syd:    'Syd Barrett',
+  tours:  'Tour subscribers',
+  ic:     'All subscribers',
 };
 
 function esc(s: string) {
@@ -131,10 +132,18 @@ function renderPage(status?: 'success' | 'error' | 'duplicate'): string {
       </label>
 
       <label class="list-option">
+        <input type="checkbox" name="lists" value="syd">
+        <span class="list-option-text">
+          <span class="list-option-name">Syd Barrett's Cambridge</span>
+          <span class="list-option-desc">Events, tours and news connected to Syd Barrett's Cambridge heritage</span>
+        </span>
+      </label>
+
+      <label class="list-option">
         <input type="checkbox" name="lists" value="tours">
         <span class="list-option-text">
           <span class="list-option-name">Alcademy Tours</span>
-          <span class="list-option-desc">Syd Barrett's Cambridge, Wittgenstein & Friends, new tours as they launch</span>
+          <span class="list-option-desc">Wittgenstein & Friends, new tours as they launch, booking announcements</span>
         </span>
       </label>
 
@@ -142,7 +151,7 @@ function renderPage(status?: 'success' | 'error' | 'duplicate'): string {
         <input type="checkbox" name="lists" value="ic">
         <span class="list-option-text">
           <span class="list-option-name">Invysible College</span>
-          <span class="list-option-desc">Always Open - Open to All : Courses, Faculties, BedeGame developments</span>
+          <span class="list-option-desc">The learning ecosystem — courses, Faculties, BedePlex developments</span>
         </span>
       </label>
     </div>
