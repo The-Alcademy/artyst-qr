@@ -3,6 +3,7 @@
     { "source": "/e/:slug", "destination": "/api/redirect?slug=:slug" },
     { "source": "/display/:zone", "destination": "/api/display?zone=:zone" },
     { "source": "/opportunity/:slug", "destination": "/api/opportunity?slug=:slug" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/join", "destination": "/api/join" }
   ]
 }
