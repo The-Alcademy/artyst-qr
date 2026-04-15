@@ -142,7 +142,7 @@ function renderPage(status?: 'success' | 'error' | 'duplicate'): string {
         <input type="checkbox" name="lists" value="ic">
         <span class="list-option-text">
           <span class="list-option-name">Invysible College</span>
-          <span class="list-option-desc">The learning ecosystem — courses, Faculties, BedePlex developments</span>
+          <span class="list-option-desc">The learning ecosystem — Courses, Faculties, BedeGame developments</span>
         </span>
       </label>
     </div>
