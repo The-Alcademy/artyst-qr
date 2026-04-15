@@ -31,12 +31,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'title and slug are required' });
   }
 
-  const CA023_URL = 'https://ca-023-volunteer-registry.vercel.app';
+const CA023_URL = 'https://ca-023-volunteer-registry-9mkoxkgtn.vercel.app';
 const isVoluntary = (employment_type ?? '').toLowerCase() === 'voluntary';
 const destinationUrl = isVoluntary
   ? `${CA023_URL}?role=${encodeURIComponent(slug)}`
   : `${BASE_URL}/opportunity/${slug}`;
-
+  
   // ── 1. Upsert destination record ──────────────────────────────────────
   // destinations.url has no unique constraint in the base schema, so we
   // check first to avoid duplicates on repeated calls.
