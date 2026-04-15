@@ -864,6 +864,7 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
   const [staffName,setStaffName]=useState('');
   const [staffSuggestions,setStaffSuggestions]=useState([]);
   const [note,setNote]=useState('');
+  const [replyTo,setReplyTo]=useState('jobs@theartyst.co.uk');
   const [status,setStatus]=useState(null);
   const [loading,setLoading]=useState(false);
 
@@ -884,6 +885,32 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
 
     const code=codes.find(c=>c.id===selectedCode);
     const errors=[];
+
+    // ── Email — call send-email endpoint ───────────────────────────────
+    if(selectedChannels.includes('email')){
+      try{
+        const res=await fetch('/api/send-email',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            qr_code_id:  selectedCode,
+            slug:         code?.slug,
+            label:        code?.label,
+            type:         code?.type,
+            redirect_url: `${BASE_URL}/e/${code?.slug}`,
+            destination_url: code?.destination_url,
+            group_ids:    selectedGroups,
+            staff_name:   staffName,
+            note:         note||null,
+            reply_to:     replyTo,
+          })
+        });
+        const data=await res.json();
+        if(!res.ok) errors.push('Email: '+(data.error||'failed'));
+      }catch(e){
+        errors.push('Email: network error');
+      }
+    }
 
     // ── WhatsApp — call send-whatsapp endpoint ──────────────────────────
     if(selectedChannels.includes('whatsapp')){
@@ -934,13 +961,13 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
     } else {
       setStatus({type:'success',msg:'Sent successfully.'});
       setConfirming(false);
-      setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');
+      setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');setReplyTo('jobs@theartyst.co.uk');
       onDistributed();
     }
   }
 
   const code=codes.find(c=>c.id===selectedCode);
-  const needsGroups=selectedChannels.some(c=>c==='email');
+  const needsGroups=selectedChannels.includes('email');
 
   return (
     <div className="card">
@@ -1008,6 +1035,18 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
               <label>Note (optional)</label>
               <input value={note} onChange={e=>setNote(e.target.value)} placeholder="e.g. Pre-event push"/>
             </div>
+            {selectedChannels.includes('email')&&(
+              <div className="form-group full">
+                <label>Reply-to address</label>
+                <select value={replyTo} onChange={e=>setReplyTo(e.target.value)}>
+                  <option value="jobs@theartyst.co.uk">jobs@theartyst.co.uk</option>
+                  <option value="hello@theartyst.co.uk">hello@theartyst.co.uk</option>
+                  <option value="events@theartyst.co.uk">events@theartyst.co.uk</option>
+                  <option value="matthew@othersyde.co.uk">matthew@othersyde.co.uk</option>
+                  <option value="bookings@alcademy.co.uk">bookings@alcademy.co.uk</option>
+                </select>
+              </div>
+            )}
           </div>
           <div style={{display:'flex',gap:'.5rem',justifyContent:'flex-end',marginTop:'1rem'}}>
             <button className="btn btn-secondary" onClick={()=>setConfirming(false)}>Cancel</button>
