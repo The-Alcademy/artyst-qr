@@ -370,8 +370,20 @@ function applyDesign(d){
     setDownloading(false);
   }
 
-  async function saveDesign(){
+async function saveDesign(){
     if(!saveName){setSaveStatus({type:'error',msg:'Please enter a name.'});return;}
+    const backDesignPayload = duplex==='different' ? {
+      title: backPoster.title||null,
+      subtitle: backPoster.subtitle||null,
+      date_text: backPoster.dateText||null,
+      price: backPoster.price||null,
+      cta: backPoster.cta||null,
+      text_color: backPoster.textColor,
+      overlay_color: backPoster.overlayColor,
+      overlay_opacity: backPoster.overlayOpacity,
+      fg_image_url: backPoster.fgImageUrl||null,
+      bg_image_url: backPoster.bgImageUrl||null,
+    } : null;
     const payload={
       name:saveName, format:poster.format,
       title_override:poster.title||null,
@@ -381,17 +393,9 @@ function applyDesign(d){
       overlay_opacity:poster.overlayOpacity,
       fg_image_url:poster.fgImageUrl||null,
       bg_image_url:poster.bgImageUrl||null,
+      duplex: duplex,
+      back_design: backDesignPayload,
     };
-    if(saveMode==='template'){
-      await supabase('/rest/v1/poster_templates','POST',payload);
-      setSaveStatus({type:'success',msg:`Template "${saveName}" saved.`});
-    } else {
-      await supabase('/rest/v1/poster_designs','POST',{...payload,qr_code_id:code?.id});
-      setSaveStatus({type:'success',msg:`Design "${saveName}" saved.`});
-    }
-    setSaveMode(null); setSaveName('');
-    if(onSaved) onSaved();
-  }
 
   const posterStyle={
     width:fmt.w, height:fmt.h,
