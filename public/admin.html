@@ -563,7 +563,12 @@ async function saveDesign(){
         )}
       </div>
 
+{/* Poster output */}
       <div className="poster-wrap">
+        {/* Side 1 */}
+        <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',marginBottom:'.5rem'}}>
+          {duplex!=='none'?'Side 1':''}
+        </div>
         {needsCropMarks ? (
           <div className="crop-wrap">
             <CropMarks posterW={fmt.w} posterH={fmt.h}/>
@@ -571,6 +576,117 @@ async function saveDesign(){
           </div>
         ) : (
           PosterContent
+        )}
+
+        {/* Side 2 */}
+        {duplex!=='none'&&(
+          <>
+            <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',margin:'2rem 0 .5rem'}}>
+              Side 2
+            </div>
+            {duplex==='same'&&(
+              needsCropMarks?(
+                <div className="crop-wrap">
+                  <CropMarks posterW={fmt.w} posterH={fmt.h}/>
+                  {PosterContent}
+                </div>
+              ):(PosterContent)
+            )}
+            {duplex==='different'&&(()=>{
+              const backFmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
+              const backNeedsCropMarks=SMALL_PHYSICAL.includes(poster.format);
+              const backPosterStyle={
+                width:backFmt.w, height:backFmt.h,
+                background:backPoster.bgImage?'transparent':'#fff',
+                color:backPoster.textColor,
+                padding:backFmt.small?'4mm':'10mm',
+                display:'flex', flexDirection:'column',
+                alignItems:'center',
+                fontFamily:'Georgia,serif', position:'relative', overflow:'hidden',
+                border: backNeedsCropMarks?'none':'1px solid #ddd',
+                margin: backNeedsCropMarks?'0':'1rem auto',
+              };
+              const BackContent=(
+                <div ref={backPosterRef} style={backPosterStyle}>
+                  {backPoster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${backPoster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}
+                  {backPoster.bgImage&&<div style={{position:'absolute',inset:0,background:backPoster.overlayColor,opacity:backPoster.overlayOpacity,zIndex:1}}/>}
+                  <div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:backFmt.small?'2mm':'3mm',flex:1,minHeight:0}}>
+                    {!backFmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}
+                    <div style={{width:'100%',height:'3px',background:'#c0392b'}}/>
+                    {backPoster.fgImage&&<img src={backPoster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}
+                    <div style={{fontSize:backFmt.small?'12pt':'26pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{backPoster.title}</div>
+                    {backPoster.subtitle&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{backPoster.subtitle}</div>}
+                    {backPoster.dateText&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center'}}>{backPoster.dateText}</div>}
+                    {backPoster.price&&<div style={{fontSize:backFmt.small?'10pt':'15pt',fontWeight:'bold',textAlign:'center'}}>{backPoster.price}</div>}
+                  </div>
+                </div>
+              );
+              return backNeedsCropMarks?(
+                <div className="crop-wrap">
+                  <CropMarks posterW={backFmt.w} posterH={backFmt.h}/>
+                  {BackContent}
+                </div>
+              ):BackContent;
+            })()}
+
+            {/* Back design editor — only shown when different */}
+            {duplex==='different'&&(
+              <div className="no-print card" style={{marginTop:'2rem'}}>
+                <h2>Back Design</h2>
+                <div className="form-grid">
+                  <div className="form-group"><label>Title</label>
+                    <input value={backPoster.title} onChange={e=>setBackPoster(p=>({...p,title:e.target.value}))}/>
+                  </div>
+                  <div className="form-group"><label>Subtitle</label>
+                    <input value={backPoster.subtitle} onChange={e=>setBackPoster(p=>({...p,subtitle:e.target.value}))} placeholder="One line description"/>
+                  </div>
+                  <div className="form-group"><label>Date & Time</label>
+                    <input value={backPoster.dateText} onChange={e=>setBackPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/>
+                  </div>
+                  <div className="form-group"><label>Price</label>
+                    <input value={backPoster.price} onChange={e=>setBackPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/>
+                  </div>
+                  <div className="form-group"><label>Call to Action</label>
+                    <input value={backPoster.cta} onChange={e=>setBackPoster(p=>({...p,cta:e.target.value}))}/>
+                  </div>
+                  <div className="form-group"><label>Foreground Image</label>
+                    <input type="file" accept="image/*" onChange={async e=>{
+                      if(!e.target.files[0])return;
+                      setBackUploading(u=>({...u,fg:true}));
+                      try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,fgImage:url,fgImageUrl:url}));}
+                      catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}
+                      setBackUploading(u=>({...u,fg:false}));
+                    }}/>
+                    {backUploading.fg&&<span className="uploading">Uploading...</span>}
+                    {backPoster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}
+                  </div>
+                  <div className="form-group"><label>Background Image</label>
+                    <input type="file" accept="image/*" onChange={async e=>{
+                      if(!e.target.files[0])return;
+                      setBackUploading(u=>({...u,bg:true}));
+                      try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,bgImage:url,bgImageUrl:url}));}
+                      catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}
+                      setBackUploading(u=>({...u,bg:false}));
+                    }}/>
+                    {backUploading.bg&&<span className="uploading">Uploading...</span>}
+                    {backPoster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}
+                  </div>
+                  {backPoster.bgImage&&<>
+                    <div className="form-group"><label>Overlay Opacity — {Math.round(backPoster.overlayOpacity*100)}%</label>
+                      <input type="range" min="0" max="1" step="0.05" value={backPoster.overlayOpacity}
+                        onChange={e=>setBackPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/>
+                    </div>
+                    <div className="form-group"><label>Overlay Colour</label>
+                      <input type="color" value={backPoster.overlayColor} onChange={e=>setBackPoster(p=>({...p,overlayColor:e.target.value}))}/>
+                    </div>
+                  </>}
+                  <div className="form-group"><label>Text Colour</label>
+                    <input type="color" value={backPoster.textColor} onChange={e=>setBackPoster(p=>({...p,textColor:e.target.value}))}/>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
