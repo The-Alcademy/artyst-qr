@@ -290,7 +290,7 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
   const isScreen=isScreenFormat(poster.format);
   const needsCropMarks=SMALL_PHYSICAL.includes(poster.format);
 
-  function applyDesign(d){
+function applyDesign(d){
     setPoster(p=>({
       ...p,
       title: d.title_override||p.title,
@@ -307,6 +307,22 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
       fgImage: d.fg_image_url||null,
       bgImage: d.bg_image_url||null,
     }));
+    if(d.duplex) setDuplex(d.duplex);
+    if(d.back_design) setBackPoster({
+      title: d.back_design.title||'',
+      subtitle: d.back_design.subtitle||'',
+      dateText: d.back_design.date_text||'',
+      price: d.back_design.price||'',
+      cta: d.back_design.cta||'Scan to find out more',
+      format: d.format||'a5-portrait',
+      overlayOpacity: d.back_design.overlay_opacity??0.5,
+      overlayColor: d.back_design.overlay_color||'#000000',
+      textColor: d.back_design.text_color||'#111111',
+      fgImageUrl: d.back_design.fg_image_url||null,
+      bgImageUrl: d.back_design.bg_image_url||null,
+      fgImage: d.back_design.fg_image_url||null,
+      bgImage: d.back_design.bg_image_url||null,
+    });
   }
 
   function handleLoadTemplate(id){
