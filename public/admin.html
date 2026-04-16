@@ -279,7 +279,11 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
   const [loadTemplateId,setLoadTemplateId]=useState('');
   const [loadDesignId,setLoadDesignId]=useState('');
   const [downloading,setDownloading]=useState(false);
+  const [duplex,setDuplex]=useState('none');
+  const [backPoster,setBackPoster]=useState({...BLANK_POSTER});
+  const [backUploading,setBackUploading]=useState({fg:false,bg:false});
   const posterRef=useRef(null);
+  const backPosterRef=useRef(null);
 
   const fmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
   const codeDesigns=(designs||[]).filter(d=>d.qr_code_id===code?.id);
