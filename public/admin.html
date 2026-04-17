@@ -116,15 +116,14 @@
     }
     .crop-mark.h{height:.3px}
     .crop-mark.v{width:.3px}
-@page{size:A4 portrait;margin:0}
-@media print{
+    @page{size:A4 portrait;margin:0}
+    @media print{
       body *{visibility:hidden}
       .poster-wrap,.poster-wrap *,.crop-wrap,.crop-wrap *{visibility:visible}
       .poster-wrap{position:fixed;top:0;left:0;width:210mm}
       .crop-mark{visibility:visible!important;display:block!important;background:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .crop-mark.h{width:8mm!important;height:0.5mm!important}
       .crop-mark.v{width:0.5mm!important;height:8mm!important}
-    }
     }
     @media screen{
       .crop-mark{display:none!important}
@@ -290,7 +289,7 @@ function PosterEditor({code, templates, designs, onClose, onSaved}){
   const isScreen=isScreenFormat(poster.format);
   const needsCropMarks=SMALL_PHYSICAL.includes(poster.format);
 
-function applyDesign(d){
+  function applyDesign(d){
     setPoster(p=>({
       ...p,
       title: d.title_override||p.title,
@@ -370,7 +369,7 @@ function applyDesign(d){
     setDownloading(false);
   }
 
-async function saveDesign(){
+  async function saveDesign(){
     if(!saveName){setSaveStatus({type:'error',msg:'Please enter a name.'});return;}
     const backDesignPayload = duplex==='different' ? {
       title: backPoster.title||null,
@@ -396,6 +395,18 @@ async function saveDesign(){
       duplex: duplex,
       back_design: backDesignPayload,
     };
+    const table = saveMode==='template' ? 'poster_templates' : 'poster_designs';
+    if(saveMode==='design') payload.qr_code_id = code?.id;
+    const res = await supabase('/rest/v1/'+table,'POST',payload,'return=representation');
+    if(res.error || (Array.isArray(res) && res[0]?.code)){
+      setSaveStatus({type:'error', msg: res.message || res[0]?.message || 'Save failed.'});
+    } else {
+      setSaveStatus({type:'success', msg: saveMode==='template' ? 'Template saved.' : 'Design saved.'});
+      setSaveMode(null);
+      setSaveName('');
+      if(onSaved) onSaved();
+    }
+  }
 
   const posterStyle={
     width:fmt.w, height:fmt.h,
@@ -510,7 +521,7 @@ async function saveDesign(){
               <input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/>
             </div>
           </>}
-<div className="form-group"><label>Text Colour</label>
+          <div className="form-group"><label>Text Colour</label>
             <input type="color" value={poster.textColor} onChange={e=>setPoster(p=>({...p,textColor:e.target.value}))}/>
           </div>
 
@@ -563,7 +574,7 @@ async function saveDesign(){
         )}
       </div>
 
-{/* Poster output */}
+      {/* Poster output */}
       <div className="poster-wrap">
         {/* Side 1 */}
         <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',marginBottom:'.5rem'}}>
