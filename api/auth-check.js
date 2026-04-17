@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password required' });
     }
 
-    const expected = process.env.ADMIN_PASSWORD || 'alcademy';
+    const expected = process.env.ADMIN_PASSWORD || 'alcademyzyx321';
 
     // Constant-time-ish comparison — good enough at this scale
     if (password.length !== expected.length) {
