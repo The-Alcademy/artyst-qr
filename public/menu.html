@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e0e0e" />
+  <title>Menu — The Artyst</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0e0e0e;
+      color: #e8e4dc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #0e0e0e;
+      padding: 24px 20px 0;
+      border-bottom: 0.5px solid #222;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .venue-name {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .page-title {
+      font-size: 26px;
+      font-weight: 500;
+      color: #f0ece4;
+      letter-spacing: -0.01em;
+      margin-bottom: 16px;
+    }
+
+    /* ── Tabs ── */
+    .tab-row {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      margin: 0 -20px;
+      padding: 0 20px;
+    }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #666;
+      cursor: pointer;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      padding: 10px 14px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active {
+      color: #f0ece4;
+      border-bottom-color: #c8a96e;
+    }
+
+    /* ── Body ── */
+    .body { padding: 0 20px 40px; }
+
+    .cat-block { padding-top: 22px; }
+
+    .cat-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: #c8a96e;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .cat-note {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    /* ── Items ── */
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 9px 0;
+      border-bottom: 0.5px solid #1a1a1a;
+    }
+    .item-row.unavailable { opacity: 0.35; }
+    .item-left { flex: 1; padding-right: 12px; }
+    .item-name { font-size: 14px; color: #e8e4dc; line-height: 1.35; }
+    .item-desc { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.4; }
+    .item-price {
+      font-size: 13px;
+      color: #888;
+      white-space: nowrap;
+      text-align: right;
+      line-height: 1.5;
+      flex-shrink: 0;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 9px;
+      background: #1c1c1c;
+      color: #666;
+      border-radius: 3px;
+      padding: 2px 5px;
+      margin-left: 5px;
+      letter-spacing: 0.04em;
+      vertical-align: middle;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 0.5px solid #1a1a1a;
+      padding: 20px 20px 40px;
+      font-size: 11px;
+      color: #555;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    /* ── States ── */
+    .state {
+      padding: 48px 0;
+      color: #555;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <p class="venue-name">The Artyst · Cambridge</p>
+    <p class="page-title">Menu</p>
+    <div class="tab-row" id="tab-row"></div>
+  </div>
+
+  <div class="body" id="body">
+    <p class="state" id="state">Loading…</p>
+  </div>
+
+  <div class="footer">
+    Honouring Syd Barrett's legacy<br>
+    <span style="color:#444">theartyst.co.uk · @theartystcambridge</span>
+  </div>
+
+  <script>
+    const TABS = [
+      { label: 'Café',    slugs: ['espresso','tea','filter','cold'] },
+      { label: 'Food',    slugs: ['sandwiches','lunch','cakes'] },
+      { label: 'Bar',     slugs: ['draught','wine','lowno'] },
+      { label: 'Spirits', slugs: ['gin','vodka','rum','whisky','brandy','liqueurs','mixers'] },
+    ];
+
+    const CAT_NOTES = {
+      espresso:  'Add any syrup +50p',
+      gin:       'Single 25ml / Double 50ml',
+      vodka:     'Single 25ml / Double 50ml',
+      rum:       'Single 25ml / Double 50ml',
+      whisky:    'Single 25ml / Double 50ml',
+      brandy:    'Single 25ml / Double 50ml',
+      liqueurs:  'Single 25ml / Double 50ml',
+      draught:   'Pint / Half',
+      wine:      'Small / Med / Large / Bottle',
+    };
+
+    let allCategories = [];
+    let activeTab = 0;
+
+    function renderTabs() {
+      const row = document.getElementById('tab-row');
+      row.innerHTML = TABS.map((t, i) =>
+        `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
+      ).join('');
+    }
+
+    function renderBody() {
+      const body = document.getElementById('body');
+      const slugs = TABS[activeTab].slugs;
+      const cats = allCategories.filter(c => slugs.includes(c.slug));
+
+      if (!cats.length) {
+        body.innerHTML = '<p class="state">Nothing here yet.</p>';
+        return;
+      }
+
+      body.innerHTML = cats.map(cat => `
+        <div class="cat-block">
+          <p class="cat-label">${cat.name}</p>
+          ${CAT_NOTES[cat.slug] ? `<p class="cat-note">${CAT_NOTES[cat.slug]}</p>` : ''}
+          ${cat.items.map(item => `
+            <div class="item-row${item.available ? '' : ' unavailable'}">
+              <div class="item-left">
+                <p class="item-name">
+                  ${item.name}
+                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
+                </p>
+                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+              </div>
+              ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function switchTab(i) {
+      activeTab = i;
+      renderTabs();
+      renderBody();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function init() {
+      try {
+        const res = await fetch('/api/menu');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allCategories = data.categories || [];
+        document.getElementById('state').remove();
+        renderTabs();
+        renderBody();
+      } catch {
+        document.getElementById('state').textContent =
+          "Couldn't load the menu. Please ask at the bar.";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
