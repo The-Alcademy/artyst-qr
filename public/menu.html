@@ -26,12 +26,17 @@
       top: 0;
       z-index: 10;
     }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
     .venue-name {
       font-size: 11px;
       letter-spacing: 0.16em;
       color: #666;
       text-transform: uppercase;
-      margin-bottom: 4px;
     }
     .page-title {
       font-size: 26px;
@@ -39,6 +44,111 @@
       color: #f0ece4;
       letter-spacing: -0.01em;
       margin-bottom: 16px;
+    }
+
+    /* ── Hamburger button ── */
+    .burger {
+      background: none;
+      border: 0.5px solid #333;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 7px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      margin-top: -2px;
+    }
+    .burger span {
+      display: block;
+      width: 18px;
+      height: 1.5px;
+      background: #888;
+      transition: all 0.2s;
+    }
+    .burger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+    .burger.open span:nth-child(2) { opacity: 0; }
+    .burger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+
+    /* ── Drawer ── */
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 280px;
+      background: #141414;
+      border-left: 0.5px solid #2a2a2a;
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      overflow-y: auto;
+      padding: 24px 0 40px;
+    }
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+    .drawer-header {
+      padding: 0 20px 20px;
+      border-bottom: 0.5px solid #222;
+      margin-bottom: 8px;
+    }
+    .drawer-venue {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .drawer-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #f0ece4;
+    }
+
+    .drawer-section {
+      padding: 16px 20px 4px;
+    }
+    .drawer-section-label {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      color: #c8a96e;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 0.5px solid #1e1e1e;
+      text-decoration: none;
+      color: #ccc;
+      font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .drawer-link:last-child { border-bottom: none; }
+    .drawer-link:active { color: #f0ece4; }
+    .drawer-link-arrow { font-size: 11px; color: #444; }
+    .pill {
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: #555;
+      text-transform: uppercase;
+      background: #1a1a1a;
+      border-radius: 3px;
+      padding: 2px 6px;
+      margin-left: 6px;
+      flex-shrink: 0;
     }
 
     /* ── Tabs ── */
@@ -65,16 +175,11 @@
       flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
     }
-    .tab.active {
-      color: #f0ece4;
-      border-bottom-color: #c8a96e;
-    }
+    .tab.active { color: #f0ece4; border-bottom-color: #c8a96e; }
 
     /* ── Body ── */
     .body { padding: 0 20px 40px; }
-
     .cat-block { padding-top: 22px; }
-
     .cat-label {
       font-size: 9px;
       letter-spacing: 0.18em;
@@ -82,13 +187,7 @@
       text-transform: uppercase;
       margin-bottom: 4px;
     }
-    .cat-note {
-      font-size: 11px;
-      color: #555;
-      margin-bottom: 8px;
-    }
-
-    /* ── Items ── */
+    .cat-note { font-size: 11px; color: #555; margin-bottom: 8px; }
     .item-row {
       display: flex;
       justify-content: space-between;
@@ -100,14 +199,7 @@
     .item-left { flex: 1; padding-right: 12px; }
     .item-name { font-size: 14px; color: #e8e4dc; line-height: 1.35; }
     .item-desc { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.4; }
-    .item-price {
-      font-size: 13px;
-      color: #888;
-      white-space: nowrap;
-      text-align: right;
-      line-height: 1.5;
-      flex-shrink: 0;
-    }
+    .item-price { font-size: 13px; color: #888; white-space: nowrap; text-align: right; line-height: 1.5; flex-shrink: 0; }
     .tag {
       display: inline-block;
       font-size: 9px;
@@ -129,20 +221,80 @@
       text-align: center;
       line-height: 1.8;
     }
-
-    /* ── States ── */
-    .state {
-      padding: 48px 0;
-      color: #555;
-      font-size: 14px;
-      text-align: center;
-    }
+    .state { padding: 48px 0; color: #555; font-size: 14px; text-align: center; }
   </style>
 </head>
 <body>
 
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <p class="drawer-venue">The Artyst · Cambridge</p>
+      <p class="drawer-title">What's here</p>
+    </div>
+
+    <div class="drawer-section">
+      <p class="drawer-section-label">The venue</p>
+      <a class="drawer-link" href="https://theartyst.co.uk" target="_blank">
+        <span>The Artyst website</span><span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/events" target="_blank">
+        <span>What's on <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank">
+        <span>Support our basement <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="drawer-section">
+      <p class="drawer-section-label">Get involved</p>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank">
+        <span>Hire our space <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/run-an-event" target="_blank">
+        <span>Run an event here <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/jobs" target="_blank">
+        <span>Jobs</span><span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/volunteering" target="_blank">
+        <span>Volunteering</span><span class="drawer-link-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="drawer-section">
+      <p class="drawer-section-label">Cambridge tours</p>
+      <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank">
+        <span>Syd Barrett's Cambridge</span><span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank">
+        <span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="drawer-section">
+      <p class="drawer-section-label">The Invysible College</p>
+      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank">
+        <span>Enrol — Head Porter</span><span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://study.invysiblecollege.net" target="_blank">
+        <span>My Study</span><span class="drawer-link-arrow">↗</span>
+      </a>
+    </div>
+  </div>
+
   <div class="header">
-    <p class="venue-name">The Artyst · Cambridge</p>
+    <div class="header-top">
+      <p class="venue-name">The Artyst · Cambridge</p>
+      <button class="burger" id="burger" onclick="toggleDrawer()" aria-label="Open navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
     <p class="page-title">Menu</p>
     <div class="tab-row" id="tab-row"></div>
   </div>
@@ -178,6 +330,18 @@
 
     let allCategories = [];
     let activeTab = 0;
+
+    function toggleDrawer() {
+      const open = document.getElementById('drawer').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('open', open);
+      document.getElementById('burger').classList.toggle('open', open);
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+      document.getElementById('burger').classList.remove('open');
+    }
 
     function renderTabs() {
       const row = document.getElementById('tab-row');
