@@ -1570,6 +1570,201 @@ function Applications({applications, onRefresh}){
   );
 }
 
+// ── MENU EDITOR ───────────────────────────────────────────
+function MenuEditor(){
+  const [categories,setCategories]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [editingItem,setEditingItem]=useState(null);
+  const [editVal,setEditVal]=useState('');
+  const [addingTo,setAddingTo]=useState(null);
+  const [newItem,setNewItem]=useState({name:'',description:'',price_display:''});
+  const [status,setStatus]=useState(null);
+
+  async function loadMenu(){
+    setLoading(true);
+    const [cats,items]=await Promise.all([
+      supabase('/rest/v1/menu_categories?order=side,sort_order'),
+      supabase('/rest/v1/menu_items?order=category_id,sort_order'),
+    ]);
+    const grouped=(Array.isArray(cats)?cats:[]).map(cat=>({
+      ...cat,
+      items:(Array.isArray(items)?items:[]).filter(i=>i.category_id===cat.id),
+    }));
+    setCategories(grouped);
+    setLoading(false);
+  }
+
+  useEffect(()=>{loadMenu();},[]);
+
+  function flash(msg,type='success'){setStatus({type,msg});setTimeout(()=>setStatus(null),2500);}
+
+  async function toggleAvailable(item){
+    await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{available:!item.available});
+    loadMenu();
+  }
+
+  async function toggleCategoryActive(cat){
+    await supabase(`/rest/v1/menu_categories?id=eq.${cat.id}`,'PATCH',{active:!cat.active});
+    loadMenu();
+  }
+
+  function startEdit(item,field){
+    setEditingItem({id:item.id,field});
+    setEditVal(item[field]||'');
+  }
+
+  async function saveEdit(itemId,field){
+    await supabase(`/rest/v1/menu_items?id=eq.${itemId}`,'PATCH',{[field]:editVal||null});
+    setEditingItem(null);
+    flash('Saved.');
+    loadMenu();
+  }
+
+  async function deleteItem(id){
+    if(!confirm('Delete this item?')) return;
+    await supabase(`/rest/v1/menu_items?id=eq.${id}`,'DELETE');
+    loadMenu();
+  }
+
+  async function addItem(categoryId){
+    if(!newItem.name){flash('Name is required.','error');return;}
+    await supabase('/rest/v1/menu_items','POST',{
+      category_id:categoryId,
+      name:newItem.name,
+      description:newItem.description||null,
+      price_display:newItem.price_display||null,
+      available:true,
+      sort_order:999,
+    });
+    setNewItem({name:'',description:'',price_display:''});
+    setAddingTo(null);
+    flash('Item added.');
+    loadMenu();
+  }
+
+  const cafe=categories.filter(c=>c.side==='cafe');
+  const bar=categories.filter(c=>c.side==='bar');
+
+  function renderSection(cats,label){
+    return (
+      <div className="card" key={label}>
+        <h2>{label}</h2>
+        {cats.map(cat=>(
+          <div key={cat.id} style={{marginBottom:'1.5rem',paddingBottom:'1.5rem',borderBottom:'1px solid #222'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.6rem'}}>
+              <span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',color:cat.active?'#888':'#444'}}>
+                {cat.name}
+              </span>
+              <div style={{display:'flex',gap:'.4rem'}}>
+                <button className={`btn btn-small ${cat.active?'btn-secondary':'btn-primary'}`}
+                  onClick={()=>toggleCategoryActive(cat)}>
+                  {cat.active?'Hide category':'Show category'}
+                </button>
+                <button className="btn btn-green btn-small" onClick={()=>setAddingTo(addingTo===cat.id?null:cat.id)}>
+                  + Add item
+                </button>
+              </div>
+            </div>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'.82rem'}}>
+              <thead>
+                <tr>
+                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a'}}>Name</th>
+                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a'}}>Description</th>
+                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a'}}>Price</th>
+                  <th style={{textAlign:'center',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a'}}>On</th>
+                  <th style={{padding:'.4rem .5rem',borderBottom:'1px solid #2a2a2a'}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {cat.items.map(item=>(
+                  <tr key={item.id} style={{opacity:item.available?1:0.45}}>
+                    {['name','description','price_display'].map(field=>(
+                      <td key={field} style={{padding:'.4rem .5rem',borderBottom:'1px solid #1e1e1e',verticalAlign:'middle'}}>
+                        {editingItem?.id===item.id&&editingItem?.field===field?(
+                          <div style={{display:'flex',gap:'.3rem'}}>
+                            <input
+                              value={editVal}
+                              onChange={e=>setEditVal(e.target.value)}
+                              onKeyDown={e=>{if(e.key==='Enter')saveEdit(item.id,field);if(e.key==='Escape')setEditingItem(null);}}
+                              autoFocus
+                              style={{flex:1,padding:'.3rem .4rem',fontSize:'.8rem',background:'#111',border:'1px solid #c0392b',color:'#eee',borderRadius:'2px'}}
+                            />
+                            <button className="btn btn-primary btn-small" onClick={()=>saveEdit(item.id,field)}>✓</button>
+                            <button className="btn btn-secondary btn-small" onClick={()=>setEditingItem(null)}>✕</button>
+                          </div>
+                        ):(
+                          <span
+                            onClick={()=>startEdit(item,field)}
+                            style={{cursor:'text',color:item[field]?'#ccc':'#444',fontStyle:item[field]?'normal':'italic',display:'block',minWidth:'40px',minHeight:'20px'}}
+                            title="Click to edit">
+                            {item[field]||'—'}
+                          </span>
+                        )}
+                      </td>
+                    ))}
+                    <td style={{padding:'.4rem .5rem',textAlign:'center',borderBottom:'1px solid #1e1e1e'}}>
+                      <div
+                        onClick={()=>toggleAvailable(item)}
+                        style={{
+                          width:'32px',height:'18px',borderRadius:'9px',cursor:'pointer',
+                          background:item.available?'#1a5c1a':'#3a1a1a',
+                          border:`1px solid ${item.available?'#2a7a2a':'#5a2a2a'}`,
+                          display:'flex',alignItems:'center',
+                          padding:'2px',transition:'background .15s',
+                        }}>
+                        <div style={{
+                          width:'12px',height:'12px',borderRadius:'50%',
+                          background:item.available?'#5aff7a':'#ff5a5a',
+                          marginLeft:item.available?'12px':'0',transition:'margin .15s',
+                        }}/>
+                      </div>
+                    </td>
+                    <td style={{padding:'.4rem .5rem',borderBottom:'1px solid #1e1e1e'}}>
+                      <button className="btn btn-secondary btn-small" onClick={()=>deleteItem(item.id)}>Del</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {addingTo===cat.id&&(
+              <div style={{marginTop:'.8rem',background:'#111',border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem'}}>
+                <div style={{display:'grid',gridTemplateColumns:'2fr 2fr 1fr auto auto',gap:'.5rem',alignItems:'end'}}>
+                  <div className="form-group" style={{margin:0}}>
+                    <label>Name</label>
+                    <input value={newItem.name} onChange={e=>setNewItem(n=>({...n,name:e.target.value}))} placeholder="Item name" autoFocus/>
+                  </div>
+                  <div className="form-group" style={{margin:0}}>
+                    <label>Description</label>
+                    <input value={newItem.description} onChange={e=>setNewItem(n=>({...n,description:e.target.value}))} placeholder="Optional"/>
+                  </div>
+                  <div className="form-group" style={{margin:0}}>
+                    <label>Price</label>
+                    <input value={newItem.price_display} onChange={e=>setNewItem(n=>({...n,price_display:e.target.value}))} placeholder="£4.50"/>
+                  </div>
+                  <button className="btn btn-primary" style={{alignSelf:'flex-end'}} onClick={()=>addItem(cat.id)}>Add</button>
+                  <button className="btn btn-secondary" style={{alignSelf:'flex-end'}} onClick={()=>setAddingTo(null)}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+      <div className="warning-box" style={{marginBottom:'1rem'}}>
+        Click any name, description, or price to edit it inline. Changes are live immediately at go.theartyst.co.uk/menu.
+      </div>
+      {loading&&<div className="empty">Loading menu...</div>}
+      {!loading&&renderSection(cafe,'Café & food')}
+      {!loading&&renderSection(bar,'Bar')}
+    </div>
+  );
+}
+
 // ── APP ───────────────────────────────────────────────────
 function App(){
   const [tab,setTab]=useState('library');
@@ -1645,7 +1840,7 @@ function App(){
     ['templates',`Templates (${templates.length+designs.length})`],
     ['history','History'],
     ['reports','Reports'],
-['applications', newApplications ? 'Applications (' + newApplications + ' new)' : 'Applications'],
+    ['applications', newApplications ? 'Applications (' + newApplications + ' new)' : 'Applications'],
     ['menu','Menu Editor'],
   ];
 
@@ -1681,7 +1876,7 @@ function App(){
         {tab==='templates'&&<Templates templates={templates} designs={designs} codes={codes} onRefresh={loadAll}/>}
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
-{tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
+        {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
         {tab==='menu'&&<MenuEditor/>}
       </>}
     </div>
