@@ -1681,7 +1681,8 @@ function App(){
         {tab==='templates'&&<Templates templates={templates} designs={designs} codes={codes} onRefresh={loadAll}/>}
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
-        {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
+{tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
+        {tab==='menu'&&<MenuEditor/>}
       </>}
     </div>
   );
