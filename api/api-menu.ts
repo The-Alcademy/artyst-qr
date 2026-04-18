@@ -1,9 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// CA-023 — Menu API
-// GET /api/menu — returns full menu JSON, grouped by category
-// Called by: public MenuPage, any future CA that needs menu data
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -34,7 +30,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const categories = await catRes.json();
     const items = await itemsRes.json();
 
-    // Attach items to their parent category
     const grouped = categories.map((cat: any) => ({
       id: cat.id,
       name: cat.name,
@@ -51,10 +46,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           dietary_tags: item.dietary_tags || [],
           available: item.available,
           sort_order: item.sort_order,
+          details: item.details || null,
         })),
     }));
 
-    // Cache for 60s at the edge, serve stale while revalidating
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ categories: grouped });
   } catch (err) {
