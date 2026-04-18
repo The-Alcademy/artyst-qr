@@ -17,7 +17,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Header ── */
     .header {
       background: #0e0e0e;
       padding: 24px 20px 0;
@@ -46,7 +45,6 @@
       margin-bottom: 16px;
     }
 
-    /* ── Hamburger button ── */
     .burger {
       background: none;
       border: 0.5px solid #333;
@@ -71,7 +69,6 @@
     .burger.open span:nth-child(2) { opacity: 0; }
     .burger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
-    /* ── Drawer ── */
     .drawer {
       position: fixed;
       top: 0; right: 0; bottom: 0;
@@ -85,7 +82,6 @@
       padding: 24px 0 40px;
     }
     .drawer.open { transform: translateX(0); }
-
     .drawer-overlay {
       position: fixed;
       inset: 0;
@@ -96,7 +92,6 @@
       transition: opacity 0.25s;
     }
     .drawer-overlay.open { opacity: 1; pointer-events: all; }
-
     .drawer-header {
       padding: 0 20px 20px;
       border-bottom: 0.5px solid #222;
@@ -109,15 +104,8 @@
       text-transform: uppercase;
       margin-bottom: 4px;
     }
-    .drawer-title {
-      font-size: 15px;
-      font-weight: 500;
-      color: #f0ece4;
-    }
-
-    .drawer-section {
-      padding: 16px 20px 4px;
-    }
+    .drawer-title { font-size: 15px; font-weight: 500; color: #f0ece4; }
+    .drawer-section { padding: 16px 20px 4px; }
     .drawer-section-label {
       font-size: 9px;
       letter-spacing: 0.16em;
@@ -151,7 +139,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Tabs ── */
     .tab-row {
       display: flex;
       overflow-x: auto;
@@ -177,7 +164,6 @@
     }
     .tab.active { color: #f0ece4; border-bottom-color: #c8a96e; }
 
-    /* ── Body ── */
     .body { padding: 0 20px 40px; }
     .cat-block { padding-top: 22px; }
     .cat-label {
@@ -188,18 +174,49 @@
       margin-bottom: 4px;
     }
     .cat-note { font-size: 11px; color: #555; margin-bottom: 8px; }
+
+    /* ── Item rows ── */
     .item-row {
+      border-bottom: 0.5px solid #1a1a1a;
+    }
+    .item-row.unavailable { opacity: 0.35; }
+
+    .item-main {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       padding: 9px 0;
-      border-bottom: 0.5px solid #1a1a1a;
+      cursor: default;
     }
-    .item-row.unavailable { opacity: 0.35; }
+    .item-row.expandable .item-main {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
     .item-left { flex: 1; padding-right: 12px; }
     .item-name { font-size: 14px; color: #e8e4dc; line-height: 1.35; }
+    .item-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
     .item-desc { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.4; }
-    .item-price { font-size: 13px; color: #888; white-space: nowrap; text-align: right; line-height: 1.5; flex-shrink: 0; }
+    .item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .item-price { font-size: 13px; color: #888; white-space: nowrap; text-align: right; line-height: 1.5; }
+    .expand-icon {
+      font-size: 10px;
+      color: #444;
+      line-height: 1;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .item-row.expandable.open .expand-icon { transform: rotate(180deg); }
+
     .tag {
       display: inline-block;
       font-size: 9px;
@@ -207,12 +224,29 @@
       color: #666;
       border-radius: 3px;
       padding: 2px 5px;
-      margin-left: 5px;
       letter-spacing: 0.04em;
       vertical-align: middle;
     }
 
-    /* ── Footer ── */
+    /* ── Expanded detail panel ── */
+    .item-detail {
+      display: none;
+      padding: 0 0 12px;
+    }
+    .item-row.open .item-detail { display: block; }
+    .detail-lines {
+      background: #141414;
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .detail-line {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.7;
+      padding: 1px 0;
+    }
+    .detail-line:first-child { color: #aaa; }
+
     .footer {
       border-top: 0.5px solid #1a1a1a;
       padding: 20px 20px 40px;
@@ -243,6 +277,10 @@
         <span>What's on <span class="pill">coming soon</span></span>
         <span class="drawer-link-arrow">↗</span>
       </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/book-a-table" target="_blank">
+        <span>Book a table <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
       <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank">
         <span>Support our basement <span class="pill">coming soon</span></span>
         <span class="drawer-link-arrow">↗</span>
@@ -251,6 +289,10 @@
 
     <div class="drawer-section">
       <p class="drawer-section-label">Get involved</p>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank">
+        <span>Arty Club &amp; CURE Club <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
+      </a>
       <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank">
         <span>Hire our space <span class="pill">coming soon</span></span>
         <span class="drawer-link-arrow">↗</span>
@@ -274,6 +316,10 @@
       </a>
       <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank">
         <span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">↗</span>
+      </a>
+      <a class="drawer-link" href="https://alcademy.co.uk/victorian-murder/" target="_blank">
+        <span>A Victorian Murder <span class="pill">coming soon</span></span>
+        <span class="drawer-link-arrow">↗</span>
       </a>
     </div>
 
@@ -343,6 +389,10 @@
       document.getElementById('burger').classList.remove('open');
     }
 
+    function toggleItem(el) {
+      el.classList.toggle('open');
+    }
+
     function renderTabs() {
       const row = document.getElementById('tab-row');
       row.innerHTML = TABS.map((t, i) =>
@@ -364,19 +414,36 @@
         <div class="cat-block">
           <p class="cat-label">${cat.name}</p>
           ${CAT_NOTES[cat.slug] ? `<p class="cat-note">${CAT_NOTES[cat.slug]}</p>` : ''}
-          ${cat.items.map(item => `
-            <div class="item-row${item.available ? '' : ' unavailable'}">
-              <div class="item-left">
-                <p class="item-name">
-                  ${item.name}
-                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
-                </p>
-                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+          ${cat.items.map(item => {
+            const hasDetails = item.details && item.details.trim();
+            const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
+            return `
+              <div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}"
+                   ${hasDetails ? `onclick="toggleItem(this)"` : ''}>
+                <div class="item-main">
+                  <div class="item-left">
+                    <div class="item-name-row">
+                      <span class="item-name">${item.name}</span>
+                      ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                      ${!item.available ? '<span class="tag">unavailable</span>' : ''}
+                    </div>
+                    ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+                  </div>
+                  <div class="item-right">
+                    ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
+                    ${hasDetails ? `<span class="expand-icon">▼</span>` : ''}
+                  </div>
+                </div>
+                ${hasDetails ? `
+                  <div class="item-detail">
+                    <div class="detail-lines">
+                      ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
+                    </div>
+                  </div>
+                ` : ''}
               </div>
-              ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `).join('');
     }
