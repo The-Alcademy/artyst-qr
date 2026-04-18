@@ -4,6 +4,7 @@
     { "source": "/display/:zone", "destination": "/api/display?zone=:zone" },
     { "source": "/opportunity/:slug", "destination": "/api/opportunity?slug=:slug" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/join", "destination": "/api/join" }
+    { "source": "/join", "destination": "/api/join" },
+    { "source": "/menu", "destination": "/menu.html" }
   ]
 }
