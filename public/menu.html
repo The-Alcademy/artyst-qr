@@ -132,18 +132,11 @@
     }
     .bene-btn:hover { color: var(--gold); }
     .bene-count { font-size: 13px; font-weight: 500; color: var(--text-2); }
-    .bene-info {
-      display: none; background: var(--gold-bg);
-      border-bottom: 0.5px solid var(--gold-border); padding: 14px 20px;
-    }
+    .bene-info { display: none; background: var(--gold-bg); border-bottom: 0.5px solid var(--gold-border); padding: 14px 20px; }
     .bene-info.open { display: block; }
     .bene-info-title { font-size: 13px; font-weight: 500; color: var(--gold); margin-bottom: 6px; }
     .bene-info-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
-    .bene-info-close {
-      margin-top: 10px; font-size: 12px; color: var(--gold);
-      background: none; border: none; cursor: pointer; padding: 0;
-      text-decoration: underline; -webkit-tap-highlight-color: transparent; display: block;
-    }
+    .bene-info-close { margin-top: 10px; font-size: 12px; color: var(--gold); background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline; -webkit-tap-highlight-color: transparent; display: block; }
 
     /* ── Slot bar ── */
     .slot-bar {
@@ -152,23 +145,20 @@
       font-size: 12px; color: var(--text-3);
     }
     .slot-bar-label { letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; }
-    .show-all-btn {
-      font-size: 11px; color: var(--gold); background: none; border: none;
-      cursor: pointer; padding: 0; text-decoration: underline; -webkit-tap-highlight-color: transparent;
-    }
+    .show-all-btn { font-size: 11px; color: var(--gold); background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline; -webkit-tap-highlight-color: transparent; }
 
-.outdoor-notice {
-      margin: 14px 20px 0; padding: 11px 14px 11px 14px;
+    /* ── Outdoor notice ── */
+    .outdoor-notice {
+      margin: 14px 20px 0; padding: 11px 14px;
       background: var(--gold-bg); border: 0.5px solid var(--gold-border);
-      border-radius: 6px; font-size: 13px; color: var(--gold); line-height: 1.5;
+      border-radius: 6px; font-size: 13px; color: var(--gold); line-height: 1.6;
       display: flex; align-items: flex-start; gap: 10px;
     }
-.outdoor-notice-text { flex: 1; }
+    .outdoor-notice-text { flex: 1; }
     .outdoor-notice-close {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-2); font-size: 20px; line-height: 1;
-      padding: 0 0 0 8px; flex-shrink: 0; opacity: 0.6;
-      -webkit-tap-highlight-color: transparent;
+      background: none; border: none; cursor: pointer; color: var(--text-2);
+      font-size: 20px; line-height: 1; padding: 0 0 0 8px; flex-shrink: 0;
+      opacity: 0.6; -webkit-tap-highlight-color: transparent;
     }
     .outdoor-notice-close:hover { opacity: 1; }
 
@@ -180,43 +170,28 @@
       transition: transform 0.25s ease, background 0.2s; overflow-y: auto; padding: 24px 0 40px;
     }
     .drawer.open { transform: translateX(0); }
-    .drawer-overlay {
-      position: fixed; inset: 0; background: var(--overlay); z-index: 99;
-      opacity: 0; pointer-events: none; transition: opacity 0.25s;
-    }
+    .drawer-overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     .drawer-overlay.open { opacity: 1; pointer-events: all; }
     .drawer-header { padding: 0 20px 20px; border-bottom: 0.5px solid var(--border); margin-bottom: 8px; }
     .drawer-venue { font-size: 11px; letter-spacing: 0.16em; color: var(--text-3); text-transform: uppercase; margin-bottom: 4px; }
     .drawer-title { font-size: 16px; font-weight: 500; color: var(--text-1); }
-    .drawer-about {
-      margin: 16px 20px 0; padding: 14px 16px;
-      background: var(--gold-bg); border-radius: 6px; border: 0.5px solid var(--border);
-    }
+    .drawer-about { margin: 16px 20px 0; padding: 14px 16px; background: var(--gold-bg); border-radius: 6px; border: 0.5px solid var(--border); }
     .drawer-about-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
     .drawer-about-text { font-size: 13px; color: var(--text-2); line-height: 1.7; margin-bottom: 10px; }
     .drawer-about-link { font-size: 12px; color: var(--gold); text-decoration: none; }
     .drawer-section { padding: 14px 20px 4px; }
     .drawer-section-label { font-size: 11px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
-    .drawer-link {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 0; border-bottom: 0.5px solid var(--border-soft);
-      text-decoration: none; color: var(--text-1); font-size: 15px; -webkit-tap-highlight-color: transparent;
-    }
+    .drawer-link { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid var(--border-soft); text-decoration: none; color: var(--text-1); font-size: 15px; -webkit-tap-highlight-color: transparent; }
     .drawer-link:last-child { border-bottom: none; }
     .drawer-link-arrow { font-size: 13px; color: var(--text-3); }
     .drawer-link-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
-    .pill {
-      font-size: 10px; letter-spacing: 0.06em; color: var(--text-3);
-      text-transform: uppercase; background: var(--bg-raised);
-      border-radius: 3px; padding: 2px 6px; margin-left: 6px; flex-shrink: 0;
-    }
+    .pill { font-size: 10px; letter-spacing: 0.06em; color: var(--text-3); text-transform: uppercase; background: var(--bg-raised); border-radius: 3px; padding: 2px 6px; margin-left: 6px; flex-shrink: 0; }
 
     /* ── Body ── */
     .body { padding: 0 20px 24px; }
     .cat-block { padding-top: 22px; }
     .cat-label { font-size: 11px; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
     .cat-note { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
-
     .item-row { border-bottom: 0.5px solid var(--border-soft); }
     .item-row.unavailable { opacity: 0.4; }
     .item-row.slot-greyed { opacity: 0.3; }
@@ -230,7 +205,6 @@
     .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; }
     .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
     .item-row.open .expand-icon { transform: rotate(180deg); }
-
     .add-btn {
       width: 30px; height: 30px; border-radius: 50%;
       background: none; border: 1.5px solid var(--border);
@@ -240,157 +214,101 @@
     }
     .add-btn:hover { border-color: var(--gold); color: var(--gold); }
     .add-btn.added { border-color: var(--green); color: var(--green); }
-
-    .tag {
-      display: inline-block; font-size: 11px; background: var(--tag-bg);
-      color: var(--tag-text); border-radius: 3px; padding: 2px 6px;
-      letter-spacing: 0.04em; vertical-align: middle;
-    }
-
-    /* ── Inline size picker (for items with NO options but multiple prices) ── */
+    .tag { display: inline-block; font-size: 11px; background: var(--tag-bg); color: var(--tag-text); border-radius: 3px; padding: 2px 6px; letter-spacing: 0.04em; vertical-align: middle; }
     .size-picker { display: none; padding: 10px 0 14px; }
     .item-row.picking .size-picker { display: block; }
     .size-picker-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
     .size-options { display: flex; flex-wrap: wrap; gap: 6px; }
-    .size-opt {
-      padding: 7px 14px; border: 0.5px solid var(--border); border-radius: 20px;
-      font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised);
-      -webkit-tap-highlight-color: transparent; transition: all 0.15s;
-    }
+    .size-opt { padding: 7px 14px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
     .size-opt:hover { border-color: var(--gold); color: var(--gold); }
     .size-price { font-size: 12px; color: var(--text-3); margin-left: 4px; }
-
-    /* ── Detail panel ── */
     .item-detail { display: none; padding: 0 0 14px; }
     .item-row.open .item-detail { display: block; }
     .detail-lines { background: var(--bg-detail); border-radius: 4px; padding: 12px 14px; }
     .detail-line { font-size: 14px; color: var(--text-2); line-height: 1.8; }
     .detail-line:first-child { color: var(--text-1); font-weight: 500; }
-
     .state { padding: 48px 0; color: var(--text-2); font-size: 15px; text-align: center; }
 
     /* ── Options bottom sheet ── */
-    .opts-overlay {
-      position: fixed; inset: 0; background: var(--overlay);
-      z-index: 250; display: none; align-items: flex-end;
-    }
+    .opts-overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 250; display: none; align-items: flex-end; }
     .opts-overlay.open { display: flex; }
-    .opts-sheet {
-      background: var(--bg); border-radius: 16px 16px 0 0;
-      width: 100%; max-height: 88vh;
-      display: flex; flex-direction: column;
-      box-shadow: 0 -4px 32px rgba(0,0,0,0.15);
-    }
-    .opts-handle {
-      width: 36px; height: 4px; border-radius: 2px;
-      background: var(--border); margin: 12px auto 0;
-      flex-shrink: 0;
-    }
-    .opts-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border);
-      flex-shrink: 0;
-    }
+    .opts-sheet { background: var(--bg); border-radius: 16px 16px 0 0; width: 100%; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+    .opts-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; flex-shrink: 0; }
+    .opts-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
     .opts-item-name { font-size: 19px; font-weight: 500; color: var(--text-1); }
-    .opts-close {
-      background: none; border: 0.5px solid var(--border); border-radius: 50%;
-      width: 28px; height: 28px; font-size: 14px; cursor: pointer;
-      color: var(--text-2); display: flex; align-items: center; justify-content: center;
-      -webkit-tap-highlight-color: transparent; flex-shrink: 0;
-    }
+    .opts-close { background: none; border: 0.5px solid var(--border); border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: var(--text-2); display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
     .opts-body { flex: 1; overflow-y: auto; padding: 4px 20px 16px; }
     .opt-group { padding: 16px 0 4px; border-bottom: 0.5px solid var(--border-soft); }
     .opt-group:last-child { border-bottom: none; }
-    .opt-group-label {
-      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--text-3); margin-bottom: 12px;
-    }
+    .opt-group-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
     .opt-optional { color: var(--gold); font-size: 10px; }
     .opt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .opt-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 9px 16px; border: 1.5px solid var(--border);
-      border-radius: 24px; font-size: 14px; color: var(--text-1);
-      cursor: pointer; background: var(--bg-raised);
-      -webkit-tap-highlight-color: transparent; transition: all 0.15s;
-      user-select: none;
-    }
+    .opt-chip { display: inline-flex; align-items: center; gap: 5px; padding: 9px 16px; border: 1.5px solid var(--border); border-radius: 24px; font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; user-select: none; }
     .opt-chip:hover { border-color: var(--gold); }
     .opt-chip.selected { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); }
     .opt-chip-mod { font-size: 12px; color: var(--text-3); }
     .opt-chip.selected .opt-chip-mod { color: var(--gold); opacity: 0.8; }
-
-    .opts-footer {
-      padding: 14px 20px 28px; border-top: 0.5px solid var(--border);
-      flex-shrink: 0; background: var(--bg);
-    }
-    .opts-add-btn {
-      width: 100%; padding: 16px; border: none; border-radius: 10px;
-      background: var(--text-1); color: var(--bg);
-      font-size: 16px; font-weight: 500; cursor: pointer;
-      -webkit-tap-highlight-color: transparent; transition: opacity 0.15s;
-    }
-    .opts-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .opts-validation {
-      font-size: 12px; color: #c0392b; margin-bottom: 10px; display: none;
-    }
+    .opts-footer { padding: 14px 20px 28px; border-top: 0.5px solid var(--border); flex-shrink: 0; background: var(--bg); }
+    .opts-add-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; background: var(--text-1); color: var(--bg); font-size: 16px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .opts-validation { font-size: 12px; color: #c0392b; margin-bottom: 10px; display: none; }
     .opts-validation.show { display: block; }
 
     /* ── Order overlay ── */
-    .order-overlay {
-      position: fixed; inset: 0; background: var(--bg);
-      z-index: 200; display: none; flex-direction: column;
-    }
+    .order-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; }
     .order-overlay.open { display: flex; }
-    .order-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 20px 16px; border-bottom: 0.5px solid var(--border); flex-shrink: 0;
-    }
+    .order-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
     .order-header-left { display: flex; align-items: baseline; gap: 10px; }
     .order-title { font-size: 22px; font-weight: 500; color: var(--text-1); }
     .order-item-count { font-size: 13px; color: var(--text-3); }
-    .close-btn {
-      background: none; border: 0.5px solid var(--border); border-radius: 4px;
-      padding: 8px 12px; font-size: 13px; color: var(--text-2); cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .close-btn { background: none; border: 0.5px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .order-body { flex: 1; overflow-y: auto; padding: 0 20px; }
-    .order-empty { padding: 60px 0; text-align: center; color: var(--text-3); font-size: 15px; }
-    .order-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 0; border-bottom: 0.5px solid var(--border-soft);
+    .order-empty { padding: 40px 0 20px; text-align: center; color: var(--text-3); font-size: 15px; }
+
+    /* ── Table selector ── */
+    .table-section { padding: 16px 0 4px; border-bottom: 0.5px solid var(--border); margin-bottom: 4px; }
+    .table-section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .table-selected-name { color: var(--gold); font-weight: 600; font-size: 13px; letter-spacing: 0; text-transform: none; }
+    .table-group { margin-bottom: 10px; }
+    .table-group-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; opacity: 0.7; }
+    .table-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .table-chip {
+      padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px;
+      font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--bg-raised);
+      -webkit-tap-highlight-color: transparent; transition: all 0.15s; user-select: none;
     }
+    .table-chip:hover { border-color: var(--gold); color: var(--gold); }
+    .table-chip.selected { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); font-weight: 500; }
+    .table-error { font-size: 12px; color: #c0392b; margin-top: 8px; display: none; }
+    .table-error.show { display: block; }
+
+    /* ── Staff table banner ── */
+    .staff-table-banner {
+      display: none; margin: 20px 20px 0;
+      background: var(--text-1); color: var(--bg);
+      border-radius: 10px; padding: 18px 20px;
+      text-align: center;
+    }
+    .staff-table-banner-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
+    .staff-table-banner-name { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+    .order-overlay.staff-mode .staff-table-banner { display: block; }
+    .order-overlay.staff-mode .table-section { display: none; }
+
+    .order-item { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 0.5px solid var(--border-soft); }
     .order-item-info { flex: 1; min-width: 0; }
     .order-item-name { font-size: 16px; color: var(--text-1); }
     .order-item-mods { font-size: 12px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
     .order-item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; margin: 0 6px; }
     .qty-controls { display: flex; align-items: center; }
-    .qty-btn {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--bg-raised); border: 0.5px solid var(--border);
-      color: var(--text-1); font-size: 16px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      -webkit-tap-highlight-color: transparent; flex-shrink: 0;
-    }
+    .qty-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-raised); border: 0.5px solid var(--border); color: var(--text-1); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
     .qty-num { font-size: 15px; color: var(--text-1); min-width: 28px; text-align: center; }
-    .order-footer {
-      padding: 16px 20px 32px; border-top: 0.5px solid var(--border); flex-shrink: 0;
-    }
+    .order-footer { padding: 16px 20px 32px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
     .order-total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
     .order-total-label { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
     .order-total-value { font-size: 28px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; }
     .order-total-note { font-size: 11px; color: var(--text-3); margin-bottom: 16px; min-height: 16px; }
     .order-actions { display: flex; gap: 10px; }
-    .order-clear-btn {
-      flex: 1; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px;
-      background: none; color: var(--text-2); font-size: 14px; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .order-show-btn {
-      flex: 2; padding: 14px; border: none; border-radius: 8px;
-      background: var(--text-1); color: var(--bg); font-size: 15px;
-      font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
+    .order-clear-btn { flex: 1; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .order-show-btn { flex: 2; padding: 14px; border: none; border-radius: 8px; background: var(--text-1); color: var(--bg); font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .order-overlay.staff-mode .order-title { font-size: 28px; }
     .order-overlay.staff-mode .order-item-name { font-size: 20px; }
     .order-overlay.staff-mode .order-item-mods { font-size: 14px; }
@@ -399,25 +317,13 @@
     .order-overlay.staff-mode .order-total-value { font-size: 36px; }
     .order-overlay.staff-mode .order-actions { display: none; }
     .order-overlay.staff-mode .qty-controls { display: none; }
-    .staff-exit-btn {
-      display: none; width: 100%; padding: 14px; border: 0.5px solid var(--border);
-      border-radius: 8px; background: none; color: var(--text-2); font-size: 14px;
-      cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent;
-    }
+    .staff-exit-btn { display: none; width: 100%; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent; }
     .order-overlay.staff-mode .staff-exit-btn { display: block; }
 
     /* ── Promo footer ── */
-    .promo-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 52px;
-      background: var(--footer-bg); border-top: 0.5px solid var(--border);
-      z-index: 10; display: flex; align-items: center; overflow: hidden;
-    }
+    .promo-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; background: var(--footer-bg); border-top: 0.5px solid var(--border); z-index: 10; display: flex; align-items: center; overflow: hidden; }
     .promo-inner { position: relative; width: 100%; height: 100%; }
-    .promo-item {
-      position: absolute; inset: 0; display: flex; align-items: center;
-      padding: 0 16px; text-decoration: none; color: var(--text-1);
-      opacity: 0; transition: opacity 0.6s ease; gap: 10px; pointer-events: none;
-    }
+    .promo-item { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 16px; text-decoration: none; color: var(--text-1); opacity: 0; transition: opacity 0.6s ease; gap: 10px; pointer-events: none; }
     .promo-item.visible { opacity: 1; pointer-events: auto; }
     .promo-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
     .promo-sep { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
@@ -485,14 +391,12 @@
       <div class="opts-handle"></div>
       <div class="opts-header">
         <span class="opts-item-name" id="opts-item-name"></span>
-        <button class="opts-close" onclick="closeOptsModal()">✕</button>
+        <button class="opts-close" onclick="closeOptsModal()">&#x2715;</button>
       </div>
       <div class="opts-body" id="opts-body"></div>
       <div class="opts-footer">
         <p class="opts-validation" id="opts-validation"></p>
-        <button class="opts-add-btn" id="opts-add-btn" onclick="confirmAddToOrder()">
-          Add to order
-        </button>
+        <button class="opts-add-btn" id="opts-add-btn" onclick="confirmAddToOrder()">Add to order</button>
       </div>
     </div>
   </div>
@@ -506,6 +410,11 @@
       </div>
       <button class="close-btn" onclick="closeOrder()">Close</button>
     </div>
+    <!-- Staff table banner (staff mode only) -->
+    <div class="staff-table-banner" id="staff-table-banner">
+      <p class="staff-table-banner-label">Table</p>
+      <p class="staff-table-banner-name" id="staff-table-name">—</p>
+    </div>
     <div class="order-body" id="order-body"></div>
     <div class="order-footer">
       <div class="order-total-row">
@@ -517,7 +426,7 @@
         <button class="order-clear-btn" onclick="clearOrder()">Clear</button>
         <button class="order-show-btn" onclick="showToStaff()">Show to staff →</button>
       </div>
-      <button class="staff-exit-btn" onclick="exitStaffMode()">← Back to editing</button>
+      <button class="staff-exit-btn" onclick="exitStaffMode()">&#x2190; Back to editing</button>
     </div>
   </div>
 
@@ -526,12 +435,12 @@
     <div class="header-top">
       <a class="venue-link" href="https://theartyst.co.uk" target="_blank">The Artyst</a>
       <div class="header-controls">
-        <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☽</button>
+        <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">&#x263D;</button>
         <button class="icon-btn" id="slot-btn" onclick="toggleSlotPicker()" aria-label="Time filter">
-          <span>🕐</span><span id="slot-label" style="font-size:12px;letter-spacing:0.04em;text-transform:uppercase;"></span>
+          <span>&#x1F550;</span><span id="slot-label" style="font-size:12px;letter-spacing:0.04em;text-transform:uppercase;"></span>
         </button>
         <button class="icon-btn" id="order-btn" onclick="openOrder()" aria-label="My order" style="font-size:18px;">
-          🧾<span class="order-badge" id="order-badge" style="display:none;"></span>
+          &#x1F9FE;<span class="order-badge" id="order-badge" style="display:none;"></span>
         </button>
         <button class="burger" id="burger" onclick="toggleDrawer()" aria-label="Open navigation">
           <span></span><span></span><span></span>
@@ -551,11 +460,11 @@
     <div class="tabs-row-wrap">
       <div class="tab-row" id="tab-row"></div>
       <button class="bene-btn" onclick="toggleBeneInfo()" aria-label="What are Benes?">
-        <span>◆</span><span class="bene-count" id="bene-count">0</span>
+        <span>&#x25C6;</span><span class="bene-count" id="bene-count">0</span>
       </button>
     </div>
     <div class="bene-info" id="bene-info">
-      <p class="bene-info-title">◆ Benes — coming soon</p>
+      <p class="bene-info-title">&#x25C6; Benes &#x2014; coming soon</p>
       <p class="bene-info-text">Benes are The Artyst's reward currency. You earn them by visiting the venue and making purchases. Accumulate Benes to unlock rewards, track your journey through the Invysible College, and access exclusive events.</p>
       <button class="bene-info-close" onclick="toggleBeneInfo()">Close</button>
     </div>
@@ -568,12 +477,12 @@
   <div id="outdoor-notice-container"></div>
 
   <div class="body" id="body">
-    <p class="state" id="state">Loading…</p>
+    <p class="state" id="state">Loading&#x2026;</p>
   </div>
 
   <div class="promo-bar">
     <div class="promo-inner" id="promo-inner">
-      <a class="promo-item visible" href="#"><span class="promo-label">The Artyst</span><span class="promo-sep"></span><span class="promo-text">Loading…</span></a>
+      <a class="promo-item visible" href="#"><span class="promo-label">The Artyst</span><span class="promo-sep"></span><span class="promo-text">Loading&#x2026;</span></a>
     </div>
   </div>
 
@@ -597,6 +506,12 @@
       tea:     {label:'Afternoon tea', hours:'2–5pm',     start:14, end:17},
       evening: {label:'Evening',       hours:'5pm–close', start:17, end:24},
     };
+    const TABLE_GROUPS = [
+      { label:'Window',  tables:['Window 1','Window 2','Window 3'] },
+      { label:'Tables',  tables:['Round table','High table 1','High table 2','Square table 1','Square table 2','Large table 1','Large table 2','Large table 3'] },
+      { label:'Bar',     tables:['Bar'] },
+      { label:'Outside', tables:['Outside 1','Outside 2','Outside 3','Outside 4'] },
+    ];
 
     let allCategories = [];
     let activeTab = 0;
@@ -606,21 +521,36 @@
     let promos = [];
     let promoIndex = 0;
     let orderItems = [];
+    let selectedTable = null;
     let pickingItemId = null;
     const itemDataMap = new Map();
 
-    // ── Price parsing ─────────────────────────────────
-    function parsePriceOptions(priceDisplay, catNote) {
-      if (!priceDisplay || priceDisplay === 'ask staff') return [];
-      const rawParts = priceDisplay.split('/').map(p => p.trim());
-      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
-      const options = [];
-      rawParts.forEach((raw, i) => {
-        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
-        if (isNaN(num) || num <= 0) return;
-        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
-      });
-      return options;
+    // ── Table ─────────────────────────────────────────
+    function saveTable() { if (selectedTable) localStorage.setItem('artyst-table', selectedTable); else localStorage.removeItem('artyst-table'); }
+    function loadTable() { selectedTable = localStorage.getItem('artyst-table') || null; }
+
+    function selectTable(name) {
+      selectedTable = name;
+      saveTable();
+      renderOrderBody();
+    }
+
+    function renderTableSelector() {
+      const label = selectedTable
+        ? `TABLE &nbsp;<span class="table-selected-name">${selectedTable}</span>`
+        : 'TABLE &nbsp;<span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;">select your table</span>';
+
+      return `<div class="table-section">
+        <div class="table-section-label">${label}</div>
+        ${TABLE_GROUPS.map(g => `
+          <div class="table-group">
+            <div class="table-group-label">${g.label}</div>
+            <div class="table-chips">
+              ${g.tables.map(t => `<div class="table-chip${t === selectedTable ? ' selected' : ''}" onclick="selectTable('${t}')">${t}</div>`).join('')}
+            </div>
+          </div>`).join('')}
+        <p class="table-error" id="table-error">Please select your table before showing to staff.</p>
+      </div>`;
     }
 
     // ── Order ─────────────────────────────────────────
@@ -668,43 +598,57 @@
       const countEl = document.getElementById('order-item-count');
       const totalEl = document.getElementById('order-total');
       const noteEl = document.getElementById('order-total-note');
+      const staffNameEl = document.getElementById('staff-table-name');
+
       const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
       countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
-      if (!orderItems.length) {
-        body.innerHTML = '<div class="order-empty">No items yet — tap + on any menu item.</div>';
-        totalEl.textContent = '0.00'; noteEl.textContent = ''; return;
-      }
-      const hasAskStaff = orderItems.some(o => o.price === 0);
-      body.innerHTML = orderItems.map(o => {
-        const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' · ');
-        return `<div class="order-item">
-          <div class="order-item-info">
-            <div class="order-item-name">${o.name}</div>
-            ${modDisplay ? `<div class="order-item-mods">${modDisplay}</div>` : ''}
-          </div>
-          <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
-          <div class="qty-controls">
-            <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', -1)">−</button>
-            <span class="qty-num">${o.qty}</span>
-            <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', 1)">+</button>
-          </div>
-        </div>`;
-      }).join('');
+      if (staffNameEl) staffNameEl.textContent = selectedTable || '—';
+
+      const itemsHtml = orderItems.length === 0
+        ? '<div class="order-empty">No items yet — tap + on any menu item.</div>'
+        : orderItems.map(o => {
+            const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' · ');
+            return `<div class="order-item">
+              <div class="order-item-info">
+                <div class="order-item-name">${o.name}</div>
+                ${modDisplay ? `<div class="order-item-mods">${modDisplay}</div>` : ''}
+              </div>
+              <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', -1)">&#x2212;</button>
+                <span class="qty-num">${o.qty}</span>
+                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', 1)">+</button>
+              </div>
+            </div>`;
+          }).join('');
+
+      body.innerHTML = renderTableSelector() + itemsHtml;
+
       const t = orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
       totalEl.textContent = t.toFixed(2);
+      const hasAskStaff = orderItems.some(o => o.price === 0);
       noteEl.textContent = hasAskStaff ? 'Some items are priced at the bar and not included above.' : '';
     }
 
     function openOrder() { loadOrder(); renderOrderBody(); document.getElementById('order-overlay').classList.add('open'); }
     function closeOrder() { document.getElementById('order-overlay').classList.remove('open','staff-mode'); }
-    function showToStaff() { document.getElementById('order-overlay').classList.add('staff-mode'); }
+
+    function showToStaff() {
+      if (!selectedTable) {
+        const err = document.getElementById('table-error');
+        if (err) { err.classList.add('show'); setTimeout(() => err.classList.remove('show'), 3000); }
+        return;
+      }
+      document.getElementById('order-overlay').classList.add('staff-mode');
+    }
+
     function exitStaffMode() { document.getElementById('order-overlay').classList.remove('staff-mode'); }
 
-    // ── Options modal state ───────────────────────────
+    // ── Options modal ─────────────────────────────────
     let modalItem = null;
     let modalSizes = [];
     let modalSizeIdx = 0;
-    let modalSelections = {}; // groupName -> choice index (-1 = none)
+    let modalSelections = {};
 
     function calcModalPrice() {
       let price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
@@ -719,58 +663,34 @@
     }
 
     function updateModalAddBtn() {
-      const price = calcModalPrice();
-      const btn = document.getElementById('opts-add-btn');
-      btn.textContent = `Add to order — ${price.toFixed(2)}`;
+      document.getElementById('opts-add-btn').textContent = `Add to order \u2014 ${calcModalPrice().toFixed(2)}`;
     }
 
     function renderOptsBody() {
-      const body = document.getElementById('opts-body');
       let html = '';
-
-      // Size group (only if multiple prices)
       if (modalSizes.length > 1) {
-        html += `<div class="opt-group">
-          <p class="opt-group-label">Size</p>
-          <div class="opt-chips">
-            ${modalSizes.map((s, i) => `
-              <div class="opt-chip${i === modalSizeIdx ? ' selected' : ''}" onclick="selectModalSize(${i})">
-                ${s.label}<span class="opt-chip-mod">&nbsp;${s.display}</span>
-              </div>`).join('')}
-          </div>
-        </div>`;
+        html += `<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">
+          ${modalSizes.map((s, i) => `<div class="opt-chip${i === modalSizeIdx ? ' selected' : ''}" onclick="selectModalSize(${i})">${s.label}<span class="opt-chip-mod">&nbsp;${s.display}</span></div>`).join('')}
+        </div></div>`;
       }
-
-      // Option groups
       if (modalItem.options) {
         modalItem.options.forEach(group => {
           const idx = modalSelections[group.name];
           html += `<div class="opt-group">
-            <p class="opt-group-label">${group.name}${!group.required ? '<span class="opt-optional"> · optional</span>' : ''}</p>
+            <p class="opt-group-label">${group.name}${!group.required ? '<span class="opt-optional"> &middot; optional</span>' : ''}</p>
             <div class="opt-chips">
               ${!group.required ? `<div class="opt-chip${idx === -1 ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', -1)">None</div>` : ''}
-              ${group.choices.map((c, i) => `
-                <div class="opt-chip${idx === i ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', ${i})">
-                  ${c.label}${c.price_mod > 0 ? `<span class="opt-chip-mod">&nbsp;+${c.price_mod.toFixed(2)}</span>` : ''}
-                </div>`).join('')}
+              ${group.choices.map((c, i) => `<div class="opt-chip${idx === i ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', ${i})">${c.label}${c.price_mod > 0 ? `<span class="opt-chip-mod">&nbsp;+${c.price_mod.toFixed(2)}</span>` : ''}</div>`).join('')}
             </div>
           </div>`;
         });
       }
-
-      body.innerHTML = html;
+      document.getElementById('opts-body').innerHTML = html;
       updateModalAddBtn();
     }
 
-    function selectModalSize(i) {
-      modalSizeIdx = i;
-      renderOptsBody();
-    }
-
-    function selectModalOpt(groupName, idx) {
-      modalSelections[groupName] = idx;
-      renderOptsBody();
-    }
+    function selectModalSize(i) { modalSizeIdx = i; renderOptsBody(); }
+    function selectModalOpt(groupName, idx) { modalSelections[groupName] = idx; renderOptsBody(); }
 
     function openOptsModal(itemId) {
       const item = itemDataMap.get(itemId);
@@ -790,19 +710,11 @@
       document.getElementById('opts-overlay').classList.add('open');
     }
 
-    function closeOptsModal() {
-      document.getElementById('opts-overlay').classList.remove('open');
-      modalItem = null;
-    }
-
-    function handleOverlayClick(e) {
-      if (e.target === document.getElementById('opts-overlay')) closeOptsModal();
-    }
+    function closeOptsModal() { document.getElementById('opts-overlay').classList.remove('open'); modalItem = null; }
+    function handleOverlayClick(e) { if (e.target === document.getElementById('opts-overlay')) closeOptsModal(); }
 
     function confirmAddToOrder() {
       if (!modalItem) return;
-
-      // Validate required groups
       const missing = (modalItem.options || []).filter(g => g.required && modalSelections[g.name] === -1).map(g => g.name);
       if (missing.length) {
         const el = document.getElementById('opts-validation');
@@ -810,10 +722,8 @@
         el.classList.add('show');
         return;
       }
-
       const sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
       const price = calcModalPrice();
-
       const mods = [];
       if (modalItem.options) {
         modalItem.options.forEach(g => {
@@ -821,9 +731,22 @@
           if (idx >= 0) mods.push({ group: g.name, choice: g.choices[idx].label, priceMod: g.choices[idx].price_mod });
         });
       }
-
       addToOrder(modalItem.id, modalItem.name, sizeLabel, mods, price);
       closeOptsModal();
+    }
+
+    // ── Price parsing ─────────────────────────────────
+    function parsePriceOptions(priceDisplay, catNote) {
+      if (!priceDisplay || priceDisplay === 'ask staff') return [];
+      const rawParts = priceDisplay.split('/').map(p => p.trim());
+      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
+      const options = [];
+      rawParts.forEach((raw, i) => {
+        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+        if (isNaN(num) || num <= 0) return;
+        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
+      });
+      return options;
     }
 
     // ── Add button handler ────────────────────────────
@@ -831,20 +754,11 @@
       event.stopPropagation();
       const item = itemDataMap.get(itemId);
       if (!item) return;
-
       const sizes = parsePriceOptions(item.price_display, item.catNote);
       const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
-
-      // Items with structured options → bottom sheet modal
       if (hasOpts) { openOptsModal(itemId); return; }
-
-      // No options, no price → ask staff
       if (sizes.length === 0) { addToOrder(item.id, item.name, '', [], 0); return; }
-
-      // Single price → add directly
       if (sizes.length === 1) { addToOrder(item.id, item.name, '', [], sizes[0].price); return; }
-
-      // Multiple prices, no options → inline size picker
       const row = document.getElementById(`item-${itemId}`);
       if (!row) return;
       if (pickingItemId === itemId) { row.classList.remove('picking'); pickingItemId = null; return; }
@@ -852,11 +766,9 @@
       pickingItemId = itemId;
       const picker = row.querySelector('.size-picker');
       if (picker) {
-        picker.innerHTML = `<p class="size-picker-label">Choose size</p>
-          <div class="size-options">
-            ${sizes.map(s => `<div class="size-opt" onclick="selectInlineSize(${itemId}, '${item.name.replace(/'/g,"\\'")}', '${s.label}', ${s.price})">
-              ${s.label}<span class="size-price">${s.display}</span></div>`).join('')}
-          </div>`;
+        picker.innerHTML = `<p class="size-picker-label">Choose size</p><div class="size-options">
+          ${sizes.map(s => `<div class="size-opt" onclick="selectInlineSize(${itemId}, '${item.name.replace(/'/g,"\\'")}', '${s.label}', ${s.price})">${s.label}<span class="size-price">${s.display}</span></div>`).join('')}
+        </div>`;
       }
       row.classList.add('picking');
     }
@@ -868,6 +780,22 @@
       pickingItemId = null;
     }
 
+    // ── Outdoor notice ────────────────────────────────
+    function renderOutdoorNotice() {
+      const container = document.getElementById('outdoor-notice-container');
+      if (!container) return;
+      if (sessionStorage.getItem('outdoor-notice-dismissed')) { container.innerHTML = ''; return; }
+      if (TABS[activeTab] && TABS[activeTab].outdoor) {
+        container.innerHTML = '<div class="outdoor-notice"><span class="outdoor-notice-text">Please note: We can serve non-alcoholic drinks at any time of day indoors, and in our outside seating area before 8pm. Alcoholic drinks can only be served indoors after midday.</span><button class="outdoor-notice-close" onclick="dismissOutdoorNotice()">&#x2715;</button></div>';
+      } else {
+        container.innerHTML = '';
+      }
+    }
+    function dismissOutdoorNotice() {
+      sessionStorage.setItem('outdoor-notice-dismissed', '1');
+      document.getElementById('outdoor-notice-container').innerHTML = '';
+    }
+
     // ── Bene ──────────────────────────────────────────
     function toggleBeneInfo() { document.getElementById('bene-info').classList.toggle('open'); }
 
@@ -877,7 +805,7 @@
       const next = isDark ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
-      document.getElementById('theme-toggle').textContent = isDark ? '☽' : '☀';
+      document.getElementById('theme-toggle').textContent = isDark ? '\u263D' : '\u2600';
       localStorage.setItem('artyst-menu-theme', next);
     }
     (function(){
@@ -885,7 +813,7 @@
       if (saved === 'dark') {
         document.documentElement.setAttribute('data-theme','dark');
         document.getElementById('theme-color-meta').content = '#0e0e0e';
-        document.getElementById('theme-toggle').textContent = '☀';
+        document.getElementById('theme-toggle').textContent = '\u2600';
       }
     })();
 
@@ -903,7 +831,7 @@
       const info = SLOTS[currentSlot];
       document.getElementById('slot-btn').classList.add('slot-active');
       document.getElementById('slot-label').textContent = info.label;
-      document.getElementById('slot-bar-text').textContent = `${info.label} · ${info.hours}`;
+      document.getElementById('slot-bar-text').textContent = `${info.label} \u00b7 ${info.hours}`;
       document.getElementById('show-all-btn').textContent = showAll ? 'Hide unavailable' : 'Show all items';
       document.querySelectorAll('.slot-option').forEach(el => el.classList.toggle('active', el.dataset.slot === currentSlot));
     }
@@ -934,23 +862,6 @@
       document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
         `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
       ).join('');
-    }
-
-// ── Outdoor notice ────────────────────────────────
-    function renderOutdoorNotice() {
-      const container = document.getElementById('outdoor-notice-container');
-      if (!container) return;
-      if (sessionStorage.getItem('outdoor-notice-dismissed')) { container.innerHTML = ''; return; }
-      if (TABS[activeTab] && TABS[activeTab].outdoor) {
-        container.innerHTML = '<div class="outdoor-notice"><span class="outdoor-notice-text">Please note: We can serve non-alcoholic drinks at any time of day indoors, and in our outside seating area before 8pm. Alcoholic drinks can only be served indoors after midday.</span><button class="outdoor-notice-close" onclick="dismissOutdoorNotice()">&#x2715;</button></div>';
-      } else {
-        container.innerHTML = '';
-      }
-    }
-
-    function dismissOutdoorNotice() {
-      sessionStorage.setItem('outdoor-notice-dismissed', '1');
-      document.getElementById('outdoor-notice-container').innerHTML = '';
     }
 
     // ── Body ──────────────────────────────────────────
@@ -985,7 +896,7 @@
               </div>
               <div class="item-right">
                 ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-                ${hasDetails ? `<span class="expand-icon" onclick="toggleItem(${item.id})">▼</span>` : ''}
+                ${hasDetails ? `<span class="expand-icon" onclick="toggleItem(${item.id})">&#x25BE;</span>` : ''}
                 ${item.available ? `<button class="add-btn" data-add-id="${item.id}" onclick="handleAddBtn(${item.id}, event)">+</button>` : ''}
               </div>
             </div>
@@ -1013,7 +924,7 @@
       inner.innerHTML = data.map((p, i) =>
         `<a class="promo-item${i === 0 ? ' visible' : ''}" href="${p.href}" target="_blank">
           <span class="promo-label">${p.label}</span><span class="promo-sep"></span>
-          <span class="promo-text">${p.text}</span><span class="promo-arrow">→</span>
+          <span class="promo-text">${p.text}</span><span class="promo-arrow">&#x2192;</span>
         </a>`).join('');
       promos = data; promoIndex = 0;
     }
@@ -1028,7 +939,7 @@
 
     // ── Init ──────────────────────────────────────────
     async function init() {
-      loadOrder(); updateOrderBadge();
+      loadOrder(); loadTable(); updateOrderBadge();
       currentSlot = detectSlot(); updateSlotUI();
 
       const [menuRes, promosRes] = await Promise.allSettled([fetch('/api/menu'), fetch('/api/promos')]);
