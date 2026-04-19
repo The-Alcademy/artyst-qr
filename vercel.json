@@ -6,6 +6,7 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/join", "destination": "/api/join" },
     { "source": "/about", "destination": "/about.html" },
+    { "source": "/takeaway", "destination": "/takeaway.html" },
     { "source": "/menu", "destination": "/menu.html" }
   ]
 }
