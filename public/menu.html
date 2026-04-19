@@ -933,13 +933,21 @@
       ).join('');
     }
 
-    // ── Outdoor notice ────────────────────────────────
+// ── Outdoor notice ────────────────────────────────
     function renderOutdoorNotice() {
       const container = document.getElementById('outdoor-notice-container');
       if (!container) return;
-      container.innerHTML = (TABS[activeTab] && TABS[activeTab].outdoor)
-        ? `<p class="outdoor-notice">Please note: We can serve non-alcoholic drinks at any time of day indoors, and in our outside seating area before 8pm. Alcoholic drinks can only be served indoors after midday.</p>`
-        : '';
+      if (sessionStorage.getItem('outdoor-notice-dismissed')) { container.innerHTML = ''; return; }
+      if (TABS[activeTab] && TABS[activeTab].outdoor) {
+        container.innerHTML = '<div class="outdoor-notice"><span class="outdoor-notice-text">Please note: We can serve non-alcoholic drinks at any time of day indoors, and in our outside seating area before 8pm. Alcoholic drinks can only be served indoors after midday.</span><button class="outdoor-notice-close" onclick="dismissOutdoorNotice()">&#x2715;</button></div>';
+      } else {
+        container.innerHTML = '';
+      }
+    }
+
+    function dismissOutdoorNotice() {
+      sessionStorage.setItem('outdoor-notice-dismissed', '1');
+      document.getElementById('outdoor-notice-container').innerHTML = '';
     }
 
     // ── Body ──────────────────────────────────────────
