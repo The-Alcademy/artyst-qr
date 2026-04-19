@@ -624,7 +624,9 @@
         orderItems = []; saveOrder(); updateOrderBadge(); renderOrderBody();
       }
     }
-
+function getItemOrderCount(itemId) {
+      return orderItems.filter(function(o) { return o.id === itemId; }).reduce(function(s, o) { return s + o.qty; }, 0);
+    }
     function updateOrderBadge() {
       var total = orderItems.reduce(function(s, o) { return s + o.qty; }, 0);
       var badge = document.getElementById('order-badge');
