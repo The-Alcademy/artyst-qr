@@ -921,6 +921,9 @@
     }
 
     // ── Init  ───────────────────────────────────────────
+        function toggleBeneInfo() {
+      document.getElementById('bene-info').classList.toggle('open');
+    }
     async function init() {
       loadOrder();
       updateOrderBadge();
