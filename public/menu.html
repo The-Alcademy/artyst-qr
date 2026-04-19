@@ -58,6 +58,9 @@
         navigator.serviceWorker.register('/service-worker.js');
       });
     }
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      document.body.classList.add('pwa');
+    }
   </script>
 body {
       background: var(--bg); color: var(--text-1);
