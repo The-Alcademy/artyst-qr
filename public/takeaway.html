@@ -611,7 +611,8 @@
       body.innerHTML = cats.map(cat => {
         const note = CAT_NOTES[cat.slug] || '';
         const itemsHtml = cat.items.map(item => {
-          itemDataMap.set(item.id, {...item, catNote: note});
+          const bottleOnly = !!(TABS[activeTab].bottleOnly);
+          itemDataMap.set(item.id, {...item, catNote: note, bottleOnly});
           const hasDetails = item.details && item.details.trim();
           const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
           const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
