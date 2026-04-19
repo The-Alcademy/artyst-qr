@@ -540,8 +540,13 @@
       event.stopPropagation();
       const item = itemDataMap.get(itemId);
       if (!item) return;
-      const sizes = parsePriceOptions(item.price_display, item.catNote);
+const sizes = parsePriceOptions(item.price_display, item.catNote);
       const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+      if (item.bottleOnly) {
+        const bottle = sizes.length > 0 ? sizes[sizes.length - 1] : null;
+        addToOrder(item.id, item.name, 'Bottle', [], bottle ? bottle.price : 0);
+        return;
+      }
       if (hasOpts) { openOptsModal(itemId); return; }
       if (sizes.length === 0) { addToOrder(item.id, item.name, '', [], 0); return; }
       if (sizes.length === 1) { addToOrder(item.id, item.name, '', [], sizes[0].price); return; }
