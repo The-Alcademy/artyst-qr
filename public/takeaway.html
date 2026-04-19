@@ -640,13 +640,12 @@
           </div>`;
         }).join('');
         if (!itemsHtml.trim()) return '';
+const bottleOnly = !!(TABS[activeTab].bottleOnly);
         return `<div class="cat-block">
           <p class="cat-label">${cat.name}</p>
-          ${note ? `<p class="cat-note">${note}</p>` : ''}
+          ${bottleOnly ? `<p class="cat-note">Bottles only &mdash; glass prices available at the counter.</p>` : note ? `<p class="cat-note">${note}</p>` : ''}
           ${itemsHtml}
         </div>`;
-      }).join('');
-    }
 
     // ── Promos ────────────────────────────────────────
     function buildPromos(data) {
