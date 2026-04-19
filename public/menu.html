@@ -522,7 +522,18 @@
       <div class="slot-option" onclick="setAutoSlot()"><span>Auto-detect</span><span class="slot-time">Current time</span></div>
     </div>
     <p class="page-title">Menu</p>
-    <div class="tab-row" id="tab-row"></div>
+    <div class="tabs-row-wrap">
+      <div class="tab-row" id="tab-row"></div>
+      <button class="bene-btn" onclick="toggleBeneInfo()" aria-label="What are Benes?">
+        <span class="bene-gem">◆</span>
+        <span class="bene-count" id="bene-count">0</span>
+      </button>
+    </div>
+    <div class="bene-info" id="bene-info">
+      <p class="bene-info-title">◆ Benes — coming soon</p>
+      <p class="bene-info-text">Benes are The Artyst's reward currency. You earn them by visiting the venue and making purchases. Accumulate Benes to unlock rewards, track your journey through the Invysible College, and access exclusive events. Benes are part of the BedeGame — a learning and exploration system built into The Artyst.</p>
+      <button class="bene-info-close" onclick="toggleBeneInfo()">Close</button>
+    </div>
   </div>
 
   <div class="slot-bar">
