@@ -1,16 +1,16 @@
 
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#faf8f4" id="theme-color-meta" />
+  <title>Menu — The Artyst</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="The Artyst" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
-<head>
-  <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#faf8f4" id="theme-color-meta" />
-  <title>Menu — The Artyst</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -52,23 +52,14 @@
       --footer-bg:   #111;
       --green:       #5aff7a;
     }
-<script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/service-worker.js');
-      });
-    }
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      document.body.classList.add('pwa');
-    }
-  </script>
-body {
+
+    body {
       background: var(--bg); color: var(--text-1);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh; pad-webkit-font-smoothing: antialiased; font-size: 20px;ding-bottom: 52px;
-     -webkit-font-smoothing: antialiased; font-size: 20px;
-      transition: background 0.2s, color 0.2s;
+      min-height: 100vh; padding-bottom: 52px;
+      -webkit-font-smoothing: antialiased; font-size: 20px;
       text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
+      transition: background 0.2s, color 0.2s;
     }
 
     /* ── Header ── */
@@ -221,15 +212,17 @@ body {
     .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
     .item-row.open .expand-icon { transform: rotate(180deg); }
     .add-btn {
-      width: 30px; height: 30px; border-radius: 50%;
+      width: 34px; height: 34px; border-radius: 50%;
       background: none; border: 1.5px solid var(--border);
-      color: var(--text-2); font-size: 20px; line-height: 1;
+      color: var(--text-2); font-size: 22px; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: all 0.15s;
     }
     .add-btn:hover { border-color: var(--gold); color: var(--gold); }
     .add-btn.added { border-color: var(--green); color: var(--green); }
     .tag { display: inline-block; font-size: 11px; background: var(--tag-bg); color: var(--tag-text); border-radius: 3px; padding: 2px 6px; letter-spacing: 0.04em; vertical-align: middle; }
+
+    /* ── Inline size picker ── */
     .size-picker { display: none; padding: 10px 0 14px; }
     .item-row.picking .size-picker { display: block; }
     .size-picker-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
@@ -237,6 +230,8 @@ body {
     .size-opt { padding: 7px 14px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
     .size-opt:hover { border-color: var(--gold); color: var(--gold); }
     .size-price { font-size: 12px; color: var(--text-3); margin-left: 4px; }
+
+    /* ── Detail panel ── */
     .item-detail { display: none; padding: 0 0 14px; }
     .item-row.open .item-detail { display: block; }
     .detail-lines { background: var(--bg-detail); border-radius: 4px; padding: 12px 14px; }
@@ -286,23 +281,14 @@ body {
     .table-group { margin-bottom: 10px; }
     .table-group-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; opacity: 0.7; }
     .table-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .table-chip {
-      padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px;
-      font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--bg-raised);
-      -webkit-tap-highlight-color: transparent; transition: all 0.15s; user-select: none;
-    }
+    .table-chip { padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; user-select: none; }
     .table-chip:hover { border-color: var(--gold); color: var(--gold); }
     .table-chip.selected { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); font-weight: 500; }
     .table-error { font-size: 12px; color: #c0392b; margin-top: 8px; display: none; }
     .table-error.show { display: block; }
 
     /* ── Staff table banner ── */
-    .staff-table-banner {
-      display: none; margin: 20px 20px 0;
-      background: var(--text-1); color: var(--bg);
-      border-radius: 10px; padding: 18px 20px;
-      text-align: center;
-    }
+    .staff-table-banner { display: none; margin: 20px 20px 0; background: var(--text-1); color: var(--bg); border-radius: 10px; padding: 18px 20px; text-align: center; }
     .staff-table-banner-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
     .staff-table-banner-name { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
     .order-overlay.staff-mode .staff-table-banner { display: block; }
@@ -345,24 +331,8 @@ body {
     .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
     .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
 
-.promo-item.visible { opacity: 1; pointer-events: auto; }
-    .promo-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
-    .promo-sep { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
-    .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
-    .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
-
-    body.pwa { font-size: 20px; }
-    body.pwa .item-name { font-size: 22px; }
-    body.pwa .page-title { font-size: 32px; }
-    body.pwa .tab { font-size: 16px; padding: 12px 16px; }
-    body.pwa .item-price { font-size: 19px; }
-    body.pwa .cat-label { font-size: 13px; }
-    body.pwa .slot-bar { font-size: 15px; }
-    body.pwa .venue-link { font-size: 14px; }
-    body.pwa .item-desc { font-size: 15px; }
-    body.pwa .add-btn { width: 36px; height: 36px; }
-
-@media (min-width: 760px) and (pointer: fine) {
+    /* ── Desktop only ── */
+    @media (min-width: 760px) and (pointer: fine) {
       body { max-width: 720px; margin: 0 auto; font-size: 15px; }
       .header { padding: 14px 20px 0; }
       .page-title { font-size: 22px; margin-bottom: 10px; }
@@ -376,14 +346,8 @@ body {
       .slot-bar { padding: 7px 20px; }
       .table-chip { padding: 5px 11px; font-size: 12px; }
       .table-chips { gap: 5px; }
-      .promo-bar {
-        max-width: 720px; left: 50%; transform: translateX(-50%);
-        border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border);
-      }
-      .order-overlay {
-        max-width: 720px; left: 50%; transform: translateX(-50%);
-        border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border);
-      }
+      .promo-bar { max-width: 720px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); }
+      .order-overlay { max-width: 720px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); }
       .opts-overlay { align-items: center; justify-content: center; }
       .opts-sheet { border-radius: 12px; max-width: 520px; max-height: 80vh; }
     }
@@ -402,47 +366,49 @@ body {
     <div class="drawer-about">
       <p class="drawer-about-label">About The Artyst</p>
       <p class="drawer-about-text">Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive. The Artyst is built on that conviction. Everything here, from the coffee to the courses, is designed to let that spirit breathe.</p>
-      <a class="drawer-about-link" href="/about">Read more →</a>
+      <a class="drawer-about-link" href="/about">Read more &#x2192;</a>
     </div>
     <div class="drawer-section">
       <p class="drawer-section-label">The venue</p>
-      <a class="drawer-link" href="https://theartyst.co.uk" target="_blank"><span>The Artyst website</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/events" target="_blank"><span>What's on <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/book-a-table" target="_blank"><span>Book a table <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank"><span>Support our basement <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://theartyst.co.uk" target="_blank"><span>The Artyst website</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/events" target="_blank"><span>What's on <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/book-a-table" target="_blank"><span>Book a table <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank"><span>Support our basement <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
     </div>
     <div class="drawer-section">
       <p class="drawer-section-label">Get involved</p>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank"><span>Arty Club &amp; CURE Club <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank"><span>Hire our space <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/run-an-event" target="_blank"><span>Run an event here <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/jobs" target="_blank"><span>Jobs</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/volunteering" target="_blank"><span>Volunteering</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://whatsapp.com/channel/0029VbCJvFC4yltKJKnR4j0N" target="_blank"><span>The Artyst on WhatsApp</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://whatsapp.com/channel/0029VbCVXYlKmCPXlbvy4w3X" target="_blank"><span>Invysible College on WhatsApp</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://whatsapp.com/channel/0029Vb85M82EgGfDkmSh341j" target="_blank"><span>Alcademy Tours on WhatsApp</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank"><span>Arty Club &amp; CURE Club <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank"><span>Hire our space <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/run-an-event" target="_blank"><span>Run an event here <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/jobs" target="_blank"><span>Jobs</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/volunteering" target="_blank"><span>Volunteering</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://whatsapp.com/channel/0029VbCJvFC4yltKJKnR4j0N" target="_blank"><span>The Artyst on WhatsApp</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://whatsapp.com/channel/0029VbCVXYlKmCPXlbvy4w3X" target="_blank"><span>Invysible College on WhatsApp</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://whatsapp.com/channel/0029Vb85M82EgGfDkmSh341j" target="_blank"><span>Alcademy Tours on WhatsApp</span><span class="drawer-link-arrow">&#x2197;</span></a>
     </div>
     <div class="drawer-section">
       <p class="drawer-section-label">Cambridge tours</p>
-      <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank"><span>Syd Barrett's Cambridge</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank"><span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://alcademy.co.uk/victorian-murder/" target="_blank"><span>A Victorian Murder <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank"><span>Syd Barrett's Cambridge</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank"><span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://alcademy.co.uk/victorian-murder/" target="_blank"><span>A Victorian Murder <span class="pill">coming soon</span></span><span class="drawer-link-arrow">&#x2197;</span></a>
     </div>
     <div class="drawer-section">
       <p class="drawer-section-label">The Invysible College</p>
-      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Enrol — Head Porter</span><span class="drawer-link-arrow">↗</span></a>
-      <a class="drawer-link" href="https://study.invysiblecollege.net" target="_blank"><span>My Study</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Enrol &#x2014; Head Porter</span><span class="drawer-link-arrow">&#x2197;</span></a>
+      <a class="drawer-link" href="https://study.invysiblecollege.net" target="_blank"><span>My Study</span><span class="drawer-link-arrow">&#x2197;</span></a>
     </div>
     <div class="drawer-section">
       <p class="drawer-section-label">The BedeGame</p>
       <a class="drawer-link" href="https://bedegame.co.uk" target="_blank">
         <div><div>Navigate the BedePlex</div><div class="drawer-link-sub">300 rooms across 6 Schools</div></div>
-        <span class="drawer-link-arrow">↗</span>
+        <span class="drawer-link-arrow">&#x2197;</span>
       </a>
-      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Start at the Porter's Lodge</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Start at the Porter's Lodge</span><span class="drawer-link-arrow">&#x2197;</span></a>
+    </div>
+    <div class="drawer-section" style="border-top:0.5px solid var(--border-soft);margin-top:8px;padding-top:16px;">
+      <p style="font-size:13px;color:var(--text-2);line-height:1.8;">If you like what we do, please give us a review on <a href="https://www.facebook.com/OtherSyde/" target="_blank" style="color:var(--gold);">Facebook</a> and/or <a href="https://g.page/r/CXyY-bX-2fiAEBM/review" target="_blank" style="color:var(--gold);">Google</a>. If you don't like what we do, please talk to us first before posting &#x1F642; Thank you.</p>
     </div>
   </div>
-<div class="drawer-section" style="border-top:0.5px solid var(--border-soft);margin-top:8px;padding-top:16px;">
 
   <!-- Options bottom sheet -->
   <div class="opts-overlay" id="opts-overlay" onclick="handleOverlayClick(event)">
@@ -469,10 +435,9 @@ body {
       </div>
       <button class="close-btn" onclick="closeOrder()">Close</button>
     </div>
-    <!-- Staff table banner (staff mode only) -->
     <div class="staff-table-banner" id="staff-table-banner">
       <p class="staff-table-banner-label">Table</p>
-      <p class="staff-table-banner-name" id="staff-table-name">—</p>
+      <p class="staff-table-banner-name" id="staff-table-name">&#x2014;</p>
     </div>
     <div class="order-body" id="order-body"></div>
     <div class="order-footer">
@@ -483,7 +448,7 @@ body {
       <p class="order-total-note" id="order-total-note"></p>
       <div class="order-actions">
         <button class="order-clear-btn" onclick="clearOrder()">Clear</button>
-        <button class="order-show-btn" onclick="showToStaff()">Show to staff →</button>
+        <button class="order-show-btn" onclick="showToStaff()">Show to staff &#x2192;</button>
       </div>
       <button class="staff-exit-btn" onclick="exitStaffMode()">&#x2190; Back to editing</button>
     </div>
@@ -508,10 +473,10 @@ body {
     </div>
     <div class="slot-picker" id="slot-picker">
       <div class="slot-auto-label">Service</div>
-      <div class="slot-option" data-slot="brunch" onclick="setSlot('brunch',true)"><span>Brunch</span><span class="slot-time">8am – 12pm</span></div>
-      <div class="slot-option" data-slot="lunch" onclick="setSlot('lunch',true)"><span>Lunch</span><span class="slot-time">12pm – 2pm</span></div>
-      <div class="slot-option" data-slot="tea" onclick="setSlot('tea',true)"><span>Afternoon tea</span><span class="slot-time">2pm – 5pm</span></div>
-      <div class="slot-option" data-slot="evening" onclick="setSlot('evening',true)"><span>Evening</span><span class="slot-time">5pm – close</span></div>
+      <div class="slot-option" data-slot="brunch" onclick="setSlot('brunch',true)"><span>Brunch</span><span class="slot-time">8am &#x2013; 12pm</span></div>
+      <div class="slot-option" data-slot="lunch" onclick="setSlot('lunch',true)"><span>Lunch</span><span class="slot-time">12pm &#x2013; 2pm</span></div>
+      <div class="slot-option" data-slot="tea" onclick="setSlot('tea',true)"><span>Afternoon tea</span><span class="slot-time">2pm &#x2013; 5pm</span></div>
+      <div class="slot-option" data-slot="evening" onclick="setSlot('evening',true)"><span>Evening</span><span class="slot-time">5pm &#x2013; close</span></div>
       <div class="slot-divider"></div>
       <div class="slot-option" onclick="setAutoSlot()"><span>Auto-detect</span><span class="slot-time">Current time</span></div>
     </div>
@@ -533,19 +498,13 @@ body {
     <span class="slot-bar-label" id="slot-bar-text"></span>
     <button class="show-all-btn" id="show-all-btn" onclick="toggleShowAll()"></button>
   </div>
-<div id="outdoor-notice-container"></div>
+  <div id="outdoor-notice-container"></div>
 
   <div class="body" id="body">
     <p class="state" id="state">Loading&#x2026;</p>
   </div>
 
-  <div style="padding:16px 20px 4px;font-size:13px;color:var(--text-2);line-height:1.8;text-align:center;">
-    If you like what we do, please give us a review on <a href="https://www.facebook.com/OtherSyde/" target="_blank" style="color:var(--gold);">Facebook</a> and/or <a href="https://g.page/r/CXyY-bX-2fiAEBM/review" target="_blank" style="color:var(--gold);">Google</a>. If you don't like what we do, please talk to us first before posting 🙂 Thank you.
-  </div>
-
-  <div class="promo-bar">
-    <p class="state" id="state">Loading&#x2026;</p>
-  </div>
+  <div style="padding:16px 20px 4px;font-size:13px;color:var(--text-2);line-height:1.8;text-align:center;">If you like what we do, please give us a review on <a href="https://www.facebook.com/OtherSyde/" target="_blank" style="color:var(--gold);">Facebook</a> and/or <a href="https://g.page/r/CXyY-bX-2fiAEBM/review" target="_blank" style="color:var(--gold);">Google</a>. If you don't like what we do, please talk to us first before posting &#x1F642; Thank you.</div>
 
   <div class="promo-bar">
     <div class="promo-inner" id="promo-inner">
@@ -555,19 +514,19 @@ body {
 
   <script>
     const TABS = [
-      { label:'Café',    slugs:['espresso','tea','filter','cold'],                          outdoor:false },
+      { label:'Caf\u00e9',   slugs:['espresso','tea','filter','cold'],                          outdoor:false },
       { label:'Food',    slugs:['sandwiches','lunch','cakes'],                              outdoor:false },
       { label:'Bar',     slugs:['draught','wine','lowno'],                                  outdoor:true  },
       { label:'Spirits', slugs:['gin','vodka','rum','whisky','brandy','liqueurs','mixers'], outdoor:true  },
     ];
-const CAT_NOTES = {};
+    const CAT_NOTES = {};
     const SLOTS = {
-      brunch:  {label:'Brunch',        hours:'8am–12pm',  start:8,  end:12},
-      lunch:   {label:'Lunch',         hours:'12–2pm',    start:12, end:14},
-      tea:     {label:'Afternoon tea', hours:'2–5pm',     start:14, end:17},
-      evening: {label:'Evening',       hours:'5pm–close', start:17, end:24},
+      brunch:  {label:'Brunch',        hours:'8am\u201312pm',  start:8,  end:12},
+      lunch:   {label:'Lunch',         hours:'12\u20132pm',    start:12, end:14},
+      tea:     {label:'Afternoon tea', hours:'2\u20135pm',     start:14, end:17},
+      evening: {label:'Evening',       hours:'5pm\u2013close', start:17, end:24},
     };
-const TABLE_GROUPS = [
+    const TABLE_GROUPS = [
       { label:'Window',  tables:['Window 1','Window 2','Window 3'] },
       { label:'Tables',  tables:['Round 4','High 5','High 6','Square 7','Square 8','Central 9','Central 10'] },
       { label:'Bar',     tables:['Bar 11','Bar 12'] },
@@ -586,55 +545,63 @@ const TABLE_GROUPS = [
     let pickingItemId = null;
     const itemDataMap = new Map();
 
+    // ── Helpers ───────────────────────────────────────
+    function parsePriceOptions(priceDisplay, catNote) {
+      if (!priceDisplay || priceDisplay === 'ask staff') return [];
+      var rawParts = priceDisplay.split('/').map(function(p) { return p.trim(); });
+      var noteParts = catNote ? catNote.split('/').map(function(n) { return n.trim(); }) : [];
+      var options = [];
+      rawParts.forEach(function(raw, i) {
+        var num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+        if (isNaN(num) || num <= 0) return;
+        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
+      });
+      return options;
+    }
+
     // ── Table ─────────────────────────────────────────
     function saveTable() { if (selectedTable) localStorage.setItem('artyst-table', selectedTable); else localStorage.removeItem('artyst-table'); }
     function loadTable() { selectedTable = localStorage.getItem('artyst-table') || null; }
 
-    function selectTable(name) {
-      selectedTable = name;
-      saveTable();
-      renderOrderBody();
-    }
+    function selectTable(name) { selectedTable = name; saveTable(); renderOrderBody(); }
 
     function renderTableSelector() {
-      const label = selectedTable
-        ? `TABLE &nbsp;<span class="table-selected-name">${selectedTable}</span>`
+      var label = selectedTable
+        ? 'TABLE &nbsp;<span class="table-selected-name">' + selectedTable + '</span>'
         : 'TABLE &nbsp;<span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;">select your table</span>';
-
-      return `<div class="table-section">
-        <div class="table-section-label">${label}</div>
-        ${TABLE_GROUPS.map(g => `
-          <div class="table-group">
-            <div class="table-group-label">${g.label}</div>
-            <div class="table-chips">
-              ${g.tables.map(t => `<div class="table-chip${t === selectedTable ? ' selected' : ''}" onclick="selectTable('${t}')">${t}</div>`).join('')}
-            </div>
-          </div>`).join('')}
-        <p class="table-error" id="table-error">Please select your table before showing to staff.</p>
-      </div>`;
+      var html = '<div class="table-section"><div class="table-section-label">' + label + '</div>';
+      TABLE_GROUPS.forEach(function(g) {
+        html += '<div class="table-group"><div class="table-group-label">' + g.label + '</div><div class="table-chips">';
+        g.tables.forEach(function(t) {
+          html += '<div class="table-chip' + (t === selectedTable ? ' selected' : '') + '" onclick="selectTable(\'' + t + '\')">' + t + '</div>';
+        });
+        html += '</div></div>';
+      });
+      html += '<p class="table-error" id="table-error">Please select your table before showing to staff.</p></div>';
+      return html;
     }
 
     // ── Order ─────────────────────────────────────────
     function saveOrder() { localStorage.setItem('artyst-order', JSON.stringify(orderItems)); }
     function loadOrder() {
       try { orderItems = JSON.parse(localStorage.getItem('artyst-order') || '[]'); }
-      catch { orderItems = []; }
+      catch(e) { orderItems = []; }
     }
 
     function addToOrder(itemId, name, sizeLabel, mods, price) {
-      const modStr = mods.map(m => m.choice).filter(Boolean).join(' · ');
-      const key = `${itemId}__${sizeLabel}__${modStr}`;
-      const existing = orderItems.find(o => o.key === key);
+      var modStr = mods.map(function(m) { return m.choice; }).filter(Boolean).join(' \u00b7 ');
+      var key = itemId + '__' + sizeLabel + '__' + modStr;
+      var existing = orderItems.find(function(o) { return o.key === key; });
       if (existing) { existing.qty++; } else {
-        orderItems.push({key, id:itemId, name, sizeLabel, mods, modStr, price, qty:1});
+        orderItems.push({key:key, id:itemId, name:name, sizeLabel:sizeLabel, mods:mods, modStr:modStr, price:price, qty:1});
       }
       saveOrder(); updateOrderBadge();
-      const btn = document.querySelector(`[data-add-id="${itemId}"]`);
-      if (btn) { btn.classList.add('added'); setTimeout(() => btn.classList.remove('added'), 800); }
+      var btn = document.querySelector('[data-add-id="' + itemId + '"]');
+      if (btn) { btn.classList.add('added'); setTimeout(function() { btn.classList.remove('added'); }, 800); }
     }
 
     function changeQty(key, delta) {
-      const idx = orderItems.findIndex(o => o.key === key);
+      var idx = orderItems.findIndex(function(o) { return o.key === key; });
       if (idx === -1) return;
       orderItems[idx].qty += delta;
       if (orderItems[idx].qty <= 0) orderItems.splice(idx, 1);
@@ -648,56 +615,53 @@ const TABLE_GROUPS = [
     }
 
     function updateOrderBadge() {
-      const total = orderItems.reduce((s, o) => s + o.qty, 0);
-      const badge = document.getElementById('order-badge');
+      var total = orderItems.reduce(function(s, o) { return s + o.qty; }, 0);
+      var badge = document.getElementById('order-badge');
       badge.textContent = total;
       badge.style.display = total > 0 ? 'flex' : 'none';
     }
 
     function renderOrderBody() {
-      const body = document.getElementById('order-body');
-      const countEl = document.getElementById('order-item-count');
-      const totalEl = document.getElementById('order-total');
-      const noteEl = document.getElementById('order-total-note');
-      const staffNameEl = document.getElementById('staff-table-name');
+      var body = document.getElementById('order-body');
+      var countEl = document.getElementById('order-item-count');
+      var totalEl = document.getElementById('order-total');
+      var noteEl = document.getElementById('order-total-note');
+      var staffNameEl = document.getElementById('staff-table-name');
+      var totalQty = orderItems.reduce(function(s, o) { return s + o.qty; }, 0);
+      countEl.textContent = totalQty ? (totalQty + ' item' + (totalQty !== 1 ? 's' : '')) : '';
+      if (staffNameEl) staffNameEl.textContent = selectedTable || '\u2014';
 
-      const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
-      countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
-      if (staffNameEl) staffNameEl.textContent = selectedTable || '—';
-
-      const itemsHtml = orderItems.length === 0
-        ? '<div class="order-empty">No items yet — tap + on any menu item.</div>'
-        : orderItems.map(o => {
-            const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' · ');
-            return `<div class="order-item">
-              <div class="order-item-info">
-                <div class="order-item-name">${o.name}</div>
-                ${modDisplay ? `<div class="order-item-mods">${modDisplay}</div>` : ''}
-              </div>
-              <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
-              <div class="qty-controls">
-                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', -1)">&#x2212;</button>
-                <span class="qty-num">${o.qty}</span>
-                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', 1)">+</button>
-              </div>
-            </div>`;
+      var itemsHtml = orderItems.length === 0
+        ? '<div class="order-empty">No items yet \u2014 tap + on any menu item.</div>'
+        : orderItems.map(function(o) {
+            var modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' \u00b7 ');
+            var safeKey = o.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return '<div class="order-item">'
+              + '<div class="order-item-info">'
+              + '<div class="order-item-name">' + o.name + '</div>'
+              + (modDisplay ? '<div class="order-item-mods">' + modDisplay + '</div>' : '')
+              + '</div>'
+              + '<div class="order-item-price">' + (o.price > 0 ? o.price.toFixed(2) : 'ask staff') + '</div>'
+              + '<div class="qty-controls">'
+              + '<button class="qty-btn" onclick="changeQty(\'' + safeKey + '\', -1)">\u2212</button>'
+              + '<span class="qty-num">' + o.qty + '</span>'
+              + '<button class="qty-btn" onclick="changeQty(\'' + safeKey + '\', 1)">+</button>'
+              + '</div></div>';
           }).join('');
 
       body.innerHTML = renderTableSelector() + itemsHtml;
-
-      const t = orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
+      var t = orderItems.reduce(function(s, o) { return s + (o.price * o.qty); }, 0);
       totalEl.textContent = t.toFixed(2);
-      const hasAskStaff = orderItems.some(o => o.price === 0);
-      noteEl.textContent = hasAskStaff ? 'Some items are priced at the bar and not included above.' : '';
+      noteEl.textContent = orderItems.some(function(o) { return o.price === 0; }) ? 'Some items are priced at the bar and not included above.' : '';
     }
 
     function openOrder() { loadOrder(); renderOrderBody(); document.getElementById('order-overlay').classList.add('open'); }
-    function closeOrder() { document.getElementById('order-overlay').classList.remove('open','staff-mode'); }
+    function closeOrder() { document.getElementById('order-overlay').classList.remove('open', 'staff-mode'); }
 
     function showToStaff() {
       if (!selectedTable) {
-        const err = document.getElementById('table-error');
-        if (err) { err.classList.add('show'); setTimeout(() => err.classList.remove('show'), 3000); }
+        var err = document.getElementById('table-error');
+        if (err) { err.classList.add('show'); setTimeout(function() { err.classList.remove('show'); }, 3000); }
         return;
       }
       document.getElementById('order-overlay').classList.add('staff-mode');
@@ -706,62 +670,61 @@ const TABLE_GROUPS = [
     function exitStaffMode() { document.getElementById('order-overlay').classList.remove('staff-mode'); }
 
     // ── Options modal ─────────────────────────────────
-    let modalItem = null;
-    let modalSizes = [];
-    let modalSizeIdx = 0;
-    let modalSelections = {};
+    var modalItem = null;
+    var modalSizes = [];
+    var modalSizeIdx = 0;
+    var modalSelections = {};
 
     function calcModalPrice() {
-      let price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
+      var price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
                 : parseFloat((modalItem.price_display || '0').replace(/[^0-9.]/g, '')) || 0;
       if (modalItem.options) {
-        modalItem.options.forEach(g => {
-          const idx = modalSelections[g.name];
+        modalItem.options.forEach(function(g) {
+          var idx = modalSelections[g.name];
           if (idx >= 0) price += g.choices[idx].price_mod;
         });
       }
       return price;
     }
 
-    function updateModalAddBtn() {
-      document.getElementById('opts-add-btn').textContent = `Add to order \u2014 ${calcModalPrice().toFixed(2)}`;
-    }
-
     function renderOptsBody() {
-      let html = '';
+      var html = '';
       if (modalSizes.length > 1) {
-        html += `<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">
-          ${modalSizes.map((s, i) => `<div class="opt-chip${i === modalSizeIdx ? ' selected' : ''}" onclick="selectModalSize(${i})">${s.label}<span class="opt-chip-mod">&nbsp;${s.display}</span></div>`).join('')}
-        </div></div>`;
+        html += '<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">'
+          + modalSizes.map(function(s, i) {
+              return '<div class="opt-chip' + (i === modalSizeIdx ? ' selected' : '') + '" onclick="selectModalSize(' + i + ')">' + s.label + '<span class="opt-chip-mod">&nbsp;' + s.display + '</span></div>';
+            }).join('')
+          + '</div></div>';
       }
       if (modalItem.options) {
-        modalItem.options.forEach(group => {
-          const idx = modalSelections[group.name];
-          html += `<div class="opt-group">
-            <p class="opt-group-label">${group.name}${!group.required ? '<span class="opt-optional"> &middot; optional</span>' : ''}</p>
-            <div class="opt-chips">
-              ${!group.required ? `<div class="opt-chip${idx === -1 ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', -1)">None</div>` : ''}
-              ${group.choices.map((c, i) => `<div class="opt-chip${idx === i ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', ${i})">${c.label}${c.price_mod > 0 ? `<span class="opt-chip-mod">&nbsp;+${c.price_mod.toFixed(2)}</span>` : ''}</div>`).join('')}
-            </div>
-          </div>`;
+        modalItem.options.forEach(function(group) {
+          var idx = modalSelections[group.name];
+          html += '<div class="opt-group"><p class="opt-group-label">' + group.name
+            + (!group.required ? '<span class="opt-optional"> &middot; optional</span>' : '') + '</p><div class="opt-chips">'
+            + (!group.required ? '<div class="opt-chip' + (idx === -1 ? ' selected' : '') + '" onclick="selectModalOpt(\'' + group.name + '\', -1)">None</div>' : '')
+            + group.choices.map(function(c, i) {
+                return '<div class="opt-chip' + (idx === i ? ' selected' : '') + '" onclick="selectModalOpt(\'' + group.name + '\', ' + i + ')">'
+                  + c.label + (c.price_mod > 0 ? '<span class="opt-chip-mod">&nbsp;+' + c.price_mod.toFixed(2) + '</span>' : '') + '</div>';
+              }).join('')
+            + '</div></div>';
         });
       }
       document.getElementById('opts-body').innerHTML = html;
-      updateModalAddBtn();
+      document.getElementById('opts-add-btn').textContent = 'Add to order \u2014 ' + calcModalPrice().toFixed(2);
     }
 
     function selectModalSize(i) { modalSizeIdx = i; renderOptsBody(); }
     function selectModalOpt(groupName, idx) { modalSelections[groupName] = idx; renderOptsBody(); }
 
     function openOptsModal(itemId) {
-      const item = itemDataMap.get(itemId);
+      var item = itemDataMap.get(itemId);
       if (!item) return;
       modalItem = item;
       modalSizes = parsePriceOptions(item.price_display, item.catNote);
       modalSizeIdx = 0;
       modalSelections = {};
       if (item.options) {
-        item.options.forEach(g => {
+        item.options.forEach(function(g) {
           modalSelections[g.name] = g.default_index !== undefined ? g.default_index : (g.required ? 0 : -1);
         });
       }
@@ -776,19 +739,19 @@ const TABLE_GROUPS = [
 
     function confirmAddToOrder() {
       if (!modalItem) return;
-      const missing = (modalItem.options || []).filter(g => g.required && modalSelections[g.name] === -1).map(g => g.name);
+      var missing = (modalItem.options || []).filter(function(g) { return g.required && modalSelections[g.name] === -1; }).map(function(g) { return g.name; });
       if (missing.length) {
-        const el = document.getElementById('opts-validation');
-        el.textContent = `Please choose: ${missing.join(', ')}`;
+        var el = document.getElementById('opts-validation');
+        el.textContent = 'Please choose: ' + missing.join(', ');
         el.classList.add('show');
         return;
       }
-      const sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
-      const price = calcModalPrice();
-      const mods = [];
+      var sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
+      var price = calcModalPrice();
+      var mods = [];
       if (modalItem.options) {
-        modalItem.options.forEach(g => {
-          const idx = modalSelections[g.name];
+        modalItem.options.forEach(function(g) {
+          var idx = modalSelections[g.name];
           if (idx >= 0) mods.push({ group: g.name, choice: g.choices[idx].label, priceMod: g.choices[idx].price_mod });
         });
       }
@@ -796,54 +759,43 @@ const TABLE_GROUPS = [
       closeOptsModal();
     }
 
-    // ── Price parsing ─────────────────────────────────
-    function parsePriceOptions(priceDisplay, catNote) {
-      if (!priceDisplay || priceDisplay === 'ask staff') return [];
-      const rawParts = priceDisplay.split('/').map(p => p.trim());
-      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
-      const options = [];
-      rawParts.forEach((raw, i) => {
-        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
-        if (isNaN(num) || num <= 0) return;
-        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
-      });
-      return options;
-    }
-
-    // ── Add button handler ────────────────────────────
+    // ── Add button ────────────────────────────────────
     function handleAddBtn(itemId, event) {
       event.stopPropagation();
-      const item = itemDataMap.get(itemId);
+      var item = itemDataMap.get(itemId);
       if (!item) return;
-      const sizes = parsePriceOptions(item.price_display, item.catNote);
-      const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+      var sizes = parsePriceOptions(item.price_display, item.catNote);
+      var hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
       if (hasOpts) { openOptsModal(itemId); return; }
       if (sizes.length === 0) { addToOrder(item.id, item.name, '', [], 0); return; }
       if (sizes.length === 1) { addToOrder(item.id, item.name, '', [], sizes[0].price); return; }
-      const row = document.getElementById(`item-${itemId}`);
+      var row = document.getElementById('item-' + itemId);
       if (!row) return;
       if (pickingItemId === itemId) { row.classList.remove('picking'); pickingItemId = null; return; }
-      if (pickingItemId) { const prev = document.getElementById(`item-${pickingItemId}`); if (prev) prev.classList.remove('picking'); }
+      if (pickingItemId) { var prev = document.getElementById('item-' + pickingItemId); if (prev) prev.classList.remove('picking'); }
       pickingItemId = itemId;
-      const picker = row.querySelector('.size-picker');
+      var picker = row.querySelector('.size-picker');
       if (picker) {
-        picker.innerHTML = `<p class="size-picker-label">Choose size</p><div class="size-options">
-          ${sizes.map(s => `<div class="size-opt" onclick="selectInlineSize(${itemId}, '${item.name.replace(/'/g,"\\'")}', '${s.label}', ${s.price})">${s.label}<span class="size-price">${s.display}</span></div>`).join('')}
-        </div>`;
+        picker.innerHTML = '<p class="size-picker-label">Choose size</p><div class="size-options">'
+          + sizes.map(function(s) {
+              var safeName = item.name.replace(/'/g, "\\'");
+              return '<div class="size-opt" onclick="selectInlineSize(' + itemId + ', \'' + safeName + '\', \'' + s.label + '\', ' + s.price + ')">' + s.label + '<span class="size-price">' + s.display + '</span></div>';
+            }).join('')
+          + '</div>';
       }
       row.classList.add('picking');
     }
 
     function selectInlineSize(itemId, name, sizeLabel, price) {
       addToOrder(itemId, name, sizeLabel, [], price);
-      const row = document.getElementById(`item-${itemId}`);
+      var row = document.getElementById('item-' + itemId);
       if (row) row.classList.remove('picking');
       pickingItemId = null;
     }
 
     // ── Outdoor notice ────────────────────────────────
     function renderOutdoorNotice() {
-      const container = document.getElementById('outdoor-notice-container');
+      var container = document.getElementById('outdoor-notice-container');
       if (!container) return;
       if (sessionStorage.getItem('outdoor-notice-dismissed')) { container.innerHTML = ''; return; }
       if (TABS[activeTab] && TABS[activeTab].outdoor) {
@@ -862,17 +814,17 @@ const TABLE_GROUPS = [
 
     // ── Theme ─────────────────────────────────────────
     function toggleTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const next = isDark ? 'light' : 'dark';
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
       document.getElementById('theme-toggle').textContent = isDark ? '\u263D' : '\u2600';
       localStorage.setItem('artyst-menu-theme', next);
     }
-    (function(){
-      const saved = localStorage.getItem('artyst-menu-theme');
+    (function() {
+      var saved = localStorage.getItem('artyst-menu-theme');
       if (saved === 'dark') {
-        document.documentElement.setAttribute('data-theme','dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
         document.getElementById('theme-color-meta').content = '#0e0e0e';
         document.getElementById('theme-toggle').textContent = '\u2600';
       }
@@ -880,7 +832,7 @@ const TABLE_GROUPS = [
 
     // ── Slot ──────────────────────────────────────────
     function detectSlot() {
-      const h = new Date().getHours();
+      var h = new Date().getHours();
       if (h >= 8  && h < 12) return 'brunch';
       if (h >= 12 && h < 14) return 'lunch';
       if (h >= 14 && h < 17) return 'tea';
@@ -889,23 +841,23 @@ const TABLE_GROUPS = [
     function setSlot(slot, manual) { currentSlot = slot; manualSlot = !!manual; showAll = false; closeSlotPicker(); updateSlotUI(); renderBody(); }
     function setAutoSlot() { manualSlot = false; currentSlot = detectSlot(); closeSlotPicker(); updateSlotUI(); renderBody(); }
     function updateSlotUI() {
-      const info = SLOTS[currentSlot];
+      var info = SLOTS[currentSlot];
       document.getElementById('slot-btn').classList.add('slot-active');
       document.getElementById('slot-label').textContent = info.label;
-      document.getElementById('slot-bar-text').textContent = `${info.label} \u00b7 ${info.hours}`;
+      document.getElementById('slot-bar-text').textContent = info.label + ' \u00b7 ' + info.hours;
       document.getElementById('show-all-btn').textContent = showAll ? 'Hide unavailable' : 'Show all items';
-      document.querySelectorAll('.slot-option').forEach(el => el.classList.toggle('active', el.dataset.slot === currentSlot));
+      document.querySelectorAll('.slot-option').forEach(function(el) { el.classList.toggle('active', el.dataset.slot === currentSlot); });
     }
     function toggleShowAll() { showAll = !showAll; updateSlotUI(); renderBody(); }
     function toggleSlotPicker() { document.getElementById('slot-picker').classList.toggle('open'); }
     function closeSlotPicker() { document.getElementById('slot-picker').classList.remove('open'); }
-    document.addEventListener('click', e => {
+    document.addEventListener('click', function(e) {
       if (!e.target.closest('#slot-btn') && !e.target.closest('#slot-picker')) closeSlotPicker();
     });
 
     // ── Drawer ────────────────────────────────────────
     function toggleDrawer() {
-      const open = document.getElementById('drawer').classList.toggle('open');
+      var open = document.getElementById('drawer').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('open', open);
       document.getElementById('burger').classList.toggle('open', open);
     }
@@ -916,82 +868,79 @@ const TABLE_GROUPS = [
     }
 
     // ── Item expand ───────────────────────────────────
-    function toggleItem(itemId) { const row = document.getElementById(`item-${itemId}`); if (row) row.classList.toggle('open'); }
+    function toggleItem(itemId) { var row = document.getElementById('item-' + itemId); if (row) row.classList.toggle('open'); }
 
     // ── Tabs ──────────────────────────────────────────
     function renderTabs() {
-      document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
-        `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
-      ).join('');
+      document.getElementById('tab-row').innerHTML = TABS.map(function(t, i) {
+        return '<button class="tab' + (i === activeTab ? ' active' : '') + '" onclick="switchTab(' + i + ')">' + t.label + '</button>';
+      }).join('');
     }
 
     // ── Body ──────────────────────────────────────────
     function renderBody() {
       renderOutdoorNotice();
-      const body = document.getElementById('body');
-      const slugs = TABS[activeTab].slugs;
-      const cats = allCategories.filter(c => slugs.includes(c.slug));
+      var body = document.getElementById('body');
+      var slugs = TABS[activeTab].slugs;
+      var cats = allCategories.filter(function(c) { return slugs.indexOf(c.slug) !== -1; });
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
-      body.innerHTML = cats.map(cat => {
-        const note = CAT_NOTES[cat.slug] || '';
-        const itemsHtml = cat.items.map(item => {
-          const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
+      body.innerHTML = cats.map(function(cat) {
+        var note = CAT_NOTES[cat.slug] || '';
+        var itemsHtml = cat.items.map(function(item) {
+          var inSlot = !item.time_slots || item.time_slots.indexOf(currentSlot) !== -1;
           if (!inSlot && !showAll) return '';
-          itemDataMap.set(item.id, {...item, catNote: note});
-          const hasDetails = item.details && item.details.trim();
-          const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
-          const slotClass = !inSlot ? ' slot-greyed' : '';
-          const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
-          return `<div class="item-row${item.available ? '' : ' unavailable'}${slotClass}${hasDetails ? ' expandable' : ''}" id="item-${item.id}">
-            <div class="item-main">
-              <div class="item-left"${hasDetails ? ` onclick="toggleItem(${item.id})"` : ''}>
-                <div class="item-name-row">
-                  <span class="item-name">${item.name}</span>
-                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
-                  ${!inSlot ? `<span class="tag">not available ${SLOTS[currentSlot].hours}</span>` : ''}
-                  ${hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">Make it so..</span>' : ''}
-                </div>
-                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
-              </div>
-              <div class="item-right">
-                ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-                ${hasDetails ? `<span class="expand-icon" onclick="toggleItem(${item.id})">&#x25BE;</span>` : ''}
-                ${item.available ? `<button class="add-btn" data-add-id="${item.id}" onclick="handleAddBtn(${item.id}, event)">+</button>` : ''}
-              </div>
-            </div>
-            <div class="size-picker"></div>
-            ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
-              ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
-            </div></div>` : ''}
-          </div>`;
+          itemDataMap.set(item.id, Object.assign({}, item, { catNote: note }));
+          var hasDetails = item.details && item.details.trim();
+          var lines = hasDetails ? item.details.trim().split('\n').filter(function(l) { return l.trim(); }) : [];
+          var slotClass = !inSlot ? ' slot-greyed' : '';
+          var hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+          return '<div class="item-row' + (item.available ? '' : ' unavailable') + slotClass + (hasDetails ? ' expandable' : '') + '" id="item-' + item.id + '">'
+            + '<div class="item-main">'
+            + '<div class="item-left"' + (hasDetails ? ' onclick="toggleItem(' + item.id + ')"' : '') + '>'
+            + '<div class="item-name-row">'
+            + '<span class="item-name">' + item.name + '</span>'
+            + item.dietary_tags.map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('')
+            + (!item.available ? '<span class="tag">unavailable</span>' : '')
+            + (!inSlot ? '<span class="tag">not available ' + SLOTS[currentSlot].hours + '</span>' : '')
+            + (hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">Make it so\u2026</span>' : '')
+            + '</div>'
+            + (item.description ? '<p class="item-desc">' + item.description + '</p>' : '')
+            + '</div>'
+            + '<div class="item-right">'
+            + (item.price_display ? '<p class="item-price">' + item.price_display + '</p>' : '')
+            + (hasDetails ? '<span class="expand-icon" onclick="toggleItem(' + item.id + ')">&#x25BE;</span>' : '')
+            + (item.available ? '<button class="add-btn" data-add-id="' + item.id + '" onclick="handleAddBtn(' + item.id + ', event)">+</button>' : '')
+            + '</div></div>'
+            + '<div class="size-picker"></div>'
+            + (hasDetails ? '<div class="item-detail"><div class="detail-lines">' + lines.map(function(l) { return '<p class="detail-line">' + l + '</p>'; }).join('') + '</div></div>' : '')
+            + '</div>';
         }).join('');
         if (!itemsHtml.trim()) return '';
-        return `<div class="cat-block">
-          <p class="cat-label">${cat.name}</p>
-          ${note ? `<p class="cat-note">${note}</p>` : ''}
-          ${itemsHtml}
-        </div>`;
+        return '<div class="cat-block">'
+          + '<p class="cat-label">' + cat.name + '</p>'
+          + (note ? '<p class="cat-note">' + note + '</p>' : '')
+          + itemsHtml
+          + '</div>';
       }).join('');
     }
 
-    function switchTab(i) { activeTab = i; renderTabs(); renderBody(); window.scrollTo({top:0,behavior:'smooth'}); }
+    function switchTab(i) { activeTab = i; renderTabs(); renderBody(); window.scrollTo({top:0, behavior:'smooth'}); }
 
     // ── Promos ────────────────────────────────────────
     function buildPromos(data) {
-      const inner = document.getElementById('promo-inner');
+      var inner = document.getElementById('promo-inner');
       if (!data.length) { inner.innerHTML = ''; return; }
-      inner.innerHTML = data.map((p, i) =>
-        `<a class="promo-item${i === 0 ? ' visible' : ''}" href="${p.href}" target="_blank">
-          <span class="promo-label">${p.label}</span><span class="promo-sep"></span>
-          <span class="promo-text">${p.text}</span><span class="promo-arrow">&#x2192;</span>
-        </a>`).join('');
+      inner.innerHTML = data.map(function(p, i) {
+        return '<a class="promo-item' + (i === 0 ? ' visible' : '') + '" href="' + p.href + '" target="_blank">'
+          + '<span class="promo-label">' + p.label + '</span><span class="promo-sep"></span>'
+          + '<span class="promo-text">' + p.text + '</span><span class="promo-arrow">&#x2192;</span></a>';
+      }).join('');
       promos = data; promoIndex = 0;
     }
     function rotatePromo() {
       if (!promos.length) return;
-      const items = document.querySelectorAll('.promo-item');
+      var items = document.querySelectorAll('.promo-item');
       if (!items.length) return;
       items[promoIndex].classList.remove('visible');
       promoIndex = (promoIndex + 1) % promos.length;
@@ -1002,28 +951,39 @@ const TABLE_GROUPS = [
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
       currentSlot = detectSlot(); updateSlotUI();
+      renderTabs();
 
-      const [menuRes, promosRes] = await Promise.allSettled([fetch('/api/menu'), fetch('/api/promos')]);
+      var results = await Promise.allSettled([fetch('/api/menu'), fetch('/api/promos')]);
+      var menuRes = results[0];
+      var promosRes = results[1];
 
       if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
-        const data = await menuRes.value.json();
+        var data = await menuRes.value.json();
         allCategories = data.categories || [];
-        const stateEl = document.getElementById('state');
+        var stateEl = document.getElementById('state');
         if (stateEl) stateEl.remove();
-        renderTabs(); renderBody();
+        renderBody();
       } else {
         document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
       }
 
       if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
-        const data = await promosRes.value.json();
-        buildPromos(data.promos || []);
+        var pdata = await promosRes.value.json();
+        buildPromos(pdata.promos || []);
       }
 
       setInterval(rotatePromo, 4000);
     }
 
     init();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
   </script>
 </body>
 </html>
