@@ -730,7 +730,7 @@
       document.getElementById('slot-btn').classList.add('slot-active');
       document.getElementById('slot-label').textContent = info.label;
       document.getElementById('slot-bar-text').textContent =
-        `${info.label} · ${info.hours}${manualSlot ? ' (manual)' : ''}`;
+      `${info.label} · ${info.hours}`
       document.getElementById('show-all-btn').textContent =
         showAll ? 'Hide unavailable' : 'Show all items';
       document.querySelectorAll('.slot-option').forEach(el =>
