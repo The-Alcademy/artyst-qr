@@ -329,6 +329,31 @@
     .promo-sep { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
     .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
     .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
+    @media (min-width: 760px) {
+      body { max-width: 720px; margin: 0 auto; font-size: 15px; }
+      .header { padding: 14px 20px 0; }
+      .page-title { font-size: 22px; margin-bottom: 10px; }
+      .body { padding: 0 20px 20px; }
+      .cat-block { padding-top: 16px; }
+      .item-main { padding: 10px 0; }
+      .item-name { font-size: 15px; }
+      .item-desc { font-size: 12px; }
+      .item-price { font-size: 14px; }
+      .cat-label { font-size: 10px; }
+      .slot-bar { padding: 7px 20px; }
+      .table-chip { padding: 5px 11px; font-size: 12px; }
+      .table-chips { gap: 5px; }
+      .promo-bar {
+        max-width: 720px; left: 50%; transform: translateX(-50%);
+        border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border);
+      }
+      .order-overlay {
+        max-width: 720px; left: 50%; transform: translateX(-50%);
+        border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border);
+      }
+      .opts-overlay { align-items: center; justify-content: center; }
+      .opts-sheet { border-radius: 12px; max-width: 520px; max-height: 80vh; }
+    }
   </style>
 </head>
 <body>
