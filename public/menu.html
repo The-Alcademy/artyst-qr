@@ -24,9 +24,10 @@
       --tag-text:    #666660;
       --overlay:     rgba(0,0,0,0.35);
       --drawer-bg:   #f2efe9;
-      --slot-bg:     #f2efe9;
-      --slot-active: #1a1a18;
-      --slot-text:   #888;
+      --footer-bg:   #f2efe9;
+      --notice-bg:   #f5eedf;
+      --notice-text: #7a5c20;
+      --notice-border:#e8d5a8;
     }
     [data-theme="dark"] {
       --bg:          #0e0e0e;
@@ -43,9 +44,10 @@
       --tag-text:    #666;
       --overlay:     rgba(0,0,0,0.6);
       --drawer-bg:   #141414;
-      --slot-bg:     #1a1a1a;
-      --slot-active: #e8e4dc;
-      --slot-text:   #555;
+      --footer-bg:   #111;
+      --notice-bg:   #1a1508;
+      --notice-text: #c8a96e;
+      --notice-border:#3a2a08;
     }
 
     body {
@@ -53,12 +55,12 @@
       color: var(--text-1);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       min-height: 100vh;
+      padding-bottom: 52px;
       -webkit-font-smoothing: antialiased;
       font-size: 16px;
       transition: background 0.2s, color 0.2s;
     }
 
-    /* ── Header ── */
     .header {
       background: var(--bg);
       padding: 20px 20px 0;
@@ -68,199 +70,117 @@
       z-index: 10;
       transition: background 0.2s;
     }
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .venue-name {
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .venue-link {
       font-size: 12px;
       letter-spacing: 0.14em;
       color: var(--text-2);
       text-transform: uppercase;
+      text-decoration: none;
     }
-    .page-title {
-      font-size: 26px;
-      font-weight: 500;
-      color: var(--text-1);
-      letter-spacing: -0.01em;
-      margin-bottom: 12px;
-    }
+    .venue-link:hover { color: var(--gold); }
+    .page-title { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 12px; }
     .header-controls { display: flex; align-items: center; gap: 6px; }
 
     .icon-btn {
-      background: none;
-      border: 0.5px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-      padding: 7px 9px;
-      font-size: 15px;
-      line-height: 1;
-      color: var(--text-2);
-      -webkit-tap-highlight-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      background: none; border: 0.5px solid var(--border); border-radius: 4px;
+      cursor: pointer; padding: 7px 9px; font-size: 15px; line-height: 1;
+      color: var(--text-2); -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 5px;
     }
-    .icon-btn.slot-active {
-      background: var(--gold-bg);
-      border-color: var(--gold);
-      color: var(--gold);
-    }
+    .icon-btn.slot-active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); }
+
     .burger {
-      background: none;
-      border: 0.5px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-      padding: 8px 9px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      -webkit-tap-highlight-color: transparent;
+      background: none; border: 0.5px solid var(--border); border-radius: 4px;
+      cursor: pointer; padding: 8px 9px; display: flex; flex-direction: column;
+      gap: 5px; -webkit-tap-highlight-color: transparent;
     }
-    .burger span {
-      display: block;
-      width: 18px;
-      height: 1.5px;
-      background: var(--text-2);
-      transition: all 0.2s;
-    }
+    .burger span { display: block; width: 18px; height: 1.5px; background: var(--text-2); transition: all 0.2s; }
     .burger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
     .burger.open span:nth-child(2) { opacity: 0; }
     .burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-    /* ── Slot picker popover ── */
     .slot-picker {
-      position: absolute;
-      top: calc(100% + 6px);
-      right: 48px;
-      background: var(--bg);
-      border: 0.5px solid var(--border);
-      border-radius: 6px;
-      padding: 6px;
-      z-index: 20;
-      display: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-      min-width: 180px;
+      position: absolute; top: calc(100% + 6px); right: 48px;
+      background: var(--bg); border: 0.5px solid var(--border); border-radius: 6px;
+      padding: 6px; z-index: 20; display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12); min-width: 190px;
     }
     .slot-picker.open { display: block; }
     .slot-option {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--text-1);
-      -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border-radius: 4px; cursor: pointer;
+      font-size: 14px; color: var(--text-1); -webkit-tap-highlight-color: transparent;
     }
     .slot-option:hover { background: var(--bg-raised); }
     .slot-option.active { background: var(--gold-bg); color: var(--gold); font-weight: 500; }
-    .slot-option .slot-time { font-size: 11px; color: var(--text-3); }
+    .slot-time { font-size: 11px; color: var(--text-3); }
     .slot-option.active .slot-time { color: var(--gold); opacity: 0.7; }
-    .slot-divider {
-      height: 0.5px;
-      background: var(--border);
-      margin: 4px 0;
-    }
-    .slot-auto-label {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      padding: 6px 12px 2px;
-    }
+    .slot-divider { height: 0.5px; background: var(--border); margin: 4px 0; }
+    .slot-auto-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); padding: 6px 12px 2px; }
 
-    /* ── Tab row ── */
     .tab-row {
-      display: flex;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      margin: 0 -20px;
-      padding: 0 20px;
+      display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; margin: 0 -20px; padding: 0 20px;
     }
     .tab-row::-webkit-scrollbar { display: none; }
     .tab {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-2);
-      cursor: pointer;
-      font-size: 13px;
-      letter-spacing: 0.06em;
-      padding: 10px 14px;
-      text-transform: uppercase;
-      white-space: nowrap;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--text-2); cursor: pointer; font-size: 13px;
+      letter-spacing: 0.06em; padding: 10px 14px; text-transform: uppercase;
+      white-space: nowrap; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
     }
     .tab.active { color: var(--text-1); border-bottom-color: var(--gold); }
 
+    .slot-bar {
+      display: flex; align-items: center; gap: 8px; padding: 9px 20px;
+      border-bottom: 0.5px solid var(--border); background: var(--bg);
+      font-size: 12px; color: var(--text-3);
+    }
+    .slot-bar-label { letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; }
+    .show-all-btn {
+      font-size: 11px; color: var(--gold); background: none; border: none;
+      cursor: pointer; padding: 0; text-decoration: underline;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Outdoor notice ── */
+    .outdoor-notice {
+      margin: 16px 20px 0;
+      padding: 11px 14px;
+      background: var(--notice-bg);
+      border: 0.5px solid var(--notice-border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--notice-text);
+      line-height: 1.5;
+    }
+
     /* ── Drawer ── */
     .drawer {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: 290px;
-      background: var(--drawer-bg);
-      border-left: 0.5px solid var(--border);
-      z-index: 100;
-      transform: translateX(100%);
-      transition: transform 0.25s ease, background 0.2s;
-      overflow-y: auto;
-      padding: 24px 0 40px;
+      position: fixed; top: 0; right: 0; bottom: 0; width: 290px;
+      background: var(--drawer-bg); border-left: 0.5px solid var(--border);
+      z-index: 100; transform: translateX(100%);
+      transition: transform 0.25s ease, background 0.2s; overflow-y: auto; padding: 24px 0 40px;
     }
     .drawer.open { transform: translateX(0); }
     .drawer-overlay {
-      position: fixed; inset: 0;
-      background: var(--overlay);
-      z-index: 99; opacity: 0; pointer-events: none;
-      transition: opacity 0.25s;
+      position: fixed; inset: 0; background: var(--overlay); z-index: 99;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
     }
     .drawer-overlay.open { opacity: 1; pointer-events: all; }
-    .drawer-header {
-      padding: 0 20px 20px;
-      border-bottom: 0.5px solid var(--border);
-      margin-bottom: 8px;
-    }
+    .drawer-header { padding: 0 20px 20px; border-bottom: 0.5px solid var(--border); margin-bottom: 8px; }
     .drawer-venue { font-size: 11px; letter-spacing: 0.16em; color: var(--text-3); text-transform: uppercase; margin-bottom: 4px; }
     .drawer-title { font-size: 16px; font-weight: 500; color: var(--text-1); }
-
-    /* ── About block in drawer ── */
     .drawer-about {
-      margin: 16px 20px 0;
-      padding: 14px 16px;
-      background: var(--gold-bg);
-      border-radius: 6px;
-      border: 0.5px solid var(--border);
+      margin: 16px 20px 0; padding: 14px 16px;
+      background: var(--gold-bg); border-radius: 6px; border: 0.5px solid var(--border);
     }
-    .drawer-about-label {
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-    .drawer-about-text {
-      font-size: 13px;
-      color: var(--text-2);
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-    .drawer-about-link {
-      font-size: 12px;
-      color: var(--gold);
-      text-decoration: none;
-      letter-spacing: 0.04em;
-    }
-
+    .drawer-about-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .drawer-about-text { font-size: 13px; color: var(--text-2); line-height: 1.7; margin-bottom: 10px; }
+    .drawer-about-link { font-size: 12px; color: var(--gold); text-decoration: none; }
     .drawer-section { padding: 14px 20px 4px; }
-    .drawer-section-label {
-      font-size: 11px; letter-spacing: 0.14em;
-      color: var(--gold); text-transform: uppercase; margin-bottom: 8px;
-    }
+    .drawer-section-label { font-size: 11px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
     .drawer-link {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 0; border-bottom: 0.5px solid var(--border-soft);
@@ -269,6 +189,7 @@
     }
     .drawer-link:last-child { border-bottom: none; }
     .drawer-link-arrow { font-size: 13px; color: var(--text-3); }
+    .drawer-link-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
     .pill {
       font-size: 10px; letter-spacing: 0.06em; color: var(--text-3);
       text-transform: uppercase; background: var(--bg-raised);
@@ -278,21 +199,13 @@
     /* ── Body ── */
     .body { padding: 0 20px 24px; }
     .cat-block { padding-top: 22px; }
-    .cat-label {
-      font-size: 11px; letter-spacing: 0.16em;
-      color: var(--gold); text-transform: uppercase; margin-bottom: 6px;
-    }
+    .cat-label { font-size: 11px; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
     .cat-note { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
 
     .item-row { border-bottom: 0.5px solid var(--border-soft); }
     .item-row.unavailable { opacity: 0.4; }
-    .item-row.slot-hidden { display: none; }
-    .item-row.slot-greyed { opacity: 0.35; }
-
-    .item-main {
-      display: flex; justify-content: space-between;
-      align-items: flex-start; padding: 13px 0; cursor: default;
-    }
+    .item-row.slot-greyed { opacity: 0.3; }
+    .item-main { display: flex; justify-content: space-between; align-items: flex-start; padding: 13px 0; cursor: default; }
     .item-row.expandable .item-main { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .item-left { flex: 1; padding-right: 12px; }
     .item-name { font-size: 17px; color: var(--text-1); line-height: 1.35; }
@@ -302,96 +215,36 @@
     .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; text-align: right; }
     .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
     .item-row.expandable.open .expand-icon { transform: rotate(180deg); }
-
     .tag {
-      display: inline-block; font-size: 11px;
-      background: var(--tag-bg); color: var(--tag-text);
-      border-radius: 3px; padding: 2px 6px;
+      display: inline-block; font-size: 11px; background: var(--tag-bg);
+      color: var(--tag-text); border-radius: 3px; padding: 2px 6px;
       letter-spacing: 0.04em; vertical-align: middle;
     }
-
     .item-detail { display: none; padding: 0 0 14px; }
     .item-row.open .item-detail { display: block; }
     .detail-lines { background: var(--bg-detail); border-radius: 4px; padding: 12px 14px; }
     .detail-line { font-size: 14px; color: var(--text-2); line-height: 1.8; }
     .detail-line:first-child { color: var(--text-1); font-weight: 500; }
 
-    /* ── Slot filter bar ── */
-    .slot-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-bottom: 0.5px solid var(--border);
-      background: var(--bg);
-      font-size: 12px;
-      color: var(--text-3);
-    }
-    .slot-bar-label { letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; }
-    .show-all-btn {
-      font-size: 11px;
-      color: var(--gold);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      text-decoration: underline;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* ── Rotating footer ── */
-    .promo-footer {
-      margin: 0 20px 40px;
-      border: 0.5px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-    }
-    .promo-card {
-      display: none;
-      padding: 18px 20px;
-      background: var(--bg-raised);
-      text-decoration: none;
-      color: var(--text-1);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .promo-card.active { display: block; }
-    .promo-card-label {
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 6px;
-    }
-    .promo-card-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
-    .promo-card-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
-    .promo-card-cta {
-      display: inline-block;
-      margin-top: 10px;
-      font-size: 12px;
-      letter-spacing: 0.06em;
-      color: var(--gold);
-    }
-    .promo-dots {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 0 14px;
-      background: var(--bg-raised);
-      border-top: 0.5px solid var(--border);
-    }
-    .promo-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--border);
-      cursor: pointer;
-      transition: background 0.2s;
-      border: none;
-      padding: 0;
-    }
-    .promo-dot.active { background: var(--gold); }
-
     .state { padding: 48px 0; color: var(--text-2); font-size: 15px; text-align: center; }
+
+    /* ── Fixed promo footer ── */
+    .promo-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 52px;
+      background: var(--footer-bg); border-top: 0.5px solid var(--border);
+      z-index: 10; display: flex; align-items: center; overflow: hidden;
+    }
+    .promo-inner { position: relative; width: 100%; height: 100%; }
+    .promo-item {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      padding: 0 16px; text-decoration: none; color: var(--text-1);
+      opacity: 0; transition: opacity 0.6s ease; gap: 10px; pointer-events: none;
+    }
+    .promo-item.visible { opacity: 1; pointer-events: auto; }
+    .promo-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+    .promo-sep { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
+    .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -404,7 +257,6 @@
       <p class="drawer-title">What's here</p>
     </div>
 
-    <!-- About block -->
     <div class="drawer-about">
       <p class="drawer-about-label">About The Artyst</p>
       <p class="drawer-about-text">Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive. The Artyst is built on that conviction. Everything here, from the coffee to the courses, is designed to let that spirit breathe.</p>
@@ -413,67 +265,51 @@
 
     <div class="drawer-section">
       <p class="drawer-section-label">The venue</p>
-      <a class="drawer-link" href="https://theartyst.co.uk" target="_blank">
-        <span>The Artyst website</span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/events" target="_blank">
-        <span>What's on <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/book-a-table" target="_blank">
-        <span>Book a table <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank">
-        <span>Support our basement <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
+      <a class="drawer-link" href="https://theartyst.co.uk" target="_blank"><span>The Artyst website</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/events" target="_blank"><span>What's on <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/book-a-table" target="_blank"><span>Book a table <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/crowdfunder" target="_blank"><span>Support our basement <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
     </div>
 
     <div class="drawer-section">
       <p class="drawer-section-label">Get involved</p>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank">
-        <span>Arty Club &amp; CURE Club <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank">
-        <span>Hire our space <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/run-an-event" target="_blank">
-        <span>Run an event here <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/jobs" target="_blank">
-        <span>Jobs</span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://go.theartyst.co.uk/volunteering" target="_blank">
-        <span>Volunteering</span><span class="drawer-link-arrow">↗</span>
-      </a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank"><span>Arty Club &amp; CURE Club <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/hire" target="_blank"><span>Hire our space <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/run-an-event" target="_blank"><span>Run an event here <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/jobs" target="_blank"><span>Jobs</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://go.theartyst.co.uk/volunteering" target="_blank"><span>Volunteering</span><span class="drawer-link-arrow">↗</span></a>
     </div>
 
     <div class="drawer-section">
       <p class="drawer-section-label">Cambridge tours</p>
-      <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank">
-        <span>Syd Barrett's Cambridge</span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank">
-        <span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">↗</span>
-      </a>
-      <a class="drawer-link" href="https://alcademy.co.uk/victorian-murder/" target="_blank">
-        <span>A Victorian Murder <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
-      </a>
+      <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank"><span>Syd Barrett's Cambridge</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://alcademy.co.uk/wittgensteins-cambridge/" target="_blank"><span>Wittgenstein &amp; Friends</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://alcademy.co.uk/victorian-murder/" target="_blank"><span>A Victorian Murder <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span></a>
     </div>
 
     <div class="drawer-section">
       <p class="drawer-section-label">The Invysible College</p>
-      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank">
-        <span>Enrol — Head Porter</span><span class="drawer-link-arrow">↗</span>
+      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Enrol — Head Porter</span><span class="drawer-link-arrow">↗</span></a>
+      <a class="drawer-link" href="https://study.invysiblecollege.net" target="_blank"><span>My Study</span><span class="drawer-link-arrow">↗</span></a>
+    </div>
+
+    <div class="drawer-section">
+      <p class="drawer-section-label">The BedeGame</p>
+      <a class="drawer-link" href="https://bedegame.co.uk" target="_blank">
+        <div>
+          <div>Navigate the BedePlex</div>
+          <div class="drawer-link-sub">300 rooms across 6 Schools</div>
+        </div>
+        <span class="drawer-link-arrow">↗</span>
       </a>
-      <a class="drawer-link" href="https://study.invysiblecollege.net" target="_blank">
-        <span>My Study</span><span class="drawer-link-arrow">↗</span>
-      </a>
+      <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank"><span>Start at the Porter's Lodge</span><span class="drawer-link-arrow">↗</span></a>
     </div>
   </div>
 
   <!-- Header -->
-  <div class="header" style="position:sticky;top:0;z-index:10;">
+  <div class="header">
     <div class="header-top">
-      <p class="venue-name">The Artyst · Cambridge</p>
+      <a class="venue-link" href="https://theartyst.co.uk" target="_blank">The Artyst · Cambridge</a>
       <div class="header-controls">
         <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☽</button>
         <button class="icon-btn" id="slot-btn" onclick="toggleSlotPicker()" aria-label="Time filter">
@@ -485,84 +321,46 @@
         </button>
       </div>
     </div>
-
-    <!-- Slot picker -->
     <div class="slot-picker" id="slot-picker">
       <div class="slot-auto-label">Service</div>
-      <div class="slot-option" data-slot="brunch" onclick="setSlot('brunch',true)">
-        <span>Brunch</span><span class="slot-time">8am – 12pm</span>
-      </div>
-      <div class="slot-option" data-slot="lunch" onclick="setSlot('lunch',true)">
-        <span>Lunch</span><span class="slot-time">12pm – 2pm</span>
-      </div>
-      <div class="slot-option" data-slot="tea" onclick="setSlot('tea',true)">
-        <span>Afternoon tea</span><span class="slot-time">2pm – 5pm</span>
-      </div>
-      <div class="slot-option" data-slot="evening" onclick="setSlot('evening',true)">
-        <span>Evening</span><span class="slot-time">5pm – close</span>
-      </div>
+      <div class="slot-option" data-slot="brunch" onclick="setSlot('brunch',true)"><span>Brunch</span><span class="slot-time">8am – 12pm</span></div>
+      <div class="slot-option" data-slot="lunch" onclick="setSlot('lunch',true)"><span>Lunch</span><span class="slot-time">12pm – 2pm</span></div>
+      <div class="slot-option" data-slot="tea" onclick="setSlot('tea',true)"><span>Afternoon tea</span><span class="slot-time">2pm – 5pm</span></div>
+      <div class="slot-option" data-slot="evening" onclick="setSlot('evening',true)"><span>Evening</span><span class="slot-time">5pm – close</span></div>
       <div class="slot-divider"></div>
-      <div class="slot-option" onclick="setAutoSlot()">
-        <span>Auto-detect</span><span class="slot-time">Current time</span>
-      </div>
+      <div class="slot-option" onclick="setAutoSlot()"><span>Auto-detect</span><span class="slot-time">Current time</span></div>
     </div>
-
     <p class="page-title">Menu</p>
     <div class="tab-row" id="tab-row"></div>
   </div>
 
-  <!-- Slot info bar -->
   <div class="slot-bar" id="slot-bar">
     <span class="slot-bar-label" id="slot-bar-text"></span>
     <button class="show-all-btn" id="show-all-btn" onclick="toggleShowAll()"></button>
   </div>
 
+  <div id="outdoor-notice-container"></div>
+
   <div class="body" id="body">
     <p class="state" id="state">Loading…</p>
   </div>
 
-  <!-- Rotating promo footer -->
-  <div class="promo-footer" id="promo-footer" style="display:none;">
-    <a class="promo-card" href="https://go.theartyst.co.uk/crowdfunder" target="_blank" id="promo-0">
-      <p class="promo-card-label">Support us</p>
-      <p class="promo-card-title">Open the Underground</p>
-      <p class="promo-card-desc">Help us complete The Artyst basement — a cultural space for performances, private events, and the Invysible College.</p>
-      <span class="promo-card-cta">Back the crowdfunder →</span>
-    </a>
-    <a class="promo-card" href="https://go.theartyst.co.uk/events" target="_blank" id="promo-1">
-      <p class="promo-card-label">Coming up</p>
-      <p class="promo-card-title">Events at The Artyst</p>
-      <p class="promo-card-desc">Wine tastings, music, talks, and Invysible College sessions. Ticketed events most weeks.</p>
-      <span class="promo-card-cta">See what's on →</span>
-    </a>
-    <a class="promo-card" href="https://go.theartyst.co.uk/ai-consultancy" target="_blank" id="promo-2">
-      <p class="promo-card-label">Work with us</p>
-      <p class="promo-card-title">No-code AI development</p>
-      <p class="promo-card-desc">This entire venue — menu, QR engine, job system, enrolment — was built without writing code. We can do the same for you.</p>
-      <span class="promo-card-cta">Find out more →</span>
-    </a>
-    <a class="promo-card" href="https://go.theartyst.co.uk/partners" target="_blank" id="promo-3">
-      <p class="promo-card-label">Partnerships</p>
-      <p class="promo-card-title">Let's build something together</p>
-      <p class="promo-card-desc">Cultural institutions, local businesses, and independent creatives — we're open to collaboration.</p>
-      <span class="promo-card-cta">Get in touch →</span>
-    </a>
-    <a class="promo-card" href="https://go.theartyst.co.uk/merch" target="_blank" id="promo-4">
-      <p class="promo-card-label">Take a piece home</p>
-      <p class="promo-card-title">Artyst &amp; Invysible College merch</p>
-      <p class="promo-card-desc">Printed and made to order. Ask at the bar or browse online.</p>
-      <span class="promo-card-cta">Shop merch →</span>
-    </a>
-    <div class="promo-dots" id="promo-dots"></div>
+  <div class="promo-bar">
+    <div class="promo-inner" id="promo-inner">
+      <a class="promo-item visible" href="#" id="promo-loading">
+        <span class="promo-label">The Artyst</span>
+        <span class="promo-sep"></span>
+        <span class="promo-text">Loading…</span>
+      </a>
+    </div>
   </div>
 
   <script>
-    // ── Constants ──────────────────────────────────────────
     const TABS = [
-      { label: 'Café',    slugs: ['espresso','tea','filter','cold'] },
-      { label: 'Food',    slugs: ['sandwiches','lunch','cakes'] },
-      { label: 'Bar',     slugs: ['draught','wine','lowno'] },
-      { label: 'Spirits', slugs: ['gin','vodka','rum','whisky','brandy','liqueurs','mixers'] },
+      { label: 'Café',    slugs: ['espresso','tea','filter','cold'],                     outdoor: false },
+      { label: 'Food',    slugs: ['sandwiches','lunch','cakes'],                         outdoor: false },
+      { label: 'Bar',     slugs: ['draught','wine','lowno'],                             outdoor: true  },
+      { label: 'Spirits', slugs: ['gin','vodka','rum','whisky','brandy','liqueurs','mixers'], outdoor: true },
     ];
     const CAT_NOTES = {
       espresso:'Add any syrup +50p', gin:'Single 25ml / Double 50ml',
@@ -572,27 +370,25 @@
       wine:'Small / Med / Large / Bottle',
     };
     const SLOTS = {
-      brunch:  { label:'Brunch',  hours:'8am–12pm',  start:8,  end:12 },
-      lunch:   { label:'Lunch',   hours:'12–2pm',    start:12, end:14 },
-      tea:     { label:'Tea',     hours:'2–5pm',     start:14, end:17 },
-      evening: { label:'Evening', hours:'5pm–close', start:17, end:24 },
+      brunch:  { label:'Brunch',        hours:'8am–12pm',  start:8,  end:12 },
+      lunch:   { label:'Lunch',         hours:'12–2pm',    start:12, end:14 },
+      tea:     { label:'Afternoon tea', hours:'2–5pm',     start:14, end:17 },
+      evening: { label:'Evening',       hours:'5pm–close', start:17, end:24 },
     };
-    const PROMO_COUNT = 5;
 
-    // ── State ─────────────────────────────────────────────
     let allCategories = [];
     let activeTab = 0;
     let currentSlot = 'evening';
     let showAll = false;
     let manualSlot = false;
+    let promos = [];
     let promoIndex = 0;
 
     // ── Theme ─────────────────────────────────────────────
     function toggleTheme() {
-      const html = document.documentElement;
-      const isDark = html.getAttribute('data-theme') === 'dark';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const next = isDark ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
+      document.documentElement.setAttribute('data-theme', next);
       document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
       document.getElementById('theme-toggle').textContent = isDark ? '☽' : '☀';
       localStorage.setItem('artyst-menu-theme', next);
@@ -606,7 +402,7 @@
       }
     })();
 
-    // ── Time slot ─────────────────────────────────────────
+    // ── Slot ─────────────────────────────────────────────
     function detectSlot() {
       const h = new Date().getHours();
       if (h >= 8  && h < 12) return 'brunch';
@@ -614,62 +410,33 @@
       if (h >= 14 && h < 17) return 'tea';
       return 'evening';
     }
-
     function setSlot(slot, manual) {
-      currentSlot = slot;
-      manualSlot = !!manual;
-      showAll = false;
-      closeSlotPicker();
-      updateSlotUI();
-      renderBody();
+      currentSlot = slot; manualSlot = !!manual; showAll = false;
+      closeSlotPicker(); updateSlotUI(); renderBody();
     }
-
     function setAutoSlot() {
-      manualSlot = false;
-      currentSlot = detectSlot();
-      closeSlotPicker();
-      updateSlotUI();
-      renderBody();
+      manualSlot = false; currentSlot = detectSlot();
+      closeSlotPicker(); updateSlotUI(); renderBody();
     }
-
     function updateSlotUI() {
       const info = SLOTS[currentSlot];
-      // Header button
-      const btn = document.getElementById('slot-btn');
-      btn.classList.add('slot-active');
+      document.getElementById('slot-btn').classList.add('slot-active');
       document.getElementById('slot-label').textContent = info.label;
-
-      // Slot bar
-      const bar = document.getElementById('slot-bar-text');
-      bar.textContent = `${info.label} · ${info.hours}${manualSlot ? ' (manual)' : ''}`;
-      const showAllBtn = document.getElementById('show-all-btn');
-      showAllBtn.textContent = showAll ? 'Hide unavailable' : 'Show all items';
-
-      // Picker highlight
-      document.querySelectorAll('.slot-option').forEach(el => {
-        el.classList.toggle('active', el.dataset.slot === currentSlot);
-      });
+      document.getElementById('slot-bar-text').textContent =
+        `${info.label} · ${info.hours}${manualSlot ? ' (manual)' : ''}`;
+      document.getElementById('show-all-btn').textContent =
+        showAll ? 'Hide unavailable' : 'Show all items';
+      document.querySelectorAll('.slot-option').forEach(el =>
+        el.classList.toggle('active', el.dataset.slot === currentSlot));
     }
-
-    function toggleShowAll() {
-      showAll = !showAll;
-      updateSlotUI();
-      renderBody();
-    }
-
-    function toggleSlotPicker() {
-      document.getElementById('slot-picker').classList.toggle('open');
-    }
-    function closeSlotPicker() {
-      document.getElementById('slot-picker').classList.remove('open');
-    }
+    function toggleShowAll() { showAll = !showAll; updateSlotUI(); renderBody(); }
+    function toggleSlotPicker() { document.getElementById('slot-picker').classList.toggle('open'); }
+    function closeSlotPicker() { document.getElementById('slot-picker').classList.remove('open'); }
     document.addEventListener('click', e => {
-      if (!e.target.closest('#slot-btn') && !e.target.closest('#slot-picker')) {
-        closeSlotPicker();
-      }
+      if (!e.target.closest('#slot-btn') && !e.target.closest('#slot-picker')) closeSlotPicker();
     });
 
-    // ── Drawer ────────────────────────────────────────────
+    // ── Drawer ───────────────────────────────────────────
     function toggleDrawer() {
       const open = document.getElementById('drawer').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('open', open);
@@ -681,117 +448,130 @@
       document.getElementById('burger').classList.remove('open');
     }
 
-    // ── Item expand ───────────────────────────────────────
+    // ── Item expand ──────────────────────────────────────
     function toggleItem(el) { el.classList.toggle('open'); }
 
-    // ── Tabs ──────────────────────────────────────────────
+    // ── Tabs ─────────────────────────────────────────────
     function renderTabs() {
       document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
         `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
       ).join('');
     }
 
-    // ── Body ──────────────────────────────────────────────
+    // ── Outdoor notice ───────────────────────────────────
+    function renderOutdoorNotice() {
+      const container = document.getElementById('outdoor-notice-container');
+      container.innerHTML = TABS[activeTab].outdoor
+        ? `<p class="outdoor-notice">🌿 Outside: only non-alcoholic drinks may be served outdoors. Please order at the bar for inside service.</p>`
+        : '';
+    }
+
+    // ── Body ─────────────────────────────────────────────
     function renderBody() {
+      renderOutdoorNotice();
       const body = document.getElementById('body');
       const slugs = TABS[activeTab].slugs;
       const cats = allCategories.filter(c => slugs.includes(c.slug));
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
       body.innerHTML = cats.map(cat => {
-        const visibleItems = cat.items.filter(item => {
+        const itemsHtml = cat.items.map(item => {
           const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
-          return inSlot || showAll;
-        });
-        if (!visibleItems.length) return '';
+          if (!inSlot && !showAll) return '';
+          const hasDetails = item.details && item.details.trim();
+          const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
+          const slotClass = !inSlot ? ' slot-greyed' : '';
+          return `<div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}${slotClass}"
+                       ${hasDetails ? 'onclick="toggleItem(this)"' : ''}>
+            <div class="item-main">
+              <div class="item-left">
+                <div class="item-name-row">
+                  <span class="item-name">${item.name}</span>
+                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
+                  ${!inSlot ? `<span class="tag">not available ${SLOTS[currentSlot].hours}</span>` : ''}
+                </div>
+                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+              </div>
+              <div class="item-right">
+                ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
+                ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
+              </div>
+            </div>
+            ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
+              ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
+            </div></div>` : ''}
+          </div>`;
+        }).join('');
 
+        if (!itemsHtml.trim()) return '';
         return `<div class="cat-block">
           <p class="cat-label">${cat.name}</p>
           ${CAT_NOTES[cat.slug] ? `<p class="cat-note">${CAT_NOTES[cat.slug]}</p>` : ''}
-          ${cat.items.map(item => {
-            const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
-            if (!inSlot && !showAll) return '';
-
-            const hasDetails = item.details && item.details.trim();
-            const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
-            const slotClass = !inSlot ? ' slot-greyed' : '';
-
-            return `<div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}${slotClass}"
-                        ${hasDetails ? 'onclick="toggleItem(this)"' : ''}>
-              <div class="item-main">
-                <div class="item-left">
-                  <div class="item-name-row">
-                    <span class="item-name">${item.name}</span>
-                    ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                    ${!item.available ? '<span class="tag">unavailable</span>' : ''}
-                    ${!inSlot ? `<span class="tag">not available ${SLOTS[currentSlot].hours}</span>` : ''}
-                  </div>
-                  ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
-                </div>
-                <div class="item-right">
-                  ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-                  ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
-                </div>
-              </div>
-              ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
-                ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
-              </div></div>` : ''}
-            </div>`;
-          }).join('')}
+          ${itemsHtml}
         </div>`;
       }).join('');
-
-      // Show promo footer once content is loaded
-      document.getElementById('promo-footer').style.display = 'block';
     }
 
     function switchTab(i) {
-      activeTab = i;
-      renderTabs();
-      renderBody();
+      activeTab = i; renderTabs(); renderBody();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ── Promo footer carousel ─────────────────────────────
-    function renderPromoDots() {
-      const dots = document.getElementById('promo-dots');
-      dots.innerHTML = Array.from({length: PROMO_COUNT}, (_, i) =>
-        `<button class="promo-dot${i === promoIndex ? ' active' : ''}" onclick="goPromo(${i})"></button>`
+    // ── Promo footer ─────────────────────────────────────
+    function buildPromos(data) {
+      const inner = document.getElementById('promo-inner');
+      if (!data.length) { inner.innerHTML = ''; return; }
+      inner.innerHTML = data.map((p, i) =>
+        `<a class="promo-item${i === 0 ? ' visible' : ''}" href="${p.href}" target="_blank">
+          <span class="promo-label">${p.label}</span>
+          <span class="promo-sep"></span>
+          <span class="promo-text">${p.text}</span>
+          <span class="promo-arrow">→</span>
+        </a>`
       ).join('');
+      promos = data;
+      promoIndex = 0;
     }
 
-    function goPromo(i) {
-      document.getElementById(`promo-${promoIndex}`).classList.remove('active');
-      promoIndex = i;
-      document.getElementById(`promo-${promoIndex}`).classList.add('active');
-      renderPromoDots();
+    function rotatePromo() {
+      if (!promos.length) return;
+      const items = document.querySelectorAll('.promo-item');
+      if (!items.length) return;
+      items[promoIndex].classList.remove('visible');
+      promoIndex = (promoIndex + 1) % promos.length;
+      items[promoIndex].classList.add('visible');
     }
 
-    function startPromoCarousel() {
-      document.getElementById('promo-0').classList.add('active');
-      renderPromoDots();
-      setInterval(() => {
-        goPromo((promoIndex + 1) % PROMO_COUNT);
-      }, 5000);
-    }
-
-    // ── Init ──────────────────────────────────────────────
+    // ── Init ─────────────────────────────────────────────
     async function init() {
       currentSlot = detectSlot();
       updateSlotUI();
 
-      try {
-        const res = await fetch('/api/menu');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
+      const [menuRes, promosRes] = await Promise.allSettled([
+        fetch('/api/menu'),
+        fetch('/api/promos'),
+      ]);
+
+      // Menu
+      if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
+        const data = await menuRes.value.json();
         allCategories = data.categories || [];
-        document.getElementById('state').remove();
+        const stateEl = document.getElementById('state');
+        if (stateEl) stateEl.remove();
         renderTabs();
         renderBody();
-        startPromoCarousel();
-      } catch {
+      } else {
         document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
       }
+
+      // Promos
+      if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
+        const data = await promosRes.value.json();
+        buildPromos(data.promos || []);
+      }
+
+      setInterval(rotatePromo, 4000);
     }
 
     init();
