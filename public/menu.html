@@ -364,6 +364,56 @@
       cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent;
     }
     .order-overlay.staff-mode .staff-exit-btn { display: block; }
+        /* ── Bene counter ── */
+    .tabs-row-wrap {
+      display: flex;
+      align-items: stretch;
+    }
+    .tab-row {
+      flex: 1;
+    }
+    .bene-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 14px;
+      background: none;
+      border: none;
+      border-left: 0.5px solid var(--border);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      color: var(--text-3);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .bene-btn:hover { color: var(--gold); }
+    .bene-gem { font-size: 14px; }
+    .bene-count { font-size: 13px; font-weight: 500; color: var(--text-2); }
+    .bene-info {
+      display: none;
+      position: absolute;
+      right: 0; left: 0;
+      background: var(--gold-bg);
+      border-bottom: 0.5px solid var(--gold-border);
+      padding: 14px 20px;
+      z-index: 5;
+    }
+    .bene-info.open { display: block; }
+    .bene-info-title {
+      font-size: 13px; font-weight: 500;
+      color: var(--gold); margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .bene-info-text {
+      font-size: 13px; color: var(--text-2); line-height: 1.6;
+    }
+    .bene-info-close {
+      margin-top: 10px; font-size: 12px; color: var(--gold);
+      background: none; border: none; cursor: pointer; padding: 0;
+      text-decoration: underline; -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body>
