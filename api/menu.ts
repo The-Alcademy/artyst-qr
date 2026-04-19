@@ -47,6 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           available: item.available,
           sort_order: item.sort_order,
           details: item.details || null,
+          time_slots: item.time_slots || ['brunch','lunch','tea','evening'],
         })),
     }));
 
