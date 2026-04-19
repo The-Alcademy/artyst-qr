@@ -401,7 +401,7 @@ saveOrder(); updateOrderBadge();
 
     function clearOrder() {
       if (!orderItems.length || confirm('Clear your order?')) {
-        orderItems = []; saveOrder(); updateOrderBadge(); renderOrderBody();
+        orderItems = []; saveOrder(); updateOrderBadge(); renderOrderBody(); renderBody();
       }
     }
 function getItemOrderCount(itemId) {
