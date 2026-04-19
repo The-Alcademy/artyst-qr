@@ -617,7 +617,7 @@ saveOrder(); updateOrderBadge();
       if (idx === -1) return;
       orderItems[idx].qty += delta;
       if (orderItems[idx].qty <= 0) orderItems.splice(idx, 1);
-      saveOrder(); updateOrderBadge(); renderOrderBody();
+     saveOrder(); updateOrderBadge(); renderOrderBody(); renderBody();
     }
 
     function clearOrder() {
