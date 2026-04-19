@@ -27,7 +27,6 @@
       --drawer-bg:    #f2efe9;
       --footer-bg:    #f2efe9;
       --green:        #2a6a2a;
-      --green-light:  #eaf4ea;
     }
     [data-theme="dark"] {
       --bg:           #0e0e0e;
@@ -47,7 +46,6 @@
       --drawer-bg:    #141414;
       --footer-bg:    #111;
       --green:        #5aff7a;
-      --green-light:  #0a1a0a;
     }
 
     body {
@@ -72,10 +70,7 @@
       transition: background 0.2s;
     }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .venue-link {
-      font-size: 12px; letter-spacing: 0.14em;
-      color: var(--text-2); text-transform: uppercase; text-decoration: none;
-    }
+    .venue-link { font-size: 12px; letter-spacing: 0.14em; color: var(--text-2); text-transform: uppercase; text-decoration: none; }
     .venue-link:hover { color: var(--gold); }
     .page-title { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 12px; }
     .header-controls { display: flex; align-items: center; gap: 6px; }
@@ -87,18 +82,12 @@
       display: flex; align-items: center; gap: 5px; position: relative;
     }
     .icon-btn.slot-active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); }
-
     .order-badge {
-      position: absolute;
-      top: -5px; right: -5px;
-      background: var(--gold);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 600;
-      width: 16px; height: 16px;
-      border-radius: 50%;
+      position: absolute; top: -5px; right: -5px;
+      background: var(--gold); color: #fff;
+      font-size: 10px; font-weight: 600;
+      width: 16px; height: 16px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      line-height: 1;
     }
 
     .burger {
@@ -131,8 +120,10 @@
     .slot-divider { height: 0.5px; background: var(--border); margin: 4px 0; }
     .slot-auto-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); padding: 6px 12px 2px; }
 
-    /* ── Tabs ── */
+    /* ── Tabs + bene counter ── */
+    .tabs-row-wrap { display: flex; align-items: stretch; }
     .tab-row {
+      flex: 1;
       display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
       scrollbar-width: none; margin: 0 -20px; padding: 0 20px;
     }
@@ -144,6 +135,34 @@
       white-space: nowrap; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
     }
     .tab.active { color: var(--text-1); border-bottom-color: var(--gold); }
+
+    /* ── Bene counter ── */
+    .bene-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 0 14px; background: none; border: none;
+      border-left: 0.5px solid var(--border);
+      border-bottom: 2px solid transparent;
+      cursor: pointer; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      color: var(--text-3); font-size: 12px;
+    }
+    .bene-btn:hover { color: var(--gold); }
+    .bene-gem { font-size: 13px; }
+    .bene-count { font-size: 13px; font-weight: 500; color: var(--text-2); }
+    .bene-info {
+      display: none;
+      background: var(--gold-bg);
+      border-bottom: 0.5px solid var(--gold-border);
+      padding: 14px 20px;
+    }
+    .bene-info.open { display: block; }
+    .bene-info-title { font-size: 13px; font-weight: 500; color: var(--gold); margin-bottom: 6px; }
+    .bene-info-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+    .bene-info-close {
+      margin-top: 10px; font-size: 12px; color: var(--gold);
+      background: none; border: none; cursor: pointer; padding: 0;
+      text-decoration: underline; -webkit-tap-highlight-color: transparent; display: block;
+    }
 
     /* ── Slot bar ── */
     .slot-bar {
@@ -213,24 +232,22 @@
     .item-row.unavailable { opacity: 0.4; }
     .item-row.slot-greyed { opacity: 0.3; }
     .item-main { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-    .item-left { flex: 1; padding-right: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .item-row.expandable .item-left { cursor: pointer; }
+    .item-left { flex: 1; padding-right: 10px; }
+    .item-row.expandable .item-left { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .item-name { font-size: 17px; color: var(--text-1); line-height: 1.35; }
     .item-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-desc { font-size: 13px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
     .item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; text-align: right; }
-    .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
+    .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
     .item-row.open .expand-icon { transform: rotate(180deg); }
 
-    /* ── Add to order button ── */
     .add-btn {
       width: 30px; height: 30px; border-radius: 50%;
       background: none; border: 1.5px solid var(--border);
       color: var(--text-2); font-size: 20px; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; -webkit-tap-highlight-color: transparent;
-      transition: all 0.15s;
+      flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: all 0.15s;
     }
     .add-btn:hover { border-color: var(--gold); color: var(--gold); }
     .add-btn.added { border-color: var(--green); color: var(--green); }
@@ -241,10 +258,8 @@
       letter-spacing: 0.04em; vertical-align: middle;
     }
 
-    /* ── Size picker (inline) ── */
-    .size-picker {
-      display: none; padding: 10px 0 14px;
-    }
+    /* ── Size picker ── */
+    .size-picker { display: none; padding: 10px 0 14px; }
     .item-row.picking .size-picker { display: block; }
     .size-picker-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
     .size-options { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -254,7 +269,7 @@
       -webkit-tap-highlight-color: transparent; transition: all 0.15s;
     }
     .size-opt:hover { border-color: var(--gold); color: var(--gold); }
-    .size-opt .size-price { font-size: 12px; color: var(--text-3); margin-left: 4px; }
+    .size-price { font-size: 12px; color: var(--text-3); margin-left: 4px; }
 
     /* ── Detail panel ── */
     .item-detail { display: none; padding: 0 0 14px; }
@@ -287,25 +302,22 @@
     .order-overlay {
       position: fixed; inset: 0; background: var(--bg);
       z-index: 200; display: none; flex-direction: column;
-      transition: background 0.2s;
     }
     .order-overlay.open { display: flex; }
     .order-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 20px 16px; border-bottom: 0.5px solid var(--border);
-      flex-shrink: 0;
+      padding: 20px 20px 16px; border-bottom: 0.5px solid var(--border); flex-shrink: 0;
     }
-    .order-header-left { display: flex; align-items: center; gap: 12px; }
+    .order-header-left { display: flex; align-items: baseline; gap: 10px; }
     .order-title { font-size: 22px; font-weight: 500; color: var(--text-1); }
-    .order-count { font-size: 13px; color: var(--text-3); }
+    .order-item-count { font-size: 13px; color: var(--text-3); }
     .close-btn {
       background: none; border: 0.5px solid var(--border); border-radius: 4px;
-      padding: 8px 12px; font-size: 13px; color: var(--text-2);
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      padding: 8px 12px; font-size: 13px; color: var(--text-2); cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .order-body { flex: 1; overflow-y: auto; padding: 0 20px; }
     .order-empty { padding: 60px 0; text-align: center; color: var(--text-3); font-size: 15px; }
-
     .order-item {
       display: flex; align-items: center; gap: 12px;
       padding: 14px 0; border-bottom: 0.5px solid var(--border-soft);
@@ -314,7 +326,7 @@
     .order-item-name { font-size: 16px; color: var(--text-1); }
     .order-item-size { font-size: 12px; color: var(--text-3); margin-top: 2px; }
     .order-item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; margin: 0 8px; }
-    .qty-controls { display: flex; align-items: center; gap: 0; }
+    .qty-controls { display: flex; align-items: center; }
     .qty-btn {
       width: 28px; height: 28px; border-radius: 50%;
       background: var(--bg-raised); border: 0.5px solid var(--border);
@@ -323,17 +335,15 @@
       -webkit-tap-highlight-color: transparent; flex-shrink: 0;
     }
     .qty-num { font-size: 15px; color: var(--text-1); min-width: 28px; text-align: center; }
-
     .order-footer {
       padding: 16px 20px 32px; border-top: 0.5px solid var(--border); flex-shrink: 0;
     }
     .order-total-row {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 16px;
+      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;
     }
     .order-total-label { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
     .order-total-value { font-size: 28px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; }
-    .order-total-note { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+    .order-total-note { font-size: 11px; color: var(--text-3); margin-bottom: 16px; min-height: 16px; }
     .order-actions { display: flex; gap: 10px; }
     .order-clear-btn {
       flex: 1; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px;
@@ -343,12 +353,8 @@
     .order-show-btn {
       flex: 2; padding: 14px; border: none; border-radius: 8px;
       background: var(--text-1); color: var(--bg); font-size: 15px;
-      font-weight: 500; cursor: pointer; letter-spacing: 0.02em;
-      -webkit-tap-highlight-color: transparent;
+      font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
-
-    /* ── Show to staff mode ── */
-    .order-overlay.staff-mode .order-header { padding: 28px 24px 20px; }
     .order-overlay.staff-mode .order-title { font-size: 28px; }
     .order-overlay.staff-mode .order-item-name { font-size: 20px; }
     .order-overlay.staff-mode .order-item-size { font-size: 14px; }
@@ -358,62 +364,11 @@
     .order-overlay.staff-mode .order-actions { display: none; }
     .order-overlay.staff-mode .qty-controls { display: none; }
     .staff-exit-btn {
-      display: none; width: 100%; padding: 14px;
-      border: 0.5px solid var(--border); border-radius: 8px;
-      background: none; color: var(--text-2); font-size: 14px;
+      display: none; width: 100%; padding: 14px; border: 0.5px solid var(--border);
+      border-radius: 8px; background: none; color: var(--text-2); font-size: 14px;
       cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent;
     }
     .order-overlay.staff-mode .staff-exit-btn { display: block; }
-        /* ── Bene counter ── */
-    .tabs-row-wrap {
-      display: flex;
-      align-items: stretch;
-    }
-    .tab-row {
-      flex: 1;
-    }
-    .bene-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 0 14px;
-      background: none;
-      border: none;
-      border-left: 0.5px solid var(--border);
-      border-bottom: 2px solid transparent;
-      cursor: pointer;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      color: var(--text-3);
-      font-size: 12px;
-      letter-spacing: 0.04em;
-    }
-    .bene-btn:hover { color: var(--gold); }
-    .bene-gem { font-size: 14px; }
-    .bene-count { font-size: 13px; font-weight: 500; color: var(--text-2); }
-    .bene-info {
-      display: none;
-      position: absolute;
-      right: 0; left: 0;
-      background: var(--gold-bg);
-      border-bottom: 0.5px solid var(--gold-border);
-      padding: 14px 20px;
-      z-index: 5;
-    }
-    .bene-info.open { display: block; }
-    .bene-info-title {
-      font-size: 13px; font-weight: 500;
-      color: var(--gold); margin-bottom: 6px;
-      letter-spacing: 0.02em;
-    }
-    .bene-info-text {
-      font-size: 13px; color: var(--text-2); line-height: 1.6;
-    }
-    .bene-info-close {
-      margin-top: 10px; font-size: 12px; color: var(--gold);
-      background: none; border: none; cursor: pointer; padding: 0;
-      text-decoration: underline; -webkit-tap-highlight-color: transparent;
-    }
   </style>
 </head>
 <body>
@@ -472,20 +427,18 @@
     <div class="order-header">
       <div class="order-header-left">
         <span class="order-title">My order</span>
-        <span class="order-count" id="order-count"></span>
+        <span class="order-item-count" id="order-item-count"></span>
       </div>
       <button class="close-btn" onclick="closeOrder()">Close</button>
     </div>
-    <div class="order-body" id="order-body">
-      <div class="order-empty">No items yet — tap + on any menu item.</div>
-    </div>
+    <div class="order-body" id="order-body"></div>
     <div class="order-footer">
       <div class="order-total-row">
         <span class="order-total-label">Total</span>
         <span class="order-total-value" id="order-total">0.00</span>
       </div>
       <p class="order-total-note" id="order-total-note"></p>
-      <div class="order-actions" style="margin-top:14px;">
+      <div class="order-actions">
         <button class="order-clear-btn" onclick="clearOrder()">Clear</button>
         <button class="order-show-btn" onclick="showToStaff()">Show to staff →</button>
       </div>
@@ -500,7 +453,7 @@
       <div class="header-controls">
         <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☽</button>
         <button class="icon-btn" id="slot-btn" onclick="toggleSlotPicker()" aria-label="Time filter">
-          <span id="slot-icon">🕐</span>
+          <span>🕐</span>
           <span id="slot-label" style="font-size:12px;letter-spacing:0.04em;text-transform:uppercase;"></span>
         </button>
         <button class="icon-btn" id="order-btn" onclick="openOrder()" aria-label="My order" style="font-size:18px;">
@@ -558,19 +511,18 @@
   </div>
 
   <script>
-    // ── Constants ──────────────────────────────────────
     const TABS = [
-      { label:'Café',    slugs:['espresso','tea','filter','cold'],                         outdoor:false },
-      { label:'Food',    slugs:['sandwiches','lunch','cakes'],                             outdoor:false },
-      { label:'Bar',     slugs:['draught','wine','lowno'],                                 outdoor:true  },
-      { label:'Spirits', slugs:['gin','vodka','rum','whisky','brandy','liqueurs','mixers'],outdoor:true  },
+      { label:'Café',    slugs:['espresso','tea','filter','cold'],                          outdoor:false },
+      { label:'Food',    slugs:['sandwiches','lunch','cakes'],                              outdoor:false },
+      { label:'Bar',     slugs:['draught','wine','lowno'],                                  outdoor:true  },
+      { label:'Spirits', slugs:['gin','vodka','rum','whisky','brandy','liqueurs','mixers'], outdoor:true  },
     ];
     const CAT_NOTES = {
-      espresso:'Add any syrup +50p', gin:'Single 25ml / Double 50ml',
-      vodka:'Single 25ml / Double 50ml', rum:'Single 25ml / Double 50ml',
-      whisky:'Single 25ml / Double 50ml', brandy:'Single 25ml / Double 50ml',
-      liqueurs:'Single 25ml / Double 50ml', draught:'Pint / Half',
-      wine:'Small / Med / Large / Bottle',
+      espresso:'Add any syrup +50p',
+      gin:'Single 25ml / Double 50ml', vodka:'Single 25ml / Double 50ml',
+      rum:'Single 25ml / Double 50ml', whisky:'Single 25ml / Double 50ml',
+      brandy:'Single 25ml / Double 50ml', liqueurs:'Single 25ml / Double 50ml',
+      draught:'Pint / Half', wine:'Small / Med / Large / Bottle',
     };
     const SLOTS = {
       brunch:  {label:'Brunch',        hours:'8am–12pm',  start:8,  end:12},
@@ -586,10 +538,10 @@
     let manualSlot = false;
     let promos = [];
     let promoIndex = 0;
-    let orderItems = []; // {id, name, size, price, qty}
+    let orderItems = [];
     let pickingItemId = null;
 
-    // ── Price parsing ──────────────────────────────────
+    // ── Price parsing ─────────────────────────────────
     function parsePriceOptions(priceDisplay, catNote) {
       if (!priceDisplay || priceDisplay === 'ask staff') return [];
       const rawParts = priceDisplay.split('/').map(p => p.trim());
@@ -598,16 +550,12 @@
       rawParts.forEach((raw, i) => {
         const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
         if (isNaN(num) || num <= 0) return;
-        options.push({
-          label: noteParts[i] || raw,
-          price: num,
-          display: num.toFixed(2),
-        });
+        options.push({ label: noteParts[i] || raw, price: num, display: num.toFixed(2) });
       });
       return options;
     }
 
-    // ── Order management ───────────────────────────────
+    // ── Order ─────────────────────────────────────────
     function saveOrder() { localStorage.setItem('artyst-order', JSON.stringify(orderItems)); }
     function loadOrder() {
       try { orderItems = JSON.parse(localStorage.getItem('artyst-order') || '[]'); }
@@ -617,11 +565,9 @@
     function addToOrder(itemId, name, size, price) {
       const key = `${itemId}__${size}`;
       const existing = orderItems.find(o => o.key === key);
-      if (existing) { existing.qty++; }
-      else { orderItems.push({key, id: itemId, name, size, price, qty: 1}); }
+      if (existing) { existing.qty++; } else { orderItems.push({key, id:itemId, name, size, price, qty:1}); }
       saveOrder();
       updateOrderBadge();
-      // Flash the + button green briefly
       const btn = document.querySelector(`[data-add-id="${itemId}"]`);
       if (btn) { btn.classList.add('added'); setTimeout(() => btn.classList.remove('added'), 800); }
     }
@@ -631,17 +577,12 @@
       if (idx === -1) return;
       orderItems[idx].qty += delta;
       if (orderItems[idx].qty <= 0) orderItems.splice(idx, 1);
-      saveOrder();
-      updateOrderBadge();
-      renderOrderBody();
+      saveOrder(); updateOrderBadge(); renderOrderBody();
     }
 
     function clearOrder() {
       if (!orderItems.length || confirm('Clear your order?')) {
-        orderItems = [];
-        saveOrder();
-        updateOrderBadge();
-        renderOrderBody();
+        orderItems = []; saveOrder(); updateOrderBadge(); renderOrderBody();
       }
     }
 
@@ -652,32 +593,23 @@
       badge.style.display = total > 0 ? 'flex' : 'none';
     }
 
-    function orderTotal() {
-      return orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
-    }
-
     function renderOrderBody() {
       const body = document.getElementById('order-body');
-      const countEl = document.getElementById('order-count');
+      const countEl = document.getElementById('order-item-count');
       const totalEl = document.getElementById('order-total');
       const noteEl = document.getElementById('order-total-note');
-
       const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
       countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
-
       if (!orderItems.length) {
         body.innerHTML = '<div class="order-empty">No items yet — tap + on any menu item.</div>';
-        totalEl.textContent = '0.00';
-        noteEl.textContent = '';
-        return;
+        totalEl.textContent = '0.00'; noteEl.textContent = ''; return;
       }
-
       const hasAskStaff = orderItems.some(o => o.price === 0);
       body.innerHTML = orderItems.map(o => `
         <div class="order-item">
           <div class="order-item-info">
             <div class="order-item-name">${o.name}</div>
-            ${o.size && o.size !== o.name ? `<div class="order-item-size">${o.size}</div>` : ''}
+            ${o.size ? `<div class="order-item-size">${o.size}</div>` : ''}
           </div>
           <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
           <div class="qty-controls">
@@ -685,12 +617,10 @@
             <span class="qty-num">${o.qty}</span>
             <button class="qty-btn" onclick="changeQty('${o.key}', 1)">+</button>
           </div>
-        </div>
-      `).join('');
-
-      const t = orderTotal();
+        </div>`).join('');
+      const t = orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
       totalEl.textContent = t.toFixed(2);
-      noteEl.textContent = hasAskStaff ? 'Some items are priced at the bar and are not included in the total.' : '';
+      noteEl.textContent = hasAskStaff ? 'Some items are priced at the bar and not included above.' : '';
     }
 
     function openOrder() { loadOrder(); renderOrderBody(); document.getElementById('order-overlay').classList.add('open'); }
@@ -698,48 +628,28 @@
     function showToStaff() { document.getElementById('order-overlay').classList.add('staff-mode'); }
     function exitStaffMode() { document.getElementById('order-overlay').classList.remove('staff-mode'); }
 
-    // ── Size picking ───────────────────────────────────
+    // ── Size picking ──────────────────────────────────
     function handleAddBtn(itemId, itemName, priceDisplay, catNote, event) {
       event.stopPropagation();
       const options = parsePriceOptions(priceDisplay, catNote);
-
-      if (options.length === 0) {
-        // ask staff
-        addToOrder(itemId, itemName, '', 0);
-        return;
-      }
-      if (options.length === 1) {
-        addToOrder(itemId, itemName, '', options[0].price);
-        return;
-      }
-
-      // Multiple options — show inline picker
+      if (options.length === 0) { addToOrder(itemId, itemName, '', 0); return; }
+      if (options.length === 1) { addToOrder(itemId, itemName, '', options[0].price); return; }
       const row = document.getElementById(`item-${itemId}`);
       if (!row) return;
-
-      if (pickingItemId === itemId) {
-        row.classList.remove('picking');
-        pickingItemId = null;
-        return;
-      }
-
-      // Close any open picker
+      if (pickingItemId === itemId) { row.classList.remove('picking'); pickingItemId = null; return; }
       if (pickingItemId) {
         const prev = document.getElementById(`item-${pickingItemId}`);
         if (prev) prev.classList.remove('picking');
       }
-
       pickingItemId = itemId;
       const picker = row.querySelector('.size-picker');
       if (picker) {
-        picker.innerHTML = `
-          <p class="size-picker-label">Choose size</p>
+        picker.innerHTML = `<p class="size-picker-label">Choose size</p>
           <div class="size-options">
-            ${options.map(opt => `
-              <div class="size-opt" onclick="selectSize('${itemId}', '${itemName.replace(/'/g,"\\'")}', '${opt.label}', ${opt.price})">
-                ${opt.label}<span class="size-price">${opt.display}</span>
-              </div>
-            `).join('')}
+            ${options.map(opt => `<div class="size-opt"
+              onclick="selectSize(${itemId}, '${itemName.replace(/'/g,"\\'")}', '${opt.label}', ${opt.price})">
+              ${opt.label}<span class="size-price">${opt.display}</span>
+            </div>`).join('')}
           </div>`;
       }
       row.classList.add('picking');
@@ -752,7 +662,12 @@
       pickingItemId = null;
     }
 
-    // ── Theme ──────────────────────────────────────────
+    // ── Bene counter ──────────────────────────────────
+    function toggleBeneInfo() {
+      document.getElementById('bene-info').classList.toggle('open');
+    }
+
+    // ── Theme ─────────────────────────────────────────
     function toggleTheme() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const next = isDark ? 'light' : 'dark';
@@ -770,7 +685,7 @@
       }
     })();
 
-    // ── Slot ───────────────────────────────────────────
+    // ── Slot ──────────────────────────────────────────
     function detectSlot() {
       const h = new Date().getHours();
       if (h >= 8  && h < 12) return 'brunch';
@@ -790,10 +705,8 @@
       const info = SLOTS[currentSlot];
       document.getElementById('slot-btn').classList.add('slot-active');
       document.getElementById('slot-label').textContent = info.label;
-      document.getElementById('slot-bar-text').textContent =
-      `${info.label} · ${info.hours}`
-      document.getElementById('show-all-btn').textContent =
-        showAll ? 'Hide unavailable' : 'Show all items';
+      document.getElementById('slot-bar-text').textContent = `${info.label} · ${info.hours}`;
+      document.getElementById('show-all-btn').textContent = showAll ? 'Hide unavailable' : 'Show all items';
       document.querySelectorAll('.slot-option').forEach(el =>
         el.classList.toggle('active', el.dataset.slot === currentSlot));
     }
@@ -804,7 +717,7 @@
       if (!e.target.closest('#slot-btn') && !e.target.closest('#slot-picker')) closeSlotPicker();
     });
 
-    // ── Drawer ─────────────────────────────────────────
+    // ── Drawer ────────────────────────────────────────
     function toggleDrawer() {
       const open = document.getElementById('drawer').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('open', open);
@@ -816,26 +729,29 @@
       document.getElementById('burger').classList.remove('open');
     }
 
-    // ── Item expand ────────────────────────────────────
+    // ── Item expand ───────────────────────────────────
     function toggleItem(itemId) {
       const row = document.getElementById(`item-${itemId}`);
       if (row) row.classList.toggle('open');
     }
 
-    // ── Tabs ───────────────────────────────────────────
+    // ── Tabs ──────────────────────────────────────────
     function renderTabs() {
       document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
         `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
       ).join('');
     }
 
-    // ── Outdoor notice ─────────────────────────────────
+    // ── Outdoor notice ────────────────────────────────
     function renderOutdoorNotice() {
-      document.getElementById('outdoor-notice-container').innerHTML = TABS[activeTab].outdoor
-`<p class="outdoor-notice">Please note: We can only serve non-alcoholic drinks in our outside seating area.</p>`
+      const container = document.getElementById('outdoor-notice-container');
+      if (!container) return;
+      container.innerHTML = (TABS[activeTab] && TABS[activeTab].outdoor)
+        ? `<p class="outdoor-notice">Please note: We can only serve non-alcoholic drinks in our outside seating area.</p>`
+        : '';
     }
 
-    // ── Body ───────────────────────────────────────────
+    // ── Body ──────────────────────────────────────────
     function renderBody() {
       renderOutdoorNotice();
       const body = document.getElementById('body');
@@ -843,24 +759,20 @@
       const cats = allCategories.filter(c => slugs.includes(c.slug));
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
-      const catNote = CAT_NOTES;
-
       body.innerHTML = cats.map(cat => {
-        const note = catNote[cat.slug] || '';
+        const note = CAT_NOTES[cat.slug] || '';
         const itemsHtml = cat.items.map(item => {
           const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
           if (!inSlot && !showAll) return '';
-
           const hasDetails = item.details && item.details.trim();
           const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
           const slotClass = !inSlot ? ' slot-greyed' : '';
           const priceEsc = (item.price_display || '').replace(/"/g, '&quot;');
           const noteEsc = note.replace(/"/g, '&quot;');
           const nameEsc = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-          return `<div class="item-row${item.available ? '' : ' unavailable'}${slotClass}" id="item-${item.id}">
+          return `<div class="item-row${item.available ? '' : ' unavailable'}${slotClass}${hasDetails ? ' expandable' : ''}" id="item-${item.id}">
             <div class="item-main">
-              <div class="item-left" ${hasDetails ? `onclick="toggleItem(${item.id})"` : ''}>
+              <div class="item-left"${hasDetails ? ` onclick="toggleItem(${item.id})"` : ''}>
                 <div class="item-name-row">
                   <span class="item-name">${item.name}</span>
                   ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
@@ -882,7 +794,6 @@
             </div></div>` : ''}
           </div>`;
         }).join('');
-
         if (!itemsHtml.trim()) return '';
         return `<div class="cat-block">
           <p class="cat-label">${cat.name}</p>
@@ -897,7 +808,7 @@
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // ── Promo footer ───────────────────────────────────
+    // ── Promos ────────────────────────────────────────
     function buildPromos(data) {
       const inner = document.getElementById('promo-inner');
       if (!data.length) { inner.innerHTML = ''; return; }
@@ -907,8 +818,7 @@
           <span class="promo-sep"></span>
           <span class="promo-text">${p.text}</span>
           <span class="promo-arrow">→</span>
-        </a>`
-      ).join('');
+        </a>`).join('');
       promos = data; promoIndex = 0;
     }
     function rotatePromo() {
@@ -920,10 +830,7 @@
       items[promoIndex].classList.add('visible');
     }
 
-    // ── Init  ───────────────────────────────────────────
-        function toggleBeneInfo() {
-      document.getElementById('bene-info').classList.toggle('open');
-    }
+    // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder();
       updateOrderBadge();
