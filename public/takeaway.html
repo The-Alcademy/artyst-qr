@@ -56,7 +56,7 @@
 
     /* ── Header ── */
     .header {
-      background: var(--bg); padding: 20px 20px 16px;
+      background: var(--bg); padding: 20px 20px 0;
       border-bottom: 0.5px solid var(--border);
       position: sticky; top: 0; z-index: 10; transition: background 0.2s;
     }
@@ -64,7 +64,7 @@
     .venue-link { font-size: 12px; letter-spacing: 0.14em; color: var(--text-2); text-transform: uppercase; text-decoration: none; }
     .venue-link:hover { color: var(--gold); }
     .page-title { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 2px; }
-    .page-sub { font-size: 13px; color: var(--text-3); }
+    .page-sub { font-size: 13px; color: var(--text-3); margin-bottom: 12px; }
     .header-controls { display: flex; align-items: center; gap: 6px; }
 
     .icon-btn {
@@ -80,10 +80,25 @@
       display: flex; align-items: center; justify-content: center;
     }
 
+    /* ── Tabs ── */
+    .tab-row {
+      display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; margin: 0 -20px; padding: 0 20px;
+    }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--text-2); cursor: pointer; font-size: 13px;
+      letter-spacing: 0.06em; padding: 10px 14px; text-transform: uppercase;
+      white-space: nowrap; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active { color: var(--text-1); border-bottom-color: var(--gold); }
+
     /* ── Body ── */
     .body { padding: 0 20px 24px; }
     .cat-block { padding-top: 22px; }
     .cat-label { font-size: 11px; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+    .cat-note { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
     .item-row { border-bottom: 0.5px solid var(--border-soft); }
     .item-row.unavailable { opacity: 0.4; }
     .item-main { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
@@ -154,28 +169,18 @@
     .close-btn { background: none; border: 0.5px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .order-body { flex: 1; overflow-y: auto; padding: 0 20px; }
     .order-empty { padding: 40px 0 20px; text-align: center; color: var(--text-3); font-size: 15px; }
-
-    /* ── Name field ── */
     .name-section { padding: 16px 0; border-bottom: 0.5px solid var(--border); margin-bottom: 4px; }
     .name-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
-    .name-input {
-      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
-      border-radius: 8px; background: var(--bg-raised); color: var(--text-1);
-      font-size: 16px; font-family: inherit; outline: none;
-      transition: border-color 0.15s;
-    }
+    .name-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--bg-raised); color: var(--text-1); font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.15s; }
     .name-input:focus { border-color: var(--gold); }
     .name-input::placeholder { color: var(--text-3); }
     .name-error { font-size: 12px; color: #c0392b; margin-top: 6px; display: none; }
     .name-error.show { display: block; }
-
-    /* ── Staff name banner ── */
     .staff-name-banner { display: none; margin: 20px 20px 0; background: var(--text-1); color: var(--bg); border-radius: 10px; padding: 18px 20px; text-align: center; }
     .staff-name-banner-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
     .staff-name-banner-value { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
     .order-overlay.staff-mode .staff-name-banner { display: block; }
     .order-overlay.staff-mode .name-section { display: none; }
-
     .order-item { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 0.5px solid var(--border-soft); }
     .order-item-info { flex: 1; min-width: 0; }
     .order-item-name { font-size: 16px; color: var(--text-1); }
@@ -214,7 +219,7 @@
 
     @media (min-width: 760px) {
       body { max-width: 720px; margin: 0 auto; font-size: 15px; }
-      .header { padding: 14px 20px 14px; }
+      .header { padding: 14px 20px 0; }
       .page-title { font-size: 22px; }
       .body { padding: 0 20px 20px; }
       .cat-block { padding-top: 16px; }
@@ -255,7 +260,7 @@
       </div>
       <button class="close-btn" onclick="closeOrder()">Close</button>
     </div>
-    <div class="staff-name-banner" id="staff-name-banner">
+    <div class="staff-name-banner">
       <p class="staff-name-banner-label">Takeaway for</p>
       <p class="staff-name-banner-value" id="staff-name-value">&#x2014;</p>
     </div>
@@ -286,7 +291,8 @@
       </div>
     </div>
     <p class="page-title">Takeaway</p>
-    <p class="page-sub">Order at the counter &#x00B7; Pay on collection</p>
+    <p class="page-sub">Order and pay at the hatch or the counter</p>
+    <div class="tab-row" id="tab-row"></div>
   </div>
 
   <div class="body" id="body">
@@ -300,15 +306,19 @@
   </div>
 
   <script>
+    const TABS = [
+      { label:'Hot drinks', slugs:['espresso','filter','tea'] },
+      { label:'Cold drinks', slugs:['cold','lowno'] },
+      { label:'Food',        slugs:['sandwiches','lunch','cakes'] },
+      { label:'Wine',        slugs:['wine'] },
+    ];
     const CAT_NOTES = {
-      espresso:'Add any syrup +0.50', gin:'Single 25ml / Double 50ml',
-      vodka:'Single 25ml / Double 50ml', rum:'Single 25ml / Double 50ml',
-      whisky:'Single 25ml / Double 50ml', brandy:'Single 25ml / Double 50ml',
-      liqueurs:'Single 25ml / Double 50ml', draught:'Pint / Half',
+      espresso:'Add any syrup +0.50',
       wine:'Small / Med / Large / Bottle',
     };
 
     let allCategories = [];
+    let activeTab = 0;
     let orderItems = [];
     let customerName = '';
     let pickingItemId = null;
@@ -363,7 +373,6 @@
       const totalEl = document.getElementById('order-total');
       const noteEl = document.getElementById('order-total-note');
       const staffVal = document.getElementById('staff-name-value');
-
       const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
       countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
       if (staffVal) staffVal.textContent = customerName || '—';
@@ -371,7 +380,8 @@
       const nameHtml = `
         <div class="name-section">
           <p class="name-label">Your name</p>
-          <input class="name-input" id="name-input" type="text" placeholder="So we can call you when it's ready"
+          <input class="name-input" id="name-input" type="text"
+            placeholder="So we can call you when it's ready"
             value="${customerName.replace(/"/g,'&quot;')}"
             oninput="updateName(this.value)"
             autocomplete="given-name" />
@@ -397,11 +407,9 @@
           }).join('');
 
       body.innerHTML = nameHtml + itemsHtml;
-
       const t = orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
       totalEl.textContent = t.toFixed(2);
-      const hasAskStaff = orderItems.some(o => o.price === 0);
-      noteEl.textContent = hasAskStaff ? 'Some items are priced at the counter.' : '';
+      noteEl.textContent = orderItems.some(o => o.price === 0) ? 'Some items are priced at the counter.' : '';
     }
 
     function updateName(val) {
@@ -578,12 +586,29 @@
       }
     })();
 
+    // ── Tabs ──────────────────────────────────────────
+    function renderTabs() {
+      document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
+        `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
+      ).join('');
+    }
+
+    function switchTab(i) {
+      activeTab = i; renderTabs(); renderBody();
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
     // ── Render ────────────────────────────────────────
     function renderBody() {
       const body = document.getElementById('body');
-      if (!allCategories.length) { body.innerHTML = '<p class="state">Nothing available for takeaway right now.</p>'; return; }
+      const slugs = TABS[activeTab].slugs;
+      const cats = allCategories.filter(c => slugs.includes(c.slug));
+      if (!cats.length) {
+        body.innerHTML = '<p class="state">Nothing available in this category.</p>';
+        return;
+      }
 
-      body.innerHTML = allCategories.map(cat => {
+      body.innerHTML = cats.map(cat => {
         const note = CAT_NOTES[cat.slug] || '';
         const itemsHtml = cat.items.map(item => {
           itemDataMap.set(item.id, {...item, catNote: note});
@@ -616,7 +641,7 @@
         if (!itemsHtml.trim()) return '';
         return `<div class="cat-block">
           <p class="cat-label">${cat.name}</p>
-          ${note ? `<p style="font-size:13px;color:var(--text-2);margin-bottom:10px;">${note}</p>` : ''}
+          ${note ? `<p class="cat-note">${note}</p>` : ''}
           ${itemsHtml}
         </div>`;
       }).join('');
@@ -645,6 +670,7 @@
     // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder(); updateOrderBadge();
+      renderTabs();
 
       const [menuRes, promosRes] = await Promise.allSettled([
         fetch('/api/takeaway'),
@@ -658,7 +684,7 @@
         if (stateEl) stateEl.remove();
         renderBody();
       } else {
-        document.getElementById('state').textContent = "Couldn't load the takeaway menu. Please ask at the counter.";
+        document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the counter.";
       }
 
       if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
