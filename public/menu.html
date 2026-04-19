@@ -923,7 +923,10 @@ function getItemOrderCount(itemId) {
             + '<div class="item-right">'
             + (item.price_display ? '<p class="item-price">' + item.price_display + '</p>' : '')
             + (hasDetails ? '<span class="expand-icon" onclick="toggleItem(' + item.id + ')">&#x25BE;</span>' : '')
-            + (item.available ? '<button class="add-btn" data-add-id="' + item.id + '" onclick="handleAddBtn(' + item.id + ', event)">+</button>' : '')
+            + (item.available ? (function() {
+                var cnt = getItemOrderCount(item.id);
+                return '<button class="add-btn" data-add-id="' + item.id + '" onclick="handleAddBtn(' + item.id + ', event)">+' + (cnt > 0 ? '<span class="add-count">' + cnt + '</span>' : '') + '</button>';
+              })() : '')
             + '</div></div>'
             + '<div class="size-picker"></div>'
             + (hasDetails ? '<div class="item-detail"><div class="detail-lines">' + lines.map(function(l) { return '<p class="detail-line">' + l + '</p>'; }).join('') + '</div></div>' : '')
