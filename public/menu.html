@@ -908,7 +908,8 @@ function getItemOrderCount(itemId) {
           var lines = hasDetails ? item.details.trim().split('\n').filter(function(l) { return l.trim(); }) : [];
           var slotClass = !inSlot ? ' slot-greyed' : '';
           var hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
-          return '<div class="item-row' + (item.available ? '' : ' unavailable') + slotClass + (hasDetails ? ' expandable' : '') + '" id="item-' + item.id + '">'
+         var orderCnt = getItemOrderCount(item.id);
+          return '<div class="item-row' + (item.available ? '' : ' unavailable') + slotClass + (hasDetails ? ' expandable' : '') + (orderCnt > 0 ? ' in-order' : '') + '" id="item-' + item.id + '">'
             + '<div class="item-main">'
             + '<div class="item-left"' + (hasDetails ? ' onclick="toggleItem(' + item.id + ')"' : '') + '>'
             + '<div class="item-name-row">'
