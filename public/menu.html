@@ -9,7 +9,6 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Tokens ── */
     :root {
       --bg:          #faf8f4;
       --bg-raised:   #f2efe9;
@@ -18,30 +17,35 @@
       --border-soft: #e8e4dc;
       --text-1:      #1a1a18;
       --text-2:      #555550;
-      --text-3:      #888880;
+      --text-3:      #999990;
       --gold:        #8a6a2e;
+      --gold-bg:     #f5eedf;
       --tag-bg:      #e8e4dc;
       --tag-text:    #666660;
-      --overlay:     rgba(0,0,0,0.4);
+      --overlay:     rgba(0,0,0,0.35);
       --drawer-bg:   #f2efe9;
-      --theme-meta:  #faf8f4;
+      --slot-bg:     #f2efe9;
+      --slot-active: #1a1a18;
+      --slot-text:   #888;
     }
-
     [data-theme="dark"] {
       --bg:          #0e0e0e;
       --bg-raised:   #141414;
       --bg-detail:   #141414;
-      --border:      #222;
+      --border:      #252525;
       --border-soft: #1a1a1a;
       --text-1:      #e8e4dc;
-      --text-2:      #666;
+      --text-2:      #777770;
       --text-3:      #444;
       --gold:        #c8a96e;
+      --gold-bg:     #1a1508;
       --tag-bg:      #1c1c1c;
       --tag-text:    #666;
       --overlay:     rgba(0,0,0,0.6);
       --drawer-bg:   #141414;
-      --theme-meta:  #0e0e0e;
+      --slot-bg:     #1a1a1a;
+      --slot-active: #e8e4dc;
+      --slot-text:   #555;
     }
 
     body {
@@ -57,7 +61,7 @@
     /* ── Header ── */
     .header {
       background: var(--bg);
-      padding: 24px 20px 0;
+      padding: 20px 20px 0;
       border-bottom: 0.5px solid var(--border);
       position: sticky;
       top: 0;
@@ -67,8 +71,8 @@
     .header-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 4px;
+      align-items: center;
+      margin-bottom: 6px;
     }
     .venue-name {
       font-size: 12px;
@@ -77,21 +81,15 @@
       text-transform: uppercase;
     }
     .page-title {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 500;
       color: var(--text-1);
       letter-spacing: -0.01em;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
+    .header-controls { display: flex; align-items: center; gap: 6px; }
 
-    /* ── Header controls ── */
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .theme-toggle {
+    .icon-btn {
       background: none;
       border: 0.5px solid var(--border);
       border-radius: 4px;
@@ -99,25 +97,31 @@
       padding: 7px 9px;
       font-size: 15px;
       line-height: 1;
-      -webkit-tap-highlight-color: transparent;
       color: var(--text-2);
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
-
+    .icon-btn.slot-active {
+      background: var(--gold-bg);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
     .burger {
       background: none;
       border: 0.5px solid var(--border);
       border-radius: 4px;
       cursor: pointer;
-      padding: 8px 10px;
+      padding: 8px 9px;
       display: flex;
       flex-direction: column;
       gap: 5px;
       -webkit-tap-highlight-color: transparent;
-      flex-shrink: 0;
     }
     .burger span {
       display: block;
-      width: 20px;
+      width: 18px;
       height: 1.5px;
       background: var(--text-2);
       transition: all 0.2s;
@@ -126,77 +130,50 @@
     .burger.open span:nth-child(2) { opacity: 0; }
     .burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-    /* ── Drawer ── */
-    .drawer {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: 290px;
-      background: var(--drawer-bg);
-      border-left: 0.5px solid var(--border);
-      z-index: 100;
-      transform: translateX(100%);
-      transition: transform 0.25s ease, background 0.2s;
-      overflow-y: auto;
-      padding: 24px 0 40px;
+    /* ── Slot picker popover ── */
+    .slot-picker {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 48px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+      padding: 6px;
+      z-index: 20;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      min-width: 180px;
     }
-    .drawer.open { transform: translateX(0); }
-    .drawer-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--overlay);
-      z-index: 99;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
-    .drawer-overlay.open { opacity: 1; pointer-events: all; }
-    .drawer-header {
-      padding: 0 20px 20px;
-      border-bottom: 0.5px solid var(--border);
-      margin-bottom: 8px;
-    }
-    .drawer-venue {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      color: var(--text-3);
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .drawer-title { font-size: 16px; font-weight: 500; color: var(--text-1); }
-    .drawer-section { padding: 16px 20px 4px; }
-    .drawer-section-label {
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .drawer-link {
+    .slot-picker.open { display: block; }
+    .slot-option {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 0;
-      border-bottom: 0.5px solid var(--border-soft);
-      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
       color: var(--text-1);
-      font-size: 16px;
       -webkit-tap-highlight-color: transparent;
     }
-    .drawer-link:last-child { border-bottom: none; }
-    .drawer-link-arrow { font-size: 13px; color: var(--text-3); }
-    .pill {
+    .slot-option:hover { background: var(--bg-raised); }
+    .slot-option.active { background: var(--gold-bg); color: var(--gold); font-weight: 500; }
+    .slot-option .slot-time { font-size: 11px; color: var(--text-3); }
+    .slot-option.active .slot-time { color: var(--gold); opacity: 0.7; }
+    .slot-divider {
+      height: 0.5px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+    .slot-auto-label {
       font-size: 10px;
-      letter-spacing: 0.06em;
-      color: var(--text-3);
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      background: var(--bg-raised);
-      border-radius: 3px;
-      padding: 2px 6px;
-      margin-left: 6px;
-      flex-shrink: 0;
+      color: var(--text-3);
+      padding: 6px 12px 2px;
     }
 
-    /* ── Tabs ── */
+    /* ── Tab row ── */
     .tab-row {
       display: flex;
       overflow-x: auto;
@@ -214,7 +191,7 @@
       cursor: pointer;
       font-size: 13px;
       letter-spacing: 0.06em;
-      padding: 11px 16px;
+      padding: 10px 14px;
       text-transform: uppercase;
       white-space: nowrap;
       flex-shrink: 0;
@@ -222,77 +199,198 @@
     }
     .tab.active { color: var(--text-1); border-bottom-color: var(--gold); }
 
-    /* ── Body ── */
-    .body { padding: 0 20px 40px; }
-    .cat-block { padding-top: 24px; }
-    .cat-label {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      color: var(--gold);
+    /* ── Drawer ── */
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 290px;
+      background: var(--drawer-bg);
+      border-left: 0.5px solid var(--border);
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.25s ease, background 0.2s;
+      overflow-y: auto;
+      padding: 24px 0 40px;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: var(--overlay);
+      z-index: 99; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+    .drawer-header {
+      padding: 0 20px 20px;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .drawer-venue { font-size: 11px; letter-spacing: 0.16em; color: var(--text-3); text-transform: uppercase; margin-bottom: 4px; }
+    .drawer-title { font-size: 16px; font-weight: 500; color: var(--text-1); }
+
+    /* ── About block in drawer ── */
+    .drawer-about {
+      margin: 16px 20px 0;
+      padding: 14px 16px;
+      background: var(--gold-bg);
+      border-radius: 6px;
+      border: 0.5px solid var(--border);
+    }
+    .drawer-about-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .drawer-about-text {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .drawer-about-link {
+      font-size: 12px;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+
+    .drawer-section { padding: 14px 20px 4px; }
+    .drawer-section-label {
+      font-size: 11px; letter-spacing: 0.14em;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 8px;
+    }
+    .drawer-link {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 0.5px solid var(--border-soft);
+      text-decoration: none; color: var(--text-1); font-size: 15px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .drawer-link:last-child { border-bottom: none; }
+    .drawer-link-arrow { font-size: 13px; color: var(--text-3); }
+    .pill {
+      font-size: 10px; letter-spacing: 0.06em; color: var(--text-3);
+      text-transform: uppercase; background: var(--bg-raised);
+      border-radius: 3px; padding: 2px 6px; margin-left: 6px; flex-shrink: 0;
+    }
+
+    /* ── Body ── */
+    .body { padding: 0 20px 24px; }
+    .cat-block { padding-top: 22px; }
+    .cat-label {
+      font-size: 11px; letter-spacing: 0.16em;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 6px;
     }
     .cat-note { font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
 
-    /* ── Item rows ── */
     .item-row { border-bottom: 0.5px solid var(--border-soft); }
     .item-row.unavailable { opacity: 0.4; }
+    .item-row.slot-hidden { display: none; }
+    .item-row.slot-greyed { opacity: 0.35; }
+
     .item-main {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 13px 0;
-      cursor: default;
+      display: flex; justify-content: space-between;
+      align-items: flex-start; padding: 13px 0; cursor: default;
     }
-    .item-row.expandable .item-main {
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .item-row.expandable .item-main { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .item-left { flex: 1; padding-right: 12px; }
     .item-name { font-size: 17px; color: var(--text-1); line-height: 1.35; }
     .item-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-desc { font-size: 13px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
     .item-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; text-align: right; line-height: 1.5; }
-    .expand-icon {
-      font-size: 11px;
-      color: var(--text-3);
-      transition: transform 0.2s;
-      flex-shrink: 0;
-    }
+    .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; text-align: right; }
+    .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
     .item-row.expandable.open .expand-icon { transform: rotate(180deg); }
 
     .tag {
-      display: inline-block;
-      font-size: 11px;
-      background: var(--tag-bg);
-      color: var(--tag-text);
-      border-radius: 3px;
-      padding: 2px 6px;
-      letter-spacing: 0.04em;
-      vertical-align: middle;
+      display: inline-block; font-size: 11px;
+      background: var(--tag-bg); color: var(--tag-text);
+      border-radius: 3px; padding: 2px 6px;
+      letter-spacing: 0.04em; vertical-align: middle;
     }
 
-    /* ── Detail panel ── */
     .item-detail { display: none; padding: 0 0 14px; }
     .item-row.open .item-detail { display: block; }
-    .detail-lines {
-      background: var(--bg-detail);
-      border-radius: 4px;
-      padding: 12px 14px;
-    }
+    .detail-lines { background: var(--bg-detail); border-radius: 4px; padding: 12px 14px; }
     .detail-line { font-size: 14px; color: var(--text-2); line-height: 1.8; }
     .detail-line:first-child { color: var(--text-1); font-weight: 500; }
 
-    /* ── Footer ── */
-    .footer {
-      border-top: 0.5px solid var(--border-soft);
-      padding: 20px 20px 40px;
-      font-size: 13px;
-      color: var(--text-2);
-      text-align: center;
-      line-height: 1.8;
+    /* ── Slot filter bar ── */
+    .slot-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      font-size: 12px;
+      color: var(--text-3);
     }
+    .slot-bar-label { letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; }
+    .show-all-btn {
+      font-size: 11px;
+      color: var(--gold);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Rotating footer ── */
+    .promo-footer {
+      margin: 0 20px 40px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .promo-card {
+      display: none;
+      padding: 18px 20px;
+      background: var(--bg-raised);
+      text-decoration: none;
+      color: var(--text-1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .promo-card.active { display: block; }
+    .promo-card-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .promo-card-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
+    .promo-card-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+    .promo-card-cta {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+    }
+    .promo-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 0 14px;
+      background: var(--bg-raised);
+      border-top: 0.5px solid var(--border);
+    }
+    .promo-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      padding: 0;
+    }
+    .promo-dot.active { background: var(--gold); }
+
     .state { padding: 48px 0; color: var(--text-2); font-size: 15px; text-align: center; }
   </style>
 </head>
@@ -305,6 +403,14 @@
       <p class="drawer-venue">The Artyst · Cambridge</p>
       <p class="drawer-title">What's here</p>
     </div>
+
+    <!-- About block -->
+    <div class="drawer-about">
+      <p class="drawer-about-label">About The Artyst</p>
+      <p class="drawer-about-text">Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive. The Artyst is built on that conviction. Everything here, from the coffee to the courses, is designed to let that spirit breathe.</p>
+      <a class="drawer-about-link" href="/about">Read more →</a>
+    </div>
+
     <div class="drawer-section">
       <p class="drawer-section-label">The venue</p>
       <a class="drawer-link" href="https://theartyst.co.uk" target="_blank">
@@ -320,6 +426,7 @@
         <span>Support our basement <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
       </a>
     </div>
+
     <div class="drawer-section">
       <p class="drawer-section-label">Get involved</p>
       <a class="drawer-link" href="https://go.theartyst.co.uk/clubs" target="_blank">
@@ -338,6 +445,7 @@
         <span>Volunteering</span><span class="drawer-link-arrow">↗</span>
       </a>
     </div>
+
     <div class="drawer-section">
       <p class="drawer-section-label">Cambridge tours</p>
       <a class="drawer-link" href="https://alcademy.co.uk/syd-barrett/" target="_blank">
@@ -350,6 +458,7 @@
         <span>A Victorian Murder <span class="pill">coming soon</span></span><span class="drawer-link-arrow">↗</span>
       </a>
     </div>
+
     <div class="drawer-section">
       <p class="drawer-section-label">The Invysible College</p>
       <a class="drawer-link" href="https://invysible-college-head-porter.vercel.app" target="_blank">
@@ -361,136 +470,279 @@
     </div>
   </div>
 
-  <div class="header">
+  <!-- Header -->
+  <div class="header" style="position:sticky;top:0;z-index:10;">
     <div class="header-top">
       <p class="venue-name">The Artyst · Cambridge</p>
       <div class="header-controls">
-        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☽</button>
+        <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☽</button>
+        <button class="icon-btn" id="slot-btn" onclick="toggleSlotPicker()" aria-label="Time filter">
+          <span id="slot-icon">🕐</span>
+          <span id="slot-label" style="font-size:12px;letter-spacing:0.04em;text-transform:uppercase;"></span>
+        </button>
         <button class="burger" id="burger" onclick="toggleDrawer()" aria-label="Open navigation">
           <span></span><span></span><span></span>
         </button>
       </div>
     </div>
+
+    <!-- Slot picker -->
+    <div class="slot-picker" id="slot-picker">
+      <div class="slot-auto-label">Service</div>
+      <div class="slot-option" data-slot="brunch" onclick="setSlot('brunch',true)">
+        <span>Brunch</span><span class="slot-time">8am – 12pm</span>
+      </div>
+      <div class="slot-option" data-slot="lunch" onclick="setSlot('lunch',true)">
+        <span>Lunch</span><span class="slot-time">12pm – 2pm</span>
+      </div>
+      <div class="slot-option" data-slot="tea" onclick="setSlot('tea',true)">
+        <span>Afternoon tea</span><span class="slot-time">2pm – 5pm</span>
+      </div>
+      <div class="slot-option" data-slot="evening" onclick="setSlot('evening',true)">
+        <span>Evening</span><span class="slot-time">5pm – close</span>
+      </div>
+      <div class="slot-divider"></div>
+      <div class="slot-option" onclick="setAutoSlot()">
+        <span>Auto-detect</span><span class="slot-time">Current time</span>
+      </div>
+    </div>
+
     <p class="page-title">Menu</p>
     <div class="tab-row" id="tab-row"></div>
+  </div>
+
+  <!-- Slot info bar -->
+  <div class="slot-bar" id="slot-bar">
+    <span class="slot-bar-label" id="slot-bar-text"></span>
+    <button class="show-all-btn" id="show-all-btn" onclick="toggleShowAll()"></button>
   </div>
 
   <div class="body" id="body">
     <p class="state" id="state">Loading…</p>
   </div>
 
-  <div class="footer">
-    Honouring Syd Barrett's legacy<br>
-    theartyst.co.uk · @theartystcambridge
+  <!-- Rotating promo footer -->
+  <div class="promo-footer" id="promo-footer" style="display:none;">
+    <a class="promo-card" href="https://go.theartyst.co.uk/crowdfunder" target="_blank" id="promo-0">
+      <p class="promo-card-label">Support us</p>
+      <p class="promo-card-title">Open the Underground</p>
+      <p class="promo-card-desc">Help us complete The Artyst basement — a cultural space for performances, private events, and the Invysible College.</p>
+      <span class="promo-card-cta">Back the crowdfunder →</span>
+    </a>
+    <a class="promo-card" href="https://go.theartyst.co.uk/events" target="_blank" id="promo-1">
+      <p class="promo-card-label">Coming up</p>
+      <p class="promo-card-title">Events at The Artyst</p>
+      <p class="promo-card-desc">Wine tastings, music, talks, and Invysible College sessions. Ticketed events most weeks.</p>
+      <span class="promo-card-cta">See what's on →</span>
+    </a>
+    <a class="promo-card" href="https://go.theartyst.co.uk/ai-consultancy" target="_blank" id="promo-2">
+      <p class="promo-card-label">Work with us</p>
+      <p class="promo-card-title">No-code AI development</p>
+      <p class="promo-card-desc">This entire venue — menu, QR engine, job system, enrolment — was built without writing code. We can do the same for you.</p>
+      <span class="promo-card-cta">Find out more →</span>
+    </a>
+    <a class="promo-card" href="https://go.theartyst.co.uk/partners" target="_blank" id="promo-3">
+      <p class="promo-card-label">Partnerships</p>
+      <p class="promo-card-title">Let's build something together</p>
+      <p class="promo-card-desc">Cultural institutions, local businesses, and independent creatives — we're open to collaboration.</p>
+      <span class="promo-card-cta">Get in touch →</span>
+    </a>
+    <a class="promo-card" href="https://go.theartyst.co.uk/merch" target="_blank" id="promo-4">
+      <p class="promo-card-label">Take a piece home</p>
+      <p class="promo-card-title">Artyst &amp; Invysible College merch</p>
+      <p class="promo-card-desc">Printed and made to order. Ask at the bar or browse online.</p>
+      <span class="promo-card-cta">Shop merch →</span>
+    </a>
+    <div class="promo-dots" id="promo-dots"></div>
   </div>
 
   <script>
+    // ── Constants ──────────────────────────────────────────
     const TABS = [
       { label: 'Café',    slugs: ['espresso','tea','filter','cold'] },
       { label: 'Food',    slugs: ['sandwiches','lunch','cakes'] },
       { label: 'Bar',     slugs: ['draught','wine','lowno'] },
       { label: 'Spirits', slugs: ['gin','vodka','rum','whisky','brandy','liqueurs','mixers'] },
     ];
-
     const CAT_NOTES = {
-      espresso:  'Add any syrup +50p',
-      gin:       'Single 25ml / Double 50ml',
-      vodka:     'Single 25ml / Double 50ml',
-      rum:       'Single 25ml / Double 50ml',
-      whisky:    'Single 25ml / Double 50ml',
-      brandy:    'Single 25ml / Double 50ml',
-      liqueurs:  'Single 25ml / Double 50ml',
-      draught:   'Pint / Half',
-      wine:      'Small / Med / Large / Bottle',
+      espresso:'Add any syrup +50p', gin:'Single 25ml / Double 50ml',
+      vodka:'Single 25ml / Double 50ml', rum:'Single 25ml / Double 50ml',
+      whisky:'Single 25ml / Double 50ml', brandy:'Single 25ml / Double 50ml',
+      liqueurs:'Single 25ml / Double 50ml', draught:'Pint / Half',
+      wine:'Small / Med / Large / Bottle',
     };
+    const SLOTS = {
+      brunch:  { label:'Brunch',  hours:'8am–12pm',  start:8,  end:12 },
+      lunch:   { label:'Lunch',   hours:'12–2pm',    start:12, end:14 },
+      tea:     { label:'Tea',     hours:'2–5pm',     start:14, end:17 },
+      evening: { label:'Evening', hours:'5pm–close', start:17, end:24 },
+    };
+    const PROMO_COUNT = 5;
 
+    // ── State ─────────────────────────────────────────────
     let allCategories = [];
     let activeTab = 0;
+    let currentSlot = 'evening';
+    let showAll = false;
+    let manualSlot = false;
+    let promoIndex = 0;
 
-    // ── Theme ──
+    // ── Theme ─────────────────────────────────────────────
     function toggleTheme() {
       const html = document.documentElement;
       const isDark = html.getAttribute('data-theme') === 'dark';
       const next = isDark ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      document.getElementById('theme-color-meta').setAttribute('content', isDark ? '#faf8f4' : '#0e0e0e');
+      document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
       document.getElementById('theme-toggle').textContent = isDark ? '☽' : '☀';
       localStorage.setItem('artyst-menu-theme', next);
     }
-
-    (function() {
+    (function(){
       const saved = localStorage.getItem('artyst-menu-theme');
       if (saved === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.getElementById('theme-color-meta').setAttribute('content', '#0e0e0e');
+        document.documentElement.setAttribute('data-theme','dark');
+        document.getElementById('theme-color-meta').content = '#0e0e0e';
         document.getElementById('theme-toggle').textContent = '☀';
       }
     })();
 
-    // ── Drawer ──
+    // ── Time slot ─────────────────────────────────────────
+    function detectSlot() {
+      const h = new Date().getHours();
+      if (h >= 8  && h < 12) return 'brunch';
+      if (h >= 12 && h < 14) return 'lunch';
+      if (h >= 14 && h < 17) return 'tea';
+      return 'evening';
+    }
+
+    function setSlot(slot, manual) {
+      currentSlot = slot;
+      manualSlot = !!manual;
+      showAll = false;
+      closeSlotPicker();
+      updateSlotUI();
+      renderBody();
+    }
+
+    function setAutoSlot() {
+      manualSlot = false;
+      currentSlot = detectSlot();
+      closeSlotPicker();
+      updateSlotUI();
+      renderBody();
+    }
+
+    function updateSlotUI() {
+      const info = SLOTS[currentSlot];
+      // Header button
+      const btn = document.getElementById('slot-btn');
+      btn.classList.add('slot-active');
+      document.getElementById('slot-label').textContent = info.label;
+
+      // Slot bar
+      const bar = document.getElementById('slot-bar-text');
+      bar.textContent = `${info.label} · ${info.hours}${manualSlot ? ' (manual)' : ''}`;
+      const showAllBtn = document.getElementById('show-all-btn');
+      showAllBtn.textContent = showAll ? 'Hide unavailable' : 'Show all items';
+
+      // Picker highlight
+      document.querySelectorAll('.slot-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.slot === currentSlot);
+      });
+    }
+
+    function toggleShowAll() {
+      showAll = !showAll;
+      updateSlotUI();
+      renderBody();
+    }
+
+    function toggleSlotPicker() {
+      document.getElementById('slot-picker').classList.toggle('open');
+    }
+    function closeSlotPicker() {
+      document.getElementById('slot-picker').classList.remove('open');
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#slot-btn') && !e.target.closest('#slot-picker')) {
+        closeSlotPicker();
+      }
+    });
+
+    // ── Drawer ────────────────────────────────────────────
     function toggleDrawer() {
       const open = document.getElementById('drawer').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('open', open);
       document.getElementById('burger').classList.toggle('open', open);
     }
-
     function closeDrawer() {
       document.getElementById('drawer').classList.remove('open');
       document.getElementById('overlay').classList.remove('open');
       document.getElementById('burger').classList.remove('open');
     }
 
-    // ── Item expand ──
+    // ── Item expand ───────────────────────────────────────
     function toggleItem(el) { el.classList.toggle('open'); }
 
-    // ── Tabs ──
+    // ── Tabs ──────────────────────────────────────────────
     function renderTabs() {
       document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
         `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
       ).join('');
     }
 
-    // ── Body ──
+    // ── Body ──────────────────────────────────────────────
     function renderBody() {
       const body = document.getElementById('body');
       const slugs = TABS[activeTab].slugs;
       const cats = allCategories.filter(c => slugs.includes(c.slug));
-
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
-      body.innerHTML = cats.map(cat => `
-        <div class="cat-block">
+      body.innerHTML = cats.map(cat => {
+        const visibleItems = cat.items.filter(item => {
+          const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
+          return inSlot || showAll;
+        });
+        if (!visibleItems.length) return '';
+
+        return `<div class="cat-block">
           <p class="cat-label">${cat.name}</p>
           ${CAT_NOTES[cat.slug] ? `<p class="cat-note">${CAT_NOTES[cat.slug]}</p>` : ''}
           ${cat.items.map(item => {
+            const inSlot = !item.time_slots || item.time_slots.includes(currentSlot);
+            if (!inSlot && !showAll) return '';
+
             const hasDetails = item.details && item.details.trim();
             const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
-            return `
-              <div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}"
-                   ${hasDetails ? 'onclick="toggleItem(this)"' : ''}>
-                <div class="item-main">
-                  <div class="item-left">
-                    <div class="item-name-row">
-                      <span class="item-name">${item.name}</span>
-                      ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                      ${!item.available ? '<span class="tag">unavailable</span>' : ''}
-                    </div>
-                    ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+            const slotClass = !inSlot ? ' slot-greyed' : '';
+
+            return `<div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}${slotClass}"
+                        ${hasDetails ? 'onclick="toggleItem(this)"' : ''}>
+              <div class="item-main">
+                <div class="item-left">
+                  <div class="item-name-row">
+                    <span class="item-name">${item.name}</span>
+                    ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                    ${!item.available ? '<span class="tag">unavailable</span>' : ''}
+                    ${!inSlot ? `<span class="tag">not available ${SLOTS[currentSlot].hours}</span>` : ''}
                   </div>
-                  <div class="item-right">
-                    ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-                    ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
-                  </div>
+                  ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
                 </div>
-                ${hasDetails ? `
-                  <div class="item-detail">
-                    <div class="detail-lines">
-                      ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
-                    </div>
-                  </div>` : ''}
-              </div>`;
+                <div class="item-right">
+                  ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
+                  ${hasDetails ? '<span class="expand-icon">▼</span>' : ''}
+                </div>
+              </div>
+              ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
+                ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
+              </div></div>` : ''}
+            </div>`;
           }).join('')}
-        </div>`).join('');
+        </div>`;
+      }).join('');
+
+      // Show promo footer once content is loaded
+      document.getElementById('promo-footer').style.display = 'block';
     }
 
     function switchTab(i) {
@@ -500,7 +752,34 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ── Promo footer carousel ─────────────────────────────
+    function renderPromoDots() {
+      const dots = document.getElementById('promo-dots');
+      dots.innerHTML = Array.from({length: PROMO_COUNT}, (_, i) =>
+        `<button class="promo-dot${i === promoIndex ? ' active' : ''}" onclick="goPromo(${i})"></button>`
+      ).join('');
+    }
+
+    function goPromo(i) {
+      document.getElementById(`promo-${promoIndex}`).classList.remove('active');
+      promoIndex = i;
+      document.getElementById(`promo-${promoIndex}`).classList.add('active');
+      renderPromoDots();
+    }
+
+    function startPromoCarousel() {
+      document.getElementById('promo-0').classList.add('active');
+      renderPromoDots();
+      setInterval(() => {
+        goPromo((promoIndex + 1) % PROMO_COUNT);
+      }, 5000);
+    }
+
+    // ── Init ──────────────────────────────────────────────
     async function init() {
+      currentSlot = detectSlot();
+      updateSlotUI();
+
       try {
         const res = await fetch('/api/menu');
         if (!res.ok) throw new Error();
@@ -509,6 +788,7 @@
         document.getElementById('state').remove();
         renderTabs();
         renderBody();
+        startPromoCarousel();
       } catch {
         document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
       }
