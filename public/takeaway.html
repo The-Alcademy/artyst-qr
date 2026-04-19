@@ -125,6 +125,17 @@
     }
     .add-btn:hover { border-color: var(--gold); color: var(--gold); }
     .add-btn.added { border-color: var(--green); color: var(--green); }
+    .add-btn { position: relative; }
+    .add-btn .add-count {
+      position: absolute; top: -6px; right: -6px;
+      background: var(--gold); color: #fff;
+      font-size: 11px; font-weight: 600;
+      min-width: 18px; height: 18px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px; line-height: 1;
+    }
+    .item-row.in-order { background: var(--gold-bg); }
+    .item-row.in-order .item-main { padding-left: 10px; padding-right: 10px; margin: 0 -10px; }
     .tag { display: inline-block; font-size: 11px; background: var(--tag-bg); color: var(--tag-text); border-radius: 3px; padding: 2px 6px; letter-spacing: 0.04em; vertical-align: middle; }
     .size-picker { display: none; padding: 10px 0 14px; }
     .item-row.picking .size-picker { display: block; }
