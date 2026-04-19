@@ -54,7 +54,6 @@
       transition: background 0.2s, color 0.2s;
     }
 
-    /* ── Header ── */
     .header {
       background: var(--bg); padding: 20px 20px 0;
       border-bottom: 0.5px solid var(--border);
@@ -66,7 +65,6 @@
     .page-title { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 2px; }
     .page-sub { font-size: 13px; color: var(--text-3); margin-bottom: 12px; }
     .header-controls { display: flex; align-items: center; gap: 6px; }
-
     .icon-btn {
       background: none; border: 0.5px solid var(--border); border-radius: 4px;
       cursor: pointer; padding: 7px 9px; font-size: 15px; line-height: 1;
@@ -80,7 +78,6 @@
       display: flex; align-items: center; justify-content: center;
     }
 
-    /* ── Tabs ── */
     .tab-row {
       display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
       scrollbar-width: none; margin: 0 -20px; padding: 0 20px;
@@ -94,7 +91,6 @@
     }
     .tab.active { color: var(--text-1); border-bottom-color: var(--gold); }
 
-    /* ── Body ── */
     .body { padding: 0 20px 24px; }
     .cat-block { padding-top: 22px; }
     .cat-label { font-size: 11px; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
@@ -207,7 +203,6 @@
     .staff-exit-btn { display: none; width: 100%; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent; }
     .order-overlay.staff-mode .staff-exit-btn { display: block; }
 
-    /* ── Promo footer ── */
     .promo-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; background: var(--footer-bg); border-top: 0.5px solid var(--border); z-index: 10; display: flex; align-items: center; overflow: hidden; }
     .promo-inner { position: relative; width: 100%; height: 100%; }
     .promo-item { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 16px; text-decoration: none; color: var(--text-1); opacity: 0; transition: opacity 0.6s ease; gap: 10px; pointer-events: none; }
@@ -306,15 +301,15 @@
   </div>
 
   <script>
+    // Tabs — bottleOnly:true means only the last (bottle) price is used when adding to order
     const TABS = [
-      { label:'Hot drinks', slugs:['espresso','filter','tea'] },
-      { label:'Cold drinks', slugs:['cold','lowno'] },
-      { label:'Food',        slugs:['sandwiches','lunch','cakes'] },
-      { label:'Wine',        slugs:['wine'], bottleOnly:true },
+      { label:'Hot drinks', slugs:['espresso','filter','tea'],   bottleOnly:false },
+      { label:'Cold drinks', slugs:['cold','lowno'],             bottleOnly:false },
+      { label:'Food',        slugs:['sandwiches','lunch','cakes'], bottleOnly:false },
+      { label:'Wine',        slugs:['wine'],                     bottleOnly:true  },
     ];
     const CAT_NOTES = {
-      espresso:'Add any syrup +0.50',
-      wine:'Small / Med / Large / Bottle',
+      espresso: 'Add any syrup +0.50',
     };
 
     let allCategories = [];
@@ -326,6 +321,27 @@
     let promoIndex = 0;
     const itemDataMap = new Map();
 
+    // ── Helpers ───────────────────────────────────────
+    function parsePriceOptions(priceDisplay, catNote) {
+      if (!priceDisplay || priceDisplay === 'ask staff') return [];
+      const rawParts = priceDisplay.split('/').map(p => p.trim());
+      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
+      const options = [];
+      rawParts.forEach((raw, i) => {
+        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+        if (isNaN(num) || num <= 0) return;
+        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
+      });
+      return options;
+    }
+
+    // Extract bottle price — the last price in a multi-price string
+    function bottlePrice(priceDisplay) {
+      const opts = parsePriceOptions(priceDisplay, '');
+      if (!opts.length) return 0;
+      return opts[opts.length - 1].price;
+    }
+
     // ── Order ─────────────────────────────────────────
     function saveOrder() { localStorage.setItem('artyst-takeaway-order', JSON.stringify(orderItems)); }
     function loadOrder() {
@@ -335,14 +351,14 @@
     }
 
     function addToOrder(itemId, name, sizeLabel, mods, price) {
-      const modStr = mods.map(m => m.choice).filter(Boolean).join(' · ');
-      const key = `${itemId}__${sizeLabel}__${modStr}`;
+      const modStr = mods.map(m => m.choice).filter(Boolean).join(' \u00b7 ');
+      const key = itemId + '__' + sizeLabel + '__' + modStr;
       const existing = orderItems.find(o => o.key === key);
       if (existing) { existing.qty++; } else {
         orderItems.push({key, id:itemId, name, sizeLabel, mods, modStr, price, qty:1});
       }
       saveOrder(); updateOrderBadge();
-      const btn = document.querySelector(`[data-add-id="${itemId}"]`);
+      const btn = document.querySelector('[data-add-id="' + itemId + '"]');
       if (btn) { btn.classList.add('added'); setTimeout(() => btn.classList.remove('added'), 800); }
     }
 
@@ -374,36 +390,32 @@
       const noteEl = document.getElementById('order-total-note');
       const staffVal = document.getElementById('staff-name-value');
       const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
-      countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
-      if (staffVal) staffVal.textContent = customerName || '—';
+      countEl.textContent = totalQty ? (totalQty + ' item' + (totalQty !== 1 ? 's' : '')) : '';
+      if (staffVal) staffVal.textContent = customerName || '\u2014';
 
-      const nameHtml = `
-        <div class="name-section">
-          <p class="name-label">Your name</p>
-          <input class="name-input" id="name-input" type="text"
-            placeholder="So we can call you when it's ready"
-            value="${customerName.replace(/"/g,'&quot;')}"
-            oninput="updateName(this.value)"
-            autocomplete="given-name" />
-          <p class="name-error" id="name-error">Please enter your name before showing to staff.</p>
-        </div>`;
+      const escapedName = customerName.replace(/"/g, '&quot;');
+      const nameHtml = '<div class="name-section">'
+        + '<p class="name-label">Your name</p>'
+        + '<input class="name-input" id="name-input" type="text" placeholder="So we can call you when it\'s ready" value="' + escapedName + '" oninput="updateName(this.value)" autocomplete="given-name" />'
+        + '<p class="name-error" id="name-error">Please enter your name before showing to staff.</p>'
+        + '</div>';
 
       const itemsHtml = orderItems.length === 0
-        ? '<div class="order-empty">No items yet &#x2014; tap + on any item.</div>'
-        : orderItems.map(o => {
-            const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' · ');
-            return `<div class="order-item">
-              <div class="order-item-info">
-                <div class="order-item-name">${o.name}</div>
-                ${modDisplay ? `<div class="order-item-mods">${modDisplay}</div>` : ''}
-              </div>
-              <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
-              <div class="qty-controls">
-                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', -1)">&#x2212;</button>
-                <span class="qty-num">${o.qty}</span>
-                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', 1)">+</button>
-              </div>
-            </div>`;
+        ? '<div class="order-empty">No items yet \u2014 tap + on any item.</div>'
+        : orderItems.map(function(o) {
+            const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' \u00b7 ');
+            const safeKey = o.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return '<div class="order-item">'
+              + '<div class="order-item-info">'
+              + '<div class="order-item-name">' + o.name + '</div>'
+              + (modDisplay ? '<div class="order-item-mods">' + modDisplay + '</div>' : '')
+              + '</div>'
+              + '<div class="order-item-price">' + (o.price > 0 ? o.price.toFixed(2) : 'ask staff') + '</div>'
+              + '<div class="qty-controls">'
+              + '<button class="qty-btn" onclick="changeQty(\'' + safeKey + '\', -1)">\u2212</button>'
+              + '<span class="qty-num">' + o.qty + '</span>'
+              + '<button class="qty-btn" onclick="changeQty(\'' + safeKey + '\', 1)">+</button>'
+              + '</div></div>';
           }).join('');
 
       body.innerHTML = nameHtml + itemsHtml;
@@ -416,11 +428,11 @@
       customerName = val.trim();
       sessionStorage.setItem('artyst-takeaway-name', customerName);
       const staffVal = document.getElementById('staff-name-value');
-      if (staffVal) staffVal.textContent = customerName || '—';
+      if (staffVal) staffVal.textContent = customerName || '\u2014';
     }
 
     function openOrder() { loadOrder(); renderOrderBody(); document.getElementById('order-overlay').classList.add('open'); }
-    function closeOrder() { document.getElementById('order-overlay').classList.remove('open','staff-mode'); }
+    function closeOrder() { document.getElementById('order-overlay').classList.remove('open', 'staff-mode'); }
 
     function showToStaff() {
       if (!customerName) {
@@ -436,30 +448,17 @@
     function exitStaffMode() { document.getElementById('order-overlay').classList.remove('staff-mode'); }
 
     // ── Options modal ─────────────────────────────────
-    let modalItem = null;
-    let modalSizes = [];
-    let modalSizeIdx = 0;
-    let modalSelections = {};
-
-    function parsePriceOptions(priceDisplay, catNote) {
-      if (!priceDisplay || priceDisplay === 'ask staff') return [];
-      const rawParts = priceDisplay.split('/').map(p => p.trim());
-      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
-      const options = [];
-      rawParts.forEach((raw, i) => {
-        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
-        if (isNaN(num) || num <= 0) return;
-        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
-      });
-      return options;
-    }
+    var modalItem = null;
+    var modalSizes = [];
+    var modalSizeIdx = 0;
+    var modalSelections = {};
 
     function calcModalPrice() {
-      let price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
+      var price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
                 : parseFloat((modalItem.price_display || '0').replace(/[^0-9.]/g, '')) || 0;
       if (modalItem.options) {
-        modalItem.options.forEach(g => {
-          const idx = modalSelections[g.name];
+        modalItem.options.forEach(function(g) {
+          var idx = modalSelections[g.name];
           if (idx >= 0) price += g.choices[idx].price_mod;
         });
       }
@@ -467,40 +466,43 @@
     }
 
     function renderOptsBody() {
-      let html = '';
+      var html = '';
       if (modalSizes.length > 1) {
-        html += `<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">
-          ${modalSizes.map((s, i) => `<div class="opt-chip${i === modalSizeIdx ? ' selected' : ''}" onclick="selectModalSize(${i})">${s.label}<span class="opt-chip-mod">&nbsp;${s.display}</span></div>`).join('')}
-        </div></div>`;
+        html += '<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">'
+          + modalSizes.map(function(s, i) {
+              return '<div class="opt-chip' + (i === modalSizeIdx ? ' selected' : '') + '" onclick="selectModalSize(' + i + ')">' + s.label + '<span class="opt-chip-mod">&nbsp;' + s.display + '</span></div>';
+            }).join('')
+          + '</div></div>';
       }
       if (modalItem.options) {
-        modalItem.options.forEach(group => {
-          const idx = modalSelections[group.name];
-          html += `<div class="opt-group">
-            <p class="opt-group-label">${group.name}${!group.required ? '<span class="opt-optional"> &middot; optional</span>' : ''}</p>
-            <div class="opt-chips">
-              ${!group.required ? `<div class="opt-chip${idx === -1 ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', -1)">None</div>` : ''}
-              ${group.choices.map((c, i) => `<div class="opt-chip${idx === i ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', ${i})">${c.label}${c.price_mod > 0 ? `<span class="opt-chip-mod">&nbsp;+${c.price_mod.toFixed(2)}</span>` : ''}</div>`).join('')}
-            </div>
-          </div>`;
+        modalItem.options.forEach(function(group) {
+          var idx = modalSelections[group.name];
+          html += '<div class="opt-group"><p class="opt-group-label">' + group.name
+            + (!group.required ? '<span class="opt-optional"> &middot; optional</span>' : '') + '</p><div class="opt-chips">'
+            + (!group.required ? '<div class="opt-chip' + (idx === -1 ? ' selected' : '') + '" onclick="selectModalOpt(\'' + group.name + '\', -1)">None</div>' : '')
+            + group.choices.map(function(c, i) {
+                return '<div class="opt-chip' + (idx === i ? ' selected' : '') + '" onclick="selectModalOpt(\'' + group.name + '\', ' + i + ')">'
+                  + c.label + (c.price_mod > 0 ? '<span class="opt-chip-mod">&nbsp;+' + c.price_mod.toFixed(2) + '</span>' : '') + '</div>';
+              }).join('')
+            + '</div></div>';
         });
       }
       document.getElementById('opts-body').innerHTML = html;
-      document.getElementById('opts-add-btn').textContent = `Add to order \u2014 ${calcModalPrice().toFixed(2)}`;
+      document.getElementById('opts-add-btn').textContent = 'Add to order \u2014 ' + calcModalPrice().toFixed(2);
     }
 
     function selectModalSize(i) { modalSizeIdx = i; renderOptsBody(); }
     function selectModalOpt(groupName, idx) { modalSelections[groupName] = idx; renderOptsBody(); }
 
     function openOptsModal(itemId) {
-      const item = itemDataMap.get(itemId);
+      var item = itemDataMap.get(itemId);
       if (!item) return;
       modalItem = item;
       modalSizes = parsePriceOptions(item.price_display, item.catNote);
       modalSizeIdx = 0;
       modalSelections = {};
       if (item.options) {
-        item.options.forEach(g => {
+        item.options.forEach(function(g) {
           modalSelections[g.name] = g.default_index !== undefined ? g.default_index : (g.required ? 0 : -1);
         });
       }
@@ -515,19 +517,19 @@
 
     function confirmAddToOrder() {
       if (!modalItem) return;
-      const missing = (modalItem.options || []).filter(g => g.required && modalSelections[g.name] === -1).map(g => g.name);
+      var missing = (modalItem.options || []).filter(function(g) { return g.required && modalSelections[g.name] === -1; }).map(function(g) { return g.name; });
       if (missing.length) {
-        const el = document.getElementById('opts-validation');
-        el.textContent = `Please choose: ${missing.join(', ')}`;
+        var el = document.getElementById('opts-validation');
+        el.textContent = 'Please choose: ' + missing.join(', ');
         el.classList.add('show');
         return;
       }
-      const sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
-      const price = calcModalPrice();
-      const mods = [];
+      var sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
+      var price = calcModalPrice();
+      var mods = [];
       if (modalItem.options) {
-        modalItem.options.forEach(g => {
-          const idx = modalSelections[g.name];
+        modalItem.options.forEach(function(g) {
+          var idx = modalSelections[g.name];
           if (idx >= 0) mods.push({ group: g.name, choice: g.choices[idx].label, priceMod: g.choices[idx].price_mod });
         });
       }
@@ -538,52 +540,61 @@
     // ── Add button ────────────────────────────────────
     function handleAddBtn(itemId, event) {
       event.stopPropagation();
-      const item = itemDataMap.get(itemId);
+      var item = itemDataMap.get(itemId);
       if (!item) return;
-const sizes = parsePriceOptions(item.price_display, item.catNote);
-      const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+
+      // Wine tab — bottle only, add at bottle price directly
       if (item.bottleOnly) {
-        const bottle = sizes.length > 0 ? sizes[sizes.length - 1] : null;
-        addToOrder(item.id, item.name, 'Bottle', [], bottle ? bottle.price : 0);
+        var bp = bottlePrice(item.price_display);
+        addToOrder(item.id, item.name, 'Bottle', [], bp);
         return;
       }
+
+      var sizes = parsePriceOptions(item.price_display, item.catNote);
+      var hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+
       if (hasOpts) { openOptsModal(itemId); return; }
       if (sizes.length === 0) { addToOrder(item.id, item.name, '', [], 0); return; }
       if (sizes.length === 1) { addToOrder(item.id, item.name, '', [], sizes[0].price); return; }
-      const row = document.getElementById(`item-${itemId}`);
+
+      // Multiple sizes, no options — inline size picker
+      var row = document.getElementById('item-' + itemId);
       if (!row) return;
       if (pickingItemId === itemId) { row.classList.remove('picking'); pickingItemId = null; return; }
-      if (pickingItemId) { const prev = document.getElementById(`item-${pickingItemId}`); if (prev) prev.classList.remove('picking'); }
+      if (pickingItemId) { var prev = document.getElementById('item-' + pickingItemId); if (prev) prev.classList.remove('picking'); }
       pickingItemId = itemId;
-      const picker = row.querySelector('.size-picker');
+      var picker = row.querySelector('.size-picker');
       if (picker) {
-        picker.innerHTML = `<p class="size-picker-label">Choose size</p><div class="size-options">
-          ${sizes.map(s => `<div class="size-opt" onclick="selectInlineSize(${itemId}, '${item.name.replace(/'/g,"\\'")}', '${s.label}', ${s.price})">${s.label}<span class="size-price">${s.display}</span></div>`).join('')}
-        </div>`;
+        picker.innerHTML = '<p class="size-picker-label">Choose size</p><div class="size-options">'
+          + sizes.map(function(s) {
+              var safeName = item.name.replace(/'/g, "\\'");
+              return '<div class="size-opt" onclick="selectInlineSize(' + itemId + ', \'' + safeName + '\', \'' + s.label + '\', ' + s.price + ')">' + s.label + '<span class="size-price">' + s.display + '</span></div>';
+            }).join('')
+          + '</div>';
       }
       row.classList.add('picking');
     }
 
     function selectInlineSize(itemId, name, sizeLabel, price) {
       addToOrder(itemId, name, sizeLabel, [], price);
-      const row = document.getElementById(`item-${itemId}`);
+      var row = document.getElementById('item-' + itemId);
       if (row) row.classList.remove('picking');
       pickingItemId = null;
     }
 
-    function toggleItem(itemId) { const row = document.getElementById(`item-${itemId}`); if (row) row.classList.toggle('open'); }
+    function toggleItem(itemId) { var row = document.getElementById('item-' + itemId); if (row) row.classList.toggle('open'); }
 
     // ── Theme ─────────────────────────────────────────
     function toggleTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const next = isDark ? 'light' : 'dark';
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
       document.getElementById('theme-toggle').textContent = isDark ? '\u263D' : '\u2600';
       localStorage.setItem('artyst-menu-theme', next);
     }
     (function(){
-      const saved = localStorage.getItem('artyst-menu-theme');
+      var saved = localStorage.getItem('artyst-menu-theme');
       if (saved === 'dark') {
         document.documentElement.setAttribute('data-theme','dark');
         document.getElementById('theme-color-meta').content = '#0e0e0e';
@@ -593,9 +604,9 @@ const sizes = parsePriceOptions(item.price_display, item.catNote);
 
     // ── Tabs ──────────────────────────────────────────
     function renderTabs() {
-      document.getElementById('tab-row').innerHTML = TABS.map((t, i) =>
-        `<button class="tab${i === activeTab ? ' active' : ''}" onclick="switchTab(${i})">${t.label}</button>`
-      ).join('');
+      document.getElementById('tab-row').innerHTML = TABS.map(function(t, i) {
+        return '<button class="tab' + (i === activeTab ? ' active' : '') + '" onclick="switchTab(' + i + ')">' + t.label + '</button>';
+      }).join('');
     }
 
     function switchTab(i) {
@@ -603,69 +614,79 @@ const sizes = parsePriceOptions(item.price_display, item.catNote);
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // ── Render ────────────────────────────────────────
+    // ── Render body ───────────────────────────────────
     function renderBody() {
-      const body = document.getElementById('body');
-      const slugs = TABS[activeTab].slugs;
-      const cats = allCategories.filter(c => slugs.includes(c.slug));
+      var body = document.getElementById('body');
+      var tab = TABS[activeTab];
+      var cats = allCategories.filter(function(c) { return tab.slugs.indexOf(c.slug) !== -1; });
+
       if (!cats.length) {
         body.innerHTML = '<p class="state">Nothing available in this category.</p>';
         return;
       }
 
-      body.innerHTML = cats.map(cat => {
-        const note = CAT_NOTES[cat.slug] || '';
-        const itemsHtml = cat.items.map(item => {
-          const bottleOnly = !!(TABS[activeTab].bottleOnly);
-          itemDataMap.set(item.id, {...item, catNote: note, bottleOnly});
-          const hasDetails = item.details && item.details.trim();
-          const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
-          const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
-          return `<div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}" id="item-${item.id}">
-            <div class="item-main">
-              <div class="item-left"${hasDetails ? ` onclick="toggleItem(${item.id})"` : ''}>
-                <div class="item-name-row">
-                  <span class="item-name">${item.name}</span>
-                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
-                  ${hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">customisable</span>' : ''}
-                </div>
-                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
-              </div>
-              <div class="item-right">
-                ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
-                ${hasDetails ? `<span class="expand-icon" onclick="toggleItem(${item.id})">&#x25BE;</span>` : ''}
-                ${item.available ? `<button class="add-btn" data-add-id="${item.id}" onclick="handleAddBtn(${item.id}, event)">+</button>` : ''}
-              </div>
-            </div>
-            <div class="size-picker"></div>
-            ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
-              ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
-            </div></div>` : ''}
-          </div>`;
+      body.innerHTML = cats.map(function(cat) {
+        var note = CAT_NOTES[cat.slug] || '';
+        var noteHtml = tab.bottleOnly
+          ? '<p class="cat-note">Bottles only &mdash; glass prices available at the counter.</p>'
+          : (note ? '<p class="cat-note">' + note + '</p>' : '');
+
+        var itemsHtml = cat.items.map(function(item) {
+          itemDataMap.set(item.id, Object.assign({}, item, { catNote: note, bottleOnly: tab.bottleOnly }));
+
+          // For bottle-only tab, extract just the bottle price for display
+          var displayPrice = item.price_display;
+          if (tab.bottleOnly) {
+            var sizes = parsePriceOptions(item.price_display, '');
+            if (sizes.length > 0) {
+              displayPrice = '\u00a3' + sizes[sizes.length - 1].price.toFixed(2);
+            }
+          }
+
+          var hasDetails = item.details && item.details.trim();
+          var lines = hasDetails ? item.details.trim().split('\n').filter(function(l) { return l.trim(); }) : [];
+          var hasOpts = !tab.bottleOnly && item.options && Array.isArray(item.options) && item.options.length > 0;
+
+          return '<div class="item-row' + (item.available ? '' : ' unavailable') + (hasDetails ? ' expandable' : '') + '" id="item-' + item.id + '">'
+            + '<div class="item-main">'
+            + '<div class="item-left"' + (hasDetails ? ' onclick="toggleItem(' + item.id + ')"' : '') + '>'
+            + '<div class="item-name-row">'
+            + '<span class="item-name">' + item.name + '</span>'
+            + item.dietary_tags.map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('')
+            + (!item.available ? '<span class="tag">unavailable</span>' : '')
+            + (hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">customisable</span>' : '')
+            + '</div>'
+            + (item.description ? '<p class="item-desc">' + item.description + '</p>' : '')
+            + '</div>'
+            + '<div class="item-right">'
+            + (displayPrice ? '<p class="item-price">' + displayPrice + '</p>' : '')
+            + (hasDetails ? '<span class="expand-icon" onclick="toggleItem(' + item.id + ')">&#x25BE;</span>' : '')
+            + (item.available ? '<button class="add-btn" data-add-id="' + item.id + '" onclick="handleAddBtn(' + item.id + ', event)">+</button>' : '')
+            + '</div></div>'
+            + '<div class="size-picker"></div>'
+            + (hasDetails ? '<div class="item-detail"><div class="detail-lines">' + lines.map(function(l) { return '<p class="detail-line">' + l + '</p>'; }).join('') + '</div></div>' : '')
+            + '</div>';
         }).join('');
+
         if (!itemsHtml.trim()) return '';
-const bottleOnly = !!(TABS[activeTab].bottleOnly);
-        return `<div class="cat-block">
-          <p class="cat-label">${cat.name}</p>
-          ${bottleOnly ? `<p class="cat-note">Bottles only &mdash; glass prices available at the counter.</p>` : note ? `<p class="cat-note">${note}</p>` : ''}
-          ${itemsHtml}
-        </div>`;
+        return '<div class="cat-block"><p class="cat-label">' + cat.name + '</p>' + noteHtml + itemsHtml + '</div>';
+      }).join('');
+    }
 
     // ── Promos ────────────────────────────────────────
     function buildPromos(data) {
-      const inner = document.getElementById('promo-inner');
+      var inner = document.getElementById('promo-inner');
       if (!data.length) { inner.innerHTML = ''; return; }
-      inner.innerHTML = data.map((p, i) =>
-        `<a class="promo-item${i === 0 ? ' visible' : ''}" href="${p.href}" target="_blank">
-          <span class="promo-label">${p.label}</span><span class="promo-sep"></span>
-          <span class="promo-text">${p.text}</span><span class="promo-arrow">&#x2192;</span>
-        </a>`).join('');
+      inner.innerHTML = data.map(function(p, i) {
+        return '<a class="promo-item' + (i === 0 ? ' visible' : '') + '" href="' + p.href + '" target="_blank">'
+          + '<span class="promo-label">' + p.label + '</span><span class="promo-sep"></span>'
+          + '<span class="promo-text">' + p.text + '</span><span class="promo-arrow">&#x2192;</span></a>';
+      }).join('');
       promos = data; promoIndex = 0;
     }
     function rotatePromo() {
       if (!promos.length) return;
-      const items = document.querySelectorAll('.promo-item');
+      var items = document.querySelectorAll('.promo-item');
       if (!items.length) return;
       items[promoIndex].classList.remove('visible');
       promoIndex = (promoIndex + 1) % promos.length;
@@ -677,15 +698,14 @@ const bottleOnly = !!(TABS[activeTab].bottleOnly);
       loadOrder(); updateOrderBadge();
       renderTabs();
 
-      const [menuRes, promosRes] = await Promise.allSettled([
-        fetch('/api/takeaway'),
-        fetch('/api/promos'),
-      ]);
+      var results = await Promise.allSettled([fetch('/api/takeaway'), fetch('/api/promos')]);
+      var menuRes = results[0];
+      var promosRes = results[1];
 
       if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
-        const data = await menuRes.value.json();
+        var data = await menuRes.value.json();
         allCategories = data.categories || [];
-        const stateEl = document.getElementById('state');
+        var stateEl = document.getElementById('state');
         if (stateEl) stateEl.remove();
         renderBody();
       } else {
@@ -693,8 +713,8 @@ const bottleOnly = !!(TABS[activeTab].bottleOnly);
       }
 
       if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
-        const data = await promosRes.value.json();
-        buildPromos(data.promos || []);
+        var pdata = await promosRes.value.json();
+        buildPromos(pdata.promos || []);
       }
 
       setInterval(rotatePromo, 4000);
