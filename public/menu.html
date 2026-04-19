@@ -606,7 +606,8 @@
       if (existing) { existing.qty++; } else {
         orderItems.push({key:key, id:itemId, name:name, sizeLabel:sizeLabel, mods:mods, modStr:modStr, price:price, qty:1});
       }
-      saveOrder(); updateOrderBadge();
+saveOrder(); updateOrderBadge();
+      renderBody();
       var btn = document.querySelector('[data-add-id="' + itemId + '"]');
       if (btn) { btn.classList.add('added'); setTimeout(function() { btn.classList.remove('added'); }, 800); }
     }
