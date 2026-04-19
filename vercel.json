@@ -5,6 +5,7 @@
     { "source": "/opportunity/:slug", "destination": "/api/opportunity?slug=:slug" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/join", "destination": "/api/join" },
+    { "source": "/about", "destination": "/about.html" },
     { "source": "/menu", "destination": "/menu.html" }
   ]
 }
