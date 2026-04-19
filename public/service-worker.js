@@ -1,4 +1,4 @@
-const CACHE_NAME = 'artyst-v3';
+const CACHE_NAME = 'artyst-v5';
 
 // Pages to pre-cache on install
 const PRECACHE = ['/menu', '/takeaway'];
