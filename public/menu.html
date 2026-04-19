@@ -924,7 +924,7 @@ const TABLE_GROUPS = [
                   ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
                   ${!item.available ? '<span class="tag">unavailable</span>' : ''}
                   ${!inSlot ? `<span class="tag">not available ${SLOTS[currentSlot].hours}</span>` : ''}
-                  ${hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">customisable</span>' : ''}
+                  ${hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">Make it so..</span>' : ''}
                 </div>
                 ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
               </div>
