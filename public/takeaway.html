@@ -1,0 +1,675 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#faf8f4" id="theme-color-meta" />
+  <title>Takeaway — The Artyst</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #faf8f4;
+      --bg-raised:   #f2efe9;
+      --bg-detail:   #ede9e2;
+      --border:      #ddd9d0;
+      --border-soft: #e8e4dc;
+      --text-1:      #1a1a18;
+      --text-2:      #555550;
+      --text-3:      #999990;
+      --gold:        #8a6a2e;
+      --gold-bg:     #f5eedf;
+      --gold-border: #e8d5a8;
+      --tag-bg:      #e8e4dc;
+      --tag-text:    #666660;
+      --overlay:     rgba(0,0,0,0.35);
+      --footer-bg:   #f2efe9;
+      --green:       #2a6a2a;
+    }
+    [data-theme="dark"] {
+      --bg:          #0e0e0e;
+      --bg-raised:   #141414;
+      --bg-detail:   #141414;
+      --border:      #252525;
+      --border-soft: #1a1a1a;
+      --text-1:      #e8e4dc;
+      --text-2:      #777770;
+      --text-3:      #444;
+      --gold:        #c8a96e;
+      --gold-bg:     #1a1508;
+      --gold-border: #3a2a08;
+      --tag-bg:      #1c1c1c;
+      --tag-text:    #666;
+      --overlay:     rgba(0,0,0,0.6);
+      --footer-bg:   #111;
+      --green:       #5aff7a;
+    }
+
+    body {
+      background: var(--bg); color: var(--text-1);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh; padding-bottom: 52px;
+      -webkit-font-smoothing: antialiased; font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--bg); padding: 20px 20px 16px;
+      border-bottom: 0.5px solid var(--border);
+      position: sticky; top: 0; z-index: 10; transition: background 0.2s;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .venue-link { font-size: 12px; letter-spacing: 0.14em; color: var(--text-2); text-transform: uppercase; text-decoration: none; }
+    .venue-link:hover { color: var(--gold); }
+    .page-title { font-size: 26px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 2px; }
+    .page-sub { font-size: 13px; color: var(--text-3); }
+    .header-controls { display: flex; align-items: center; gap: 6px; }
+
+    .icon-btn {
+      background: none; border: 0.5px solid var(--border); border-radius: 4px;
+      cursor: pointer; padding: 7px 9px; font-size: 15px; line-height: 1;
+      color: var(--text-2); -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 5px; position: relative;
+    }
+    .order-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: var(--gold); color: #fff; font-size: 10px; font-weight: 600;
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Body ── */
+    .body { padding: 0 20px 24px; }
+    .cat-block { padding-top: 22px; }
+    .cat-label { font-size: 11px; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+    .item-row { border-bottom: 0.5px solid var(--border-soft); }
+    .item-row.unavailable { opacity: 0.4; }
+    .item-main { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+    .item-left { flex: 1; padding-right: 10px; }
+    .item-row.expandable .item-left { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .item-name { font-size: 17px; color: var(--text-1); line-height: 1.35; }
+    .item-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .item-desc { font-size: 13px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+    .item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; }
+    .expand-icon { font-size: 11px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
+    .item-row.open .expand-icon { transform: rotate(180deg); }
+    .add-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: none; border: 1.5px solid var(--border);
+      color: var(--text-2); font-size: 20px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: all 0.15s;
+    }
+    .add-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .add-btn.added { border-color: var(--green); color: var(--green); }
+    .tag { display: inline-block; font-size: 11px; background: var(--tag-bg); color: var(--tag-text); border-radius: 3px; padding: 2px 6px; letter-spacing: 0.04em; vertical-align: middle; }
+    .size-picker { display: none; padding: 10px 0 14px; }
+    .item-row.picking .size-picker { display: block; }
+    .size-picker-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+    .size-options { display: flex; flex-wrap: wrap; gap: 6px; }
+    .size-opt { padding: 7px 14px; border: 0.5px solid var(--border); border-radius: 20px; font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+    .size-opt:hover { border-color: var(--gold); color: var(--gold); }
+    .size-price { font-size: 12px; color: var(--text-3); margin-left: 4px; }
+    .item-detail { display: none; padding: 0 0 14px; }
+    .item-row.open .item-detail { display: block; }
+    .detail-lines { background: var(--bg-detail); border-radius: 4px; padding: 12px 14px; }
+    .detail-line { font-size: 14px; color: var(--text-2); line-height: 1.8; }
+    .detail-line:first-child { color: var(--text-1); font-weight: 500; }
+    .state { padding: 48px 0; color: var(--text-2); font-size: 15px; text-align: center; }
+
+    /* ── Options bottom sheet ── */
+    .opts-overlay { position: fixed; inset: 0; background: var(--overlay); z-index: 250; display: none; align-items: flex-end; }
+    .opts-overlay.open { display: flex; }
+    .opts-sheet { background: var(--bg); border-radius: 16px 16px 0 0; width: 100%; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+    .opts-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; flex-shrink: 0; }
+    .opts-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .opts-item-name { font-size: 19px; font-weight: 500; color: var(--text-1); }
+    .opts-close { background: none; border: 0.5px solid var(--border); border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: var(--text-2); display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+    .opts-body { flex: 1; overflow-y: auto; padding: 4px 20px 16px; }
+    .opt-group { padding: 16px 0 4px; border-bottom: 0.5px solid var(--border-soft); }
+    .opt-group:last-child { border-bottom: none; }
+    .opt-group-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+    .opt-optional { color: var(--gold); font-size: 10px; }
+    .opt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opt-chip { display: inline-flex; align-items: center; gap: 5px; padding: 9px 16px; border: 1.5px solid var(--border); border-radius: 24px; font-size: 14px; color: var(--text-1); cursor: pointer; background: var(--bg-raised); -webkit-tap-highlight-color: transparent; transition: all 0.15s; user-select: none; }
+    .opt-chip:hover { border-color: var(--gold); }
+    .opt-chip.selected { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); }
+    .opt-chip-mod { font-size: 12px; color: var(--text-3); }
+    .opt-chip.selected .opt-chip-mod { color: var(--gold); opacity: 0.8; }
+    .opts-footer { padding: 14px 20px 28px; border-top: 0.5px solid var(--border); flex-shrink: 0; background: var(--bg); }
+    .opts-add-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; background: var(--text-1); color: var(--bg); font-size: 16px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .opts-validation { font-size: 12px; color: #c0392b; margin-bottom: 10px; display: none; }
+    .opts-validation.show { display: block; }
+
+    /* ── Order overlay ── */
+    .order-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; }
+    .order-overlay.open { display: flex; }
+    .order-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+    .order-header-left { display: flex; align-items: baseline; gap: 10px; }
+    .order-title { font-size: 22px; font-weight: 500; color: var(--text-1); }
+    .order-item-count { font-size: 13px; color: var(--text-3); }
+    .close-btn { background: none; border: 0.5px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .order-body { flex: 1; overflow-y: auto; padding: 0 20px; }
+    .order-empty { padding: 40px 0 20px; text-align: center; color: var(--text-3); font-size: 15px; }
+
+    /* ── Name field ── */
+    .name-section { padding: 16px 0; border-bottom: 0.5px solid var(--border); margin-bottom: 4px; }
+    .name-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+    .name-input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--bg-raised); color: var(--text-1);
+      font-size: 16px; font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    .name-input:focus { border-color: var(--gold); }
+    .name-input::placeholder { color: var(--text-3); }
+    .name-error { font-size: 12px; color: #c0392b; margin-top: 6px; display: none; }
+    .name-error.show { display: block; }
+
+    /* ── Staff name banner ── */
+    .staff-name-banner { display: none; margin: 20px 20px 0; background: var(--text-1); color: var(--bg); border-radius: 10px; padding: 18px 20px; text-align: center; }
+    .staff-name-banner-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
+    .staff-name-banner-value { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+    .order-overlay.staff-mode .staff-name-banner { display: block; }
+    .order-overlay.staff-mode .name-section { display: none; }
+
+    .order-item { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 0.5px solid var(--border-soft); }
+    .order-item-info { flex: 1; min-width: 0; }
+    .order-item-name { font-size: 16px; color: var(--text-1); }
+    .order-item-mods { font-size: 12px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
+    .order-item-price { font-size: 15px; color: var(--text-2); white-space: nowrap; margin: 0 6px; }
+    .qty-controls { display: flex; align-items: center; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-raised); border: 0.5px solid var(--border); color: var(--text-1); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+    .qty-num { font-size: 15px; color: var(--text-1); min-width: 28px; text-align: center; }
+    .order-footer { padding: 16px 20px 32px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
+    .order-total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .order-total-label { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+    .order-total-value { font-size: 28px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; }
+    .order-total-note { font-size: 11px; color: var(--text-3); margin-bottom: 16px; min-height: 16px; }
+    .order-actions { display: flex; gap: 10px; }
+    .order-clear-btn { flex: 1; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .order-show-btn { flex: 2; padding: 14px; border: none; border-radius: 8px; background: var(--text-1); color: var(--bg); font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .order-overlay.staff-mode .order-item-name { font-size: 20px; }
+    .order-overlay.staff-mode .order-item-mods { font-size: 14px; }
+    .order-overlay.staff-mode .order-item-price { font-size: 18px; }
+    .order-overlay.staff-mode .qty-num { font-size: 18px; }
+    .order-overlay.staff-mode .order-total-value { font-size: 36px; }
+    .order-overlay.staff-mode .order-actions { display: none; }
+    .order-overlay.staff-mode .qty-controls { display: none; }
+    .staff-exit-btn { display: none; width: 100%; padding: 14px; border: 0.5px solid var(--border); border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; cursor: pointer; margin-top: 16px; -webkit-tap-highlight-color: transparent; }
+    .order-overlay.staff-mode .staff-exit-btn { display: block; }
+
+    /* ── Promo footer ── */
+    .promo-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; background: var(--footer-bg); border-top: 0.5px solid var(--border); z-index: 10; display: flex; align-items: center; overflow: hidden; }
+    .promo-inner { position: relative; width: 100%; height: 100%; }
+    .promo-item { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 16px; text-decoration: none; color: var(--text-1); opacity: 0; transition: opacity 0.6s ease; gap: 10px; pointer-events: none; }
+    .promo-item.visible { opacity: 1; pointer-events: auto; }
+    .promo-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+    .promo-sep { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
+    .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
+
+    @media (min-width: 760px) {
+      body { max-width: 720px; margin: 0 auto; font-size: 15px; }
+      .header { padding: 14px 20px 14px; }
+      .page-title { font-size: 22px; }
+      .body { padding: 0 20px 20px; }
+      .cat-block { padding-top: 16px; }
+      .item-main { padding: 10px 0; }
+      .item-name { font-size: 15px; }
+      .item-price { font-size: 14px; }
+      .promo-bar { max-width: 720px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); }
+      .order-overlay { max-width: 720px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); }
+      .opts-overlay { align-items: center; justify-content: center; }
+      .opts-sheet { border-radius: 12px; max-width: 520px; max-height: 80vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Options bottom sheet -->
+  <div class="opts-overlay" id="opts-overlay" onclick="handleOverlayClick(event)">
+    <div class="opts-sheet">
+      <div class="opts-handle"></div>
+      <div class="opts-header">
+        <span class="opts-item-name" id="opts-item-name"></span>
+        <button class="opts-close" onclick="closeOptsModal()">&#x2715;</button>
+      </div>
+      <div class="opts-body" id="opts-body"></div>
+      <div class="opts-footer">
+        <p class="opts-validation" id="opts-validation"></p>
+        <button class="opts-add-btn" id="opts-add-btn" onclick="confirmAddToOrder()">Add to order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order overlay -->
+  <div class="order-overlay" id="order-overlay">
+    <div class="order-header">
+      <div class="order-header-left">
+        <span class="order-title">My order</span>
+        <span class="order-item-count" id="order-item-count"></span>
+      </div>
+      <button class="close-btn" onclick="closeOrder()">Close</button>
+    </div>
+    <div class="staff-name-banner" id="staff-name-banner">
+      <p class="staff-name-banner-label">Takeaway for</p>
+      <p class="staff-name-banner-value" id="staff-name-value">&#x2014;</p>
+    </div>
+    <div class="order-body" id="order-body"></div>
+    <div class="order-footer">
+      <div class="order-total-row">
+        <span class="order-total-label">Total</span>
+        <span class="order-total-value" id="order-total">0.00</span>
+      </div>
+      <p class="order-total-note" id="order-total-note"></p>
+      <div class="order-actions">
+        <button class="order-clear-btn" onclick="clearOrder()">Clear</button>
+        <button class="order-show-btn" onclick="showToStaff()">Show to staff &#x2192;</button>
+      </div>
+      <button class="staff-exit-btn" onclick="exitStaffMode()">&#x2190; Back to editing</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <a class="venue-link" href="https://theartyst.co.uk" target="_blank">The Artyst</a>
+      <div class="header-controls">
+        <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">&#x263D;</button>
+        <button class="icon-btn" onclick="openOrder()" aria-label="My order" style="font-size:18px;">
+          &#x1F9FE;<span class="order-badge" id="order-badge" style="display:none;"></span>
+        </button>
+      </div>
+    </div>
+    <p class="page-title">Takeaway</p>
+    <p class="page-sub">Order at the counter &#x00B7; Pay on collection</p>
+  </div>
+
+  <div class="body" id="body">
+    <p class="state" id="state">Loading&#x2026;</p>
+  </div>
+
+  <div class="promo-bar">
+    <div class="promo-inner" id="promo-inner">
+      <a class="promo-item visible" href="#"><span class="promo-label">The Artyst</span><span class="promo-sep"></span><span class="promo-text">Loading&#x2026;</span></a>
+    </div>
+  </div>
+
+  <script>
+    const CAT_NOTES = {
+      espresso:'Add any syrup +0.50', gin:'Single 25ml / Double 50ml',
+      vodka:'Single 25ml / Double 50ml', rum:'Single 25ml / Double 50ml',
+      whisky:'Single 25ml / Double 50ml', brandy:'Single 25ml / Double 50ml',
+      liqueurs:'Single 25ml / Double 50ml', draught:'Pint / Half',
+      wine:'Small / Med / Large / Bottle',
+    };
+
+    let allCategories = [];
+    let orderItems = [];
+    let customerName = '';
+    let pickingItemId = null;
+    let promos = [];
+    let promoIndex = 0;
+    const itemDataMap = new Map();
+
+    // ── Order ─────────────────────────────────────────
+    function saveOrder() { localStorage.setItem('artyst-takeaway-order', JSON.stringify(orderItems)); }
+    function loadOrder() {
+      try { orderItems = JSON.parse(localStorage.getItem('artyst-takeaway-order') || '[]'); }
+      catch { orderItems = []; }
+      customerName = sessionStorage.getItem('artyst-takeaway-name') || '';
+    }
+
+    function addToOrder(itemId, name, sizeLabel, mods, price) {
+      const modStr = mods.map(m => m.choice).filter(Boolean).join(' · ');
+      const key = `${itemId}__${sizeLabel}__${modStr}`;
+      const existing = orderItems.find(o => o.key === key);
+      if (existing) { existing.qty++; } else {
+        orderItems.push({key, id:itemId, name, sizeLabel, mods, modStr, price, qty:1});
+      }
+      saveOrder(); updateOrderBadge();
+      const btn = document.querySelector(`[data-add-id="${itemId}"]`);
+      if (btn) { btn.classList.add('added'); setTimeout(() => btn.classList.remove('added'), 800); }
+    }
+
+    function changeQty(key, delta) {
+      const idx = orderItems.findIndex(o => o.key === key);
+      if (idx === -1) return;
+      orderItems[idx].qty += delta;
+      if (orderItems[idx].qty <= 0) orderItems.splice(idx, 1);
+      saveOrder(); updateOrderBadge(); renderOrderBody();
+    }
+
+    function clearOrder() {
+      if (!orderItems.length || confirm('Clear your order?')) {
+        orderItems = []; saveOrder(); updateOrderBadge(); renderOrderBody();
+      }
+    }
+
+    function updateOrderBadge() {
+      const total = orderItems.reduce((s, o) => s + o.qty, 0);
+      const badge = document.getElementById('order-badge');
+      badge.textContent = total;
+      badge.style.display = total > 0 ? 'flex' : 'none';
+    }
+
+    function renderOrderBody() {
+      const body = document.getElementById('order-body');
+      const countEl = document.getElementById('order-item-count');
+      const totalEl = document.getElementById('order-total');
+      const noteEl = document.getElementById('order-total-note');
+      const staffVal = document.getElementById('staff-name-value');
+
+      const totalQty = orderItems.reduce((s, o) => s + o.qty, 0);
+      countEl.textContent = totalQty ? `${totalQty} item${totalQty !== 1 ? 's' : ''}` : '';
+      if (staffVal) staffVal.textContent = customerName || '—';
+
+      const nameHtml = `
+        <div class="name-section">
+          <p class="name-label">Your name</p>
+          <input class="name-input" id="name-input" type="text" placeholder="So we can call you when it's ready"
+            value="${customerName.replace(/"/g,'&quot;')}"
+            oninput="updateName(this.value)"
+            autocomplete="given-name" />
+          <p class="name-error" id="name-error">Please enter your name before showing to staff.</p>
+        </div>`;
+
+      const itemsHtml = orderItems.length === 0
+        ? '<div class="order-empty">No items yet &#x2014; tap + on any item.</div>'
+        : orderItems.map(o => {
+            const modDisplay = [o.sizeLabel, o.modStr].filter(Boolean).join(' · ');
+            return `<div class="order-item">
+              <div class="order-item-info">
+                <div class="order-item-name">${o.name}</div>
+                ${modDisplay ? `<div class="order-item-mods">${modDisplay}</div>` : ''}
+              </div>
+              <div class="order-item-price">${o.price > 0 ? o.price.toFixed(2) : 'ask staff'}</div>
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', -1)">&#x2212;</button>
+                <span class="qty-num">${o.qty}</span>
+                <button class="qty-btn" onclick="changeQty('${o.key.replace(/'/g,"\\'")}', 1)">+</button>
+              </div>
+            </div>`;
+          }).join('');
+
+      body.innerHTML = nameHtml + itemsHtml;
+
+      const t = orderItems.reduce((s, o) => s + (o.price * o.qty), 0);
+      totalEl.textContent = t.toFixed(2);
+      const hasAskStaff = orderItems.some(o => o.price === 0);
+      noteEl.textContent = hasAskStaff ? 'Some items are priced at the counter.' : '';
+    }
+
+    function updateName(val) {
+      customerName = val.trim();
+      sessionStorage.setItem('artyst-takeaway-name', customerName);
+      const staffVal = document.getElementById('staff-name-value');
+      if (staffVal) staffVal.textContent = customerName || '—';
+    }
+
+    function openOrder() { loadOrder(); renderOrderBody(); document.getElementById('order-overlay').classList.add('open'); }
+    function closeOrder() { document.getElementById('order-overlay').classList.remove('open','staff-mode'); }
+
+    function showToStaff() {
+      if (!customerName) {
+        const err = document.getElementById('name-error');
+        const inp = document.getElementById('name-input');
+        if (err) { err.classList.add('show'); setTimeout(() => err.classList.remove('show'), 3000); }
+        if (inp) inp.focus();
+        return;
+      }
+      document.getElementById('order-overlay').classList.add('staff-mode');
+    }
+
+    function exitStaffMode() { document.getElementById('order-overlay').classList.remove('staff-mode'); }
+
+    // ── Options modal ─────────────────────────────────
+    let modalItem = null;
+    let modalSizes = [];
+    let modalSizeIdx = 0;
+    let modalSelections = {};
+
+    function parsePriceOptions(priceDisplay, catNote) {
+      if (!priceDisplay || priceDisplay === 'ask staff') return [];
+      const rawParts = priceDisplay.split('/').map(p => p.trim());
+      const noteParts = catNote ? catNote.split('/').map(n => n.trim()) : [];
+      const options = [];
+      rawParts.forEach((raw, i) => {
+        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+        if (isNaN(num) || num <= 0) return;
+        options.push({ label: noteParts[i] ? noteParts[i].split(' ')[0] : raw, price: num, display: num.toFixed(2) });
+      });
+      return options;
+    }
+
+    function calcModalPrice() {
+      let price = modalSizes.length > 0 ? modalSizes[modalSizeIdx].price
+                : parseFloat((modalItem.price_display || '0').replace(/[^0-9.]/g, '')) || 0;
+      if (modalItem.options) {
+        modalItem.options.forEach(g => {
+          const idx = modalSelections[g.name];
+          if (idx >= 0) price += g.choices[idx].price_mod;
+        });
+      }
+      return price;
+    }
+
+    function renderOptsBody() {
+      let html = '';
+      if (modalSizes.length > 1) {
+        html += `<div class="opt-group"><p class="opt-group-label">Size</p><div class="opt-chips">
+          ${modalSizes.map((s, i) => `<div class="opt-chip${i === modalSizeIdx ? ' selected' : ''}" onclick="selectModalSize(${i})">${s.label}<span class="opt-chip-mod">&nbsp;${s.display}</span></div>`).join('')}
+        </div></div>`;
+      }
+      if (modalItem.options) {
+        modalItem.options.forEach(group => {
+          const idx = modalSelections[group.name];
+          html += `<div class="opt-group">
+            <p class="opt-group-label">${group.name}${!group.required ? '<span class="opt-optional"> &middot; optional</span>' : ''}</p>
+            <div class="opt-chips">
+              ${!group.required ? `<div class="opt-chip${idx === -1 ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', -1)">None</div>` : ''}
+              ${group.choices.map((c, i) => `<div class="opt-chip${idx === i ? ' selected' : ''}" onclick="selectModalOpt('${group.name}', ${i})">${c.label}${c.price_mod > 0 ? `<span class="opt-chip-mod">&nbsp;+${c.price_mod.toFixed(2)}</span>` : ''}</div>`).join('')}
+            </div>
+          </div>`;
+        });
+      }
+      document.getElementById('opts-body').innerHTML = html;
+      document.getElementById('opts-add-btn').textContent = `Add to order \u2014 ${calcModalPrice().toFixed(2)}`;
+    }
+
+    function selectModalSize(i) { modalSizeIdx = i; renderOptsBody(); }
+    function selectModalOpt(groupName, idx) { modalSelections[groupName] = idx; renderOptsBody(); }
+
+    function openOptsModal(itemId) {
+      const item = itemDataMap.get(itemId);
+      if (!item) return;
+      modalItem = item;
+      modalSizes = parsePriceOptions(item.price_display, item.catNote);
+      modalSizeIdx = 0;
+      modalSelections = {};
+      if (item.options) {
+        item.options.forEach(g => {
+          modalSelections[g.name] = g.default_index !== undefined ? g.default_index : (g.required ? 0 : -1);
+        });
+      }
+      document.getElementById('opts-item-name').textContent = item.name;
+      document.getElementById('opts-validation').classList.remove('show');
+      renderOptsBody();
+      document.getElementById('opts-overlay').classList.add('open');
+    }
+
+    function closeOptsModal() { document.getElementById('opts-overlay').classList.remove('open'); modalItem = null; }
+    function handleOverlayClick(e) { if (e.target === document.getElementById('opts-overlay')) closeOptsModal(); }
+
+    function confirmAddToOrder() {
+      if (!modalItem) return;
+      const missing = (modalItem.options || []).filter(g => g.required && modalSelections[g.name] === -1).map(g => g.name);
+      if (missing.length) {
+        const el = document.getElementById('opts-validation');
+        el.textContent = `Please choose: ${missing.join(', ')}`;
+        el.classList.add('show');
+        return;
+      }
+      const sizeLabel = modalSizes.length > 1 ? modalSizes[modalSizeIdx].label : '';
+      const price = calcModalPrice();
+      const mods = [];
+      if (modalItem.options) {
+        modalItem.options.forEach(g => {
+          const idx = modalSelections[g.name];
+          if (idx >= 0) mods.push({ group: g.name, choice: g.choices[idx].label, priceMod: g.choices[idx].price_mod });
+        });
+      }
+      addToOrder(modalItem.id, modalItem.name, sizeLabel, mods, price);
+      closeOptsModal();
+    }
+
+    // ── Add button ────────────────────────────────────
+    function handleAddBtn(itemId, event) {
+      event.stopPropagation();
+      const item = itemDataMap.get(itemId);
+      if (!item) return;
+      const sizes = parsePriceOptions(item.price_display, item.catNote);
+      const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+      if (hasOpts) { openOptsModal(itemId); return; }
+      if (sizes.length === 0) { addToOrder(item.id, item.name, '', [], 0); return; }
+      if (sizes.length === 1) { addToOrder(item.id, item.name, '', [], sizes[0].price); return; }
+      const row = document.getElementById(`item-${itemId}`);
+      if (!row) return;
+      if (pickingItemId === itemId) { row.classList.remove('picking'); pickingItemId = null; return; }
+      if (pickingItemId) { const prev = document.getElementById(`item-${pickingItemId}`); if (prev) prev.classList.remove('picking'); }
+      pickingItemId = itemId;
+      const picker = row.querySelector('.size-picker');
+      if (picker) {
+        picker.innerHTML = `<p class="size-picker-label">Choose size</p><div class="size-options">
+          ${sizes.map(s => `<div class="size-opt" onclick="selectInlineSize(${itemId}, '${item.name.replace(/'/g,"\\'")}', '${s.label}', ${s.price})">${s.label}<span class="size-price">${s.display}</span></div>`).join('')}
+        </div>`;
+      }
+      row.classList.add('picking');
+    }
+
+    function selectInlineSize(itemId, name, sizeLabel, price) {
+      addToOrder(itemId, name, sizeLabel, [], price);
+      const row = document.getElementById(`item-${itemId}`);
+      if (row) row.classList.remove('picking');
+      pickingItemId = null;
+    }
+
+    function toggleItem(itemId) { const row = document.getElementById(`item-${itemId}`); if (row) row.classList.toggle('open'); }
+
+    // ── Theme ─────────────────────────────────────────
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-color-meta').content = isDark ? '#faf8f4' : '#0e0e0e';
+      document.getElementById('theme-toggle').textContent = isDark ? '\u263D' : '\u2600';
+      localStorage.setItem('artyst-menu-theme', next);
+    }
+    (function(){
+      const saved = localStorage.getItem('artyst-menu-theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.getElementById('theme-color-meta').content = '#0e0e0e';
+        document.getElementById('theme-toggle').textContent = '\u2600';
+      }
+    })();
+
+    // ── Render ────────────────────────────────────────
+    function renderBody() {
+      const body = document.getElementById('body');
+      if (!allCategories.length) { body.innerHTML = '<p class="state">Nothing available for takeaway right now.</p>'; return; }
+
+      body.innerHTML = allCategories.map(cat => {
+        const note = CAT_NOTES[cat.slug] || '';
+        const itemsHtml = cat.items.map(item => {
+          itemDataMap.set(item.id, {...item, catNote: note});
+          const hasDetails = item.details && item.details.trim();
+          const lines = hasDetails ? item.details.trim().split('\n').filter(l => l.trim()) : [];
+          const hasOpts = item.options && Array.isArray(item.options) && item.options.length > 0;
+          return `<div class="item-row${item.available ? '' : ' unavailable'}${hasDetails ? ' expandable' : ''}" id="item-${item.id}">
+            <div class="item-main">
+              <div class="item-left"${hasDetails ? ` onclick="toggleItem(${item.id})"` : ''}>
+                <div class="item-name-row">
+                  <span class="item-name">${item.name}</span>
+                  ${item.dietary_tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                  ${!item.available ? '<span class="tag">unavailable</span>' : ''}
+                  ${hasOpts ? '<span class="tag" style="color:var(--gold);background:var(--gold-bg);border:0.5px solid var(--gold-border);">customisable</span>' : ''}
+                </div>
+                ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+              </div>
+              <div class="item-right">
+                ${item.price_display ? `<p class="item-price">${item.price_display}</p>` : ''}
+                ${hasDetails ? `<span class="expand-icon" onclick="toggleItem(${item.id})">&#x25BE;</span>` : ''}
+                ${item.available ? `<button class="add-btn" data-add-id="${item.id}" onclick="handleAddBtn(${item.id}, event)">+</button>` : ''}
+              </div>
+            </div>
+            <div class="size-picker"></div>
+            ${hasDetails ? `<div class="item-detail"><div class="detail-lines">
+              ${lines.map(l => `<p class="detail-line">${l}</p>`).join('')}
+            </div></div>` : ''}
+          </div>`;
+        }).join('');
+        if (!itemsHtml.trim()) return '';
+        return `<div class="cat-block">
+          <p class="cat-label">${cat.name}</p>
+          ${note ? `<p style="font-size:13px;color:var(--text-2);margin-bottom:10px;">${note}</p>` : ''}
+          ${itemsHtml}
+        </div>`;
+      }).join('');
+    }
+
+    // ── Promos ────────────────────────────────────────
+    function buildPromos(data) {
+      const inner = document.getElementById('promo-inner');
+      if (!data.length) { inner.innerHTML = ''; return; }
+      inner.innerHTML = data.map((p, i) =>
+        `<a class="promo-item${i === 0 ? ' visible' : ''}" href="${p.href}" target="_blank">
+          <span class="promo-label">${p.label}</span><span class="promo-sep"></span>
+          <span class="promo-text">${p.text}</span><span class="promo-arrow">&#x2192;</span>
+        </a>`).join('');
+      promos = data; promoIndex = 0;
+    }
+    function rotatePromo() {
+      if (!promos.length) return;
+      const items = document.querySelectorAll('.promo-item');
+      if (!items.length) return;
+      items[promoIndex].classList.remove('visible');
+      promoIndex = (promoIndex + 1) % promos.length;
+      items[promoIndex].classList.add('visible');
+    }
+
+    // ── Init ──────────────────────────────────────────
+    async function init() {
+      loadOrder(); updateOrderBadge();
+
+      const [menuRes, promosRes] = await Promise.allSettled([
+        fetch('/api/takeaway'),
+        fetch('/api/promos'),
+      ]);
+
+      if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
+        const data = await menuRes.value.json();
+        allCategories = data.categories || [];
+        const stateEl = document.getElementById('state');
+        if (stateEl) stateEl.remove();
+        renderBody();
+      } else {
+        document.getElementById('state').textContent = "Couldn't load the takeaway menu. Please ask at the counter.";
+      }
+
+      if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
+        const data = await promosRes.value.json();
+        buildPromos(data.promos || []);
+      }
+
+      setInterval(rotatePromo, 4000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
