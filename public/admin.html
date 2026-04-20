@@ -512,6 +512,296 @@ function Applications({applications,onRefresh}){
 }
 
 // ── MENU EDITOR ───────────────────────────────────────────
+
+  // ── NEWS EDITOR ───────────────────────────────────────────
+// Paste this function into admin.html alongside PromoEditor.
+// Then add <NewsEditor/> to the main admin JSX wherever you want it rendered
+// (e.g. above <PromoEditor/> in the MenuEditor return block).
+
+function NewsEditor(){
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({
+    label: '', headline: '', href: '',
+    active: true, show_on_menu: true, show_on_takeaway: true,
+    starts_at: '', ends_at: '', sort_order: 100,
+  });
+  const [editing, setEditing] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  async function loadNews(){
+    setLoading(true);
+    const res = await supabase('/rest/v1/news_messages?order=sort_order');
+    setNews(Array.isArray(res) ? res : []);
+    setLoading(false);
+  }
+  useEffect(() => { loadNews(); }, []);
+
+  function flash(msg, type = 'success'){
+    setStatus({type, msg});
+    setTimeout(() => setStatus(null), 2500);
+  }
+
+  function resetForm(){
+    setForm({
+      label: '', headline: '', href: '',
+      active: true, show_on_menu: true, show_on_takeaway: true,
+      starts_at: '', ends_at: '', sort_order: 100,
+    });
+    setEditing(null);
+  }
+
+  async function toggleActive(n){
+    await supabase(`/rest/v1/news_messages?id=eq.${n.id}`, 'PATCH', { active: !n.active });
+    loadNews();
+  }
+
+  async function toggleSurface(n, field){
+    await supabase(`/rest/v1/news_messages?id=eq.${n.id}`, 'PATCH', { [field]: !n[field] });
+    loadNews();
+  }
+
+  async function save(){
+    if (!form.label || !form.headline){
+      flash('Label and headline are required.', 'error');
+      return;
+    }
+    if (form.label.length > 30){
+      flash('Label must be 30 characters or fewer.', 'error');
+      return;
+    }
+    if (form.headline.length > 120){
+      flash('Headline must be 120 characters or fewer.', 'error');
+      return;
+    }
+
+    const body = {
+      label: form.label,
+      headline: form.headline,
+      href: form.href || null,
+      active: form.active,
+      show_on_menu: form.show_on_menu,
+      show_on_takeaway: form.show_on_takeaway,
+      starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+      ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+      sort_order: parseInt(form.sort_order) || 100,
+    };
+
+    if (editing){
+      await supabase(`/rest/v1/news_messages?id=eq.${editing}`, 'PATCH', body);
+    } else {
+      await supabase('/rest/v1/news_messages', 'POST', body);
+    }
+    resetForm();
+    flash('Saved.');
+    loadNews();
+  }
+
+  async function remove(id){
+    if (!confirm('Delete this news message?')) return;
+    await supabase(`/rest/v1/news_messages?id=eq.${id}`, 'DELETE');
+    loadNews();
+  }
+
+  function startEdit(n){
+    setEditing(n.id);
+    setForm({
+      label: n.label || '',
+      headline: n.headline || '',
+      href: n.href || '',
+      active: !!n.active,
+      show_on_menu: !!n.show_on_menu,
+      show_on_takeaway: !!n.show_on_takeaway,
+      starts_at: n.starts_at ? toLocalDatetime(n.starts_at) : '',
+      ends_at: n.ends_at ? toLocalDatetime(n.ends_at) : '',
+      sort_order: n.sort_order || 100,
+    });
+  }
+
+  // Convert ISO UTC to a value compatible with <input type="datetime-local">
+  function toLocalDatetime(iso){
+    try {
+      const d = new Date(iso);
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch { return ''; }
+  }
+
+  // Is a news message "active right now" considering active flag + date window?
+  function isLiveNow(n){
+    if (!n.active) return false;
+    const now = new Date();
+    if (n.starts_at && new Date(n.starts_at) > now) return false;
+    if (n.ends_at && new Date(n.ends_at) < now) return false;
+    return true;
+  }
+
+  const livePreviewItems = news.filter(isLiveNow);
+
+  return (
+    <div className="card" style={{marginBottom: '1.5rem'}}>
+      <h2>News Notices</h2>
+      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
+        Rotating banner shown at the top of <code style={{fontFamily: 'inherit'}}>/menu</code> and <code style={{fontFamily: 'inherit'}}>/takeaway</code>.
+        Aim for 3–5 active messages. Keep headlines under 80 characters.
+      </p>
+
+      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
+
+      {/* ── LIVE PREVIEW ─────────────────────── */}
+      <div style={{marginBottom: '1.5rem', padding: '.8rem', background: '#0d0d0d', border: '1px solid #2a2a2a', borderRadius: '3px'}}>
+        <div style={{fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#c8a96e', marginBottom: '.6rem'}}>
+          Live preview — what customers see right now
+        </div>
+        {livePreviewItems.length === 0 ? (
+          <div style={{fontSize: '.82rem', color: '#666', fontStyle: 'italic', padding: '.6rem 0'}}>
+            Nothing active. The notice banner will be hidden on the menu.
+          </div>
+        ) : (
+          livePreviewItems.map((n, i) => (
+            <div key={n.id} style={{
+              padding: '10px 14px',
+              marginBottom: i === livePreviewItems.length - 1 ? 0 : '.5rem',
+              background: '#1a1508',
+              borderLeft: '3px solid #c8a96e',
+              borderRadius: '2px',
+              display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap',
+            }}>
+              <span style={{fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: '#c8a96e', flexShrink: 0}}>
+                {n.label}
+              </span>
+              <span style={{fontSize: '.86rem', color: '#e8e4dc', flex: 1, minWidth: 0}}>
+                {n.headline}
+              </span>
+              {n.href && <span style={{fontSize: '.7rem', color: '#888'}}>→</span>}
+              {(!n.show_on_menu || !n.show_on_takeaway) && (
+                <span style={{fontSize: '.65rem', color: '#ffaa5a'}}>
+                  {!n.show_on_menu && '(menu off)'} {!n.show_on_takeaway && '(takeaway off)'}
+                </span>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ── EXISTING MESSAGES ─────────────────── */}
+      {!loading && news.length === 0 && (
+        <div style={{fontSize: '.85rem', color: '#888', padding: '.8rem 0', fontStyle: 'italic'}}>
+          No news messages yet. Add one below.
+        </div>
+      )}
+
+      {!loading && news.map(n => {
+        const live = isLiveNow(n);
+        return (
+          <div key={n.id} style={{
+            display: 'flex', alignItems: 'center', gap: '.6rem',
+            padding: '.7rem 0', borderBottom: '1px solid #222', flexWrap: 'wrap',
+          }}>
+            <div style={{flex: 1, minWidth: 0}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '.4rem'}}>
+                <span style={{
+                  fontSize: '.68rem', letterSpacing: '.1em', textTransform: 'uppercase',
+                  color: live ? '#c8a96e' : '#555',
+                }}>{n.label}</span>
+                {!live && <span style={{fontSize: '.62rem', color: '#666'}}>· off</span>}
+              </div>
+              <div style={{fontSize: '.82rem', color: live ? '#eee' : '#666', marginTop: '2px'}}>
+                {n.headline}
+              </div>
+              <div style={{fontSize: '.68rem', color: '#666', marginTop: '3px', display: 'flex', gap: '.8rem', flexWrap: 'wrap'}}>
+                <span>sort {n.sort_order}</span>
+                {n.starts_at && <span>from {new Date(n.starts_at).toLocaleString('en-GB')}</span>}
+                {n.ends_at && <span>until {new Date(n.ends_at).toLocaleString('en-GB')}</span>}
+                {n.href && <span style={{color: '#5aafff'}}>→ {n.href.length > 40 ? n.href.substr(0, 40) + '…' : n.href}</span>}
+              </div>
+            </div>
+            <div style={{display: 'flex', gap: '.3rem', flexShrink: 0, alignItems: 'center'}}>
+              <button
+                className={`btn btn-small ${n.show_on_menu ? 'btn-blue' : 'btn-secondary'}`}
+                onClick={() => toggleSurface(n, 'show_on_menu')}
+                title="Show on /menu"
+              >Menu {n.show_on_menu ? '✓' : '✕'}</button>
+              <button
+                className={`btn btn-small ${n.show_on_takeaway ? 'btn-blue' : 'btn-secondary'}`}
+                onClick={() => toggleSurface(n, 'show_on_takeaway')}
+                title="Show on /takeaway"
+              >T/A {n.show_on_takeaway ? '✓' : '✕'}</button>
+              <button
+                className={`btn btn-small ${n.active ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => toggleActive(n)}
+              >{n.active ? 'Active' : 'Off'}</button>
+              <button className="btn btn-blue btn-small" onClick={() => startEdit(n)}>Edit</button>
+              <button className="btn btn-secondary btn-small" onClick={() => remove(n.id)}>Del</button>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* ── FORM ─────────────────────────────── */}
+      <div style={{marginTop: '1.4rem', paddingTop: '1rem', borderTop: '1px solid #222'}}>
+        <div style={{fontSize: '.75rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: '.8rem'}}>
+          {editing ? 'Edit message' : 'Add message'}
+        </div>
+
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Label · max 30 <span style={{color: '#666'}}>({form.label.length}/30)</span></label>
+            <input value={form.label} onChange={e => setForm(f => ({...f, label: e.target.value}))} placeholder="e.g. This weekend" maxLength={30}/>
+          </div>
+
+          <div className="form-group">
+            <label>Sort order · lower = earlier</label>
+            <input type="number" value={form.sort_order} onChange={e => setForm(f => ({...f, sort_order: e.target.value}))} />
+          </div>
+
+          <div className="form-group full">
+            <label>Headline · max 120 <span style={{color: '#666'}}>({form.headline.length}/120)</span></label>
+            <input value={form.headline} onChange={e => setForm(f => ({...f, headline: e.target.value}))} placeholder="What's on, one line." maxLength={120}/>
+          </div>
+
+          <div className="form-group full">
+            <label>Link URL · optional</label>
+            <input value={form.href} onChange={e => setForm(f => ({...f, href: e.target.value}))} placeholder="https://..."/>
+          </div>
+
+          <div className="form-group">
+            <label>Starts at · optional</label>
+            <input type="datetime-local" value={form.starts_at} onChange={e => setForm(f => ({...f, starts_at: e.target.value}))} />
+          </div>
+
+          <div className="form-group">
+            <label>Ends at · optional</label>
+            <input type="datetime-local" value={form.ends_at} onChange={e => setForm(f => ({...f, ends_at: e.target.value}))} />
+          </div>
+
+          <div className="form-group full" style={{flexDirection: 'row', gap: '1.2rem', alignItems: 'center', flexWrap: 'wrap'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
+              <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({...f, active: e.target.checked}))} style={{width: 'auto'}}/>
+              <span style={{fontSize: '.82rem'}}>Active</span>
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
+              <input type="checkbox" checked={form.show_on_menu} onChange={e => setForm(f => ({...f, show_on_menu: e.target.checked}))} style={{width: 'auto'}}/>
+              <span style={{fontSize: '.82rem'}}>Show on /menu</span>
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
+              <input type="checkbox" checked={form.show_on_takeaway} onChange={e => setForm(f => ({...f, show_on_takeaway: e.target.checked}))} style={{width: 'auto'}}/>
+              <span style={{fontSize: '.82rem'}}>Show on /takeaway</span>
+            </label>
+          </div>
+
+          <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.5rem'}}>
+            {editing && <button className="btn btn-secondary" onClick={resetForm}>Cancel</button>}
+            <button className="btn btn-primary" onClick={save}>
+              {editing ? 'Save changes' : 'Add message'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+  
 function PromoEditor(){
   const [promos,setPromos]=useState([]);
   const [loading,setLoading]=useState(true);
