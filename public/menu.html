@@ -342,6 +342,58 @@
     .promo-text { font-size: 13px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
     .promo-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
 
+    /* ── News notice ── */
+    .news-notice {
+      margin: 0 20px;
+      padding: 12px 14px;
+      background: var(--gold-bg);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-1);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      min-height: 48px;
+    }
+    .news-notice.visible { display: flex; }
+    .news-notice-inner {
+      flex: 1; min-width: 0; position: relative;
+      display: flex; align-items: center; gap: 10px;
+      flex-wrap: wrap;
+    }
+    .news-notice-item {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transition: opacity 0.6s ease;
+      pointer-events: none;
+      text-decoration: none; color: inherit;
+    }
+    .news-notice-item.active { opacity: 1; pointer-events: auto; position: relative; }
+    .news-notice-item.single { position: relative; opacity: 1; pointer-events: auto; }
+    .news-notice-label {
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); white-space: nowrap; flex-shrink: 0; font-weight: 600;
+    }
+    .news-notice-sep { width: 0.5px; height: 14px; background: var(--gold-border); flex-shrink: 0; }
+    .news-notice-headline {
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .news-notice-arrow { font-size: 13px; color: var(--gold); flex-shrink: 0; }
+    .news-notice-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-2); font-size: 18px; line-height: 1;
+      padding: 0 0 0 8px; flex-shrink: 0; opacity: 0.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .news-notice-close:hover { opacity: 1; }
+    @media (max-width: 640px) {
+      .news-notice-headline { white-space: normal; }
+    }
+
     /* ── Desktop only ── */
     @media (min-width: 760px) and (pointer: fine) {
       body { max-width: 720px; margin: 0 auto; font-size: 15px; }
