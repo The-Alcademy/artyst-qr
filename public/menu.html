@@ -1057,6 +1057,54 @@ function getItemOrderCount(itemId) {
     function switchTab(i) { activeTab = i; renderTabs(); renderBody(); window.scrollTo({top:0, behavior:'smooth'}); }
 
     // ── Promos ────────────────────────────────────────
+
+    // ── Opening hours ─────────────────────────────────
+    function renderHoursMicro(state) {
+      var el = document.getElementById('hours-micro');
+      if (!el) return;
+      if (!state) { el.innerHTML = ''; return; }
+      if (state.is_open) {
+        el.innerHTML = '<span class="hours-micro-dot"></span>'
+          + '<span class="hours-micro-status">Open until ' + state.closes_at + '</span>'
+          + '<span>\u00b7</span>'
+          + '<a href="#" onclick="openNewsFromMicro(event)">help us open later</a>';
+      } else if (state.opens_at) {
+        var dayStr = (state.opens_day === 'today')
+          ? 'today at ' + state.opens_at
+          : (state.opens_day ? state.opens_day + ' at ' + state.opens_at : 'tomorrow at ' + state.opens_at);
+        el.innerHTML = '<span class="hours-micro-dot closed"></span>'
+          + '<span class="hours-micro-status">Closed &mdash; opens ' + dayStr + '</span>';
+      } else {
+        el.innerHTML = '<span class="hours-micro-dot closed"></span>'
+          + '<span class="hours-micro-status">Closed</span>';
+      }
+    }
+
+    function renderHoursList(days) {
+      var el = document.getElementById('hours-list');
+      if (!el || !days || !days.length) return;
+      el.innerHTML = days.map(function(d) {
+        var closed = !d.opens_at || !d.closes_at || !d.active;
+        var timesHtml = closed
+          ? '<span class="hours-closed">Closed</span>'
+          : d.opens_at + ' \u2013 ' + d.closes_at;
+        return '<div class="hours-row' + (d.is_today ? ' today' : '') + '">'
+          + '<span class="hours-day">' + d.day_label + '</span>'
+          + '<span class="hours-times">' + timesHtml + '</span>'
+          + '</div>';
+      }).join('');
+    }
+
+    function openNewsFromMicro(event) {
+      if (event) event.preventDefault();
+      sessionStorage.removeItem('artyst-news-dismissed');
+      fetch('/api/news?surface=' + getNewsSurface())
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) { if (data) buildNews(data.news || []); })
+        .catch(function() {});
+      toggleDrawer();
+      return false;
+    }
     
     // ── News notice ───────────────────────────────────
     var newsItems = [];
