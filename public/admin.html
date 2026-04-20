@@ -518,6 +518,171 @@ function Applications({applications,onRefresh}){
 // Then add <NewsEditor/> to the main admin JSX wherever you want it rendered
 // (e.g. above <PromoEditor/> in the MenuEditor return block).
 
+// ── HOURS EDITOR ──────────────────────────────────────────
+// Paste alongside NewsEditor and PromoEditor in admin.html.
+// Add <HoursEditor/> to the MenuEditor return block wherever you want it rendered
+// (suggested: above <NewsEditor/>).
+
+function HoursEditor(){
+  const [days, setDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState(null);
+  const [editing, setEditing] = useState(null); // {day_of_week, opens_at, closes_at, notes}
+
+  async function loadDays(){
+    setLoading(true);
+    const res = await supabase('/rest/v1/opening_hours?order=day_of_week');
+    setDays(Array.isArray(res) ? res : []);
+    setLoading(false);
+  }
+  useEffect(() => { loadDays(); }, []);
+
+  function flash(msg, type = 'success'){
+    setStatus({type, msg});
+    setTimeout(() => setStatus(null), 2500);
+  }
+
+  async function toggleActive(day){
+    await supabase(`/rest/v1/opening_hours?day_of_week=eq.${day.day_of_week}`, 'PATCH', {
+      active: !day.active,
+    });
+    loadDays();
+  }
+
+  function startEdit(day){
+    setEditing({
+      day_of_week: day.day_of_week,
+      day_label: day.day_label,
+      opens_at: day.opens_at ? day.opens_at.substring(0, 5) : '',
+      closes_at: day.closes_at ? day.closes_at.substring(0, 5) : '',
+      notes: day.notes || '',
+    });
+  }
+
+  function cancelEdit(){ setEditing(null); }
+
+  async function saveEdit(){
+    if (!editing) return;
+    const body = {
+      opens_at: editing.opens_at || null,
+      closes_at: editing.closes_at || null,
+      notes: editing.notes || null,
+    };
+    // Validate: either both times or neither
+    if ((body.opens_at && !body.closes_at) || (!body.opens_at && body.closes_at)){
+      flash('Set both open and close times, or leave both blank for closed.', 'error');
+      return;
+    }
+    if (body.opens_at && body.closes_at && body.opens_at >= body.closes_at){
+      flash('Close time must be after open time.', 'error');
+      return;
+    }
+    await supabase(`/rest/v1/opening_hours?day_of_week=eq.${editing.day_of_week}`, 'PATCH', body);
+    setEditing(null);
+    flash('Saved.');
+    loadDays();
+  }
+
+  function formatTime(t){
+    if (!t) return '';
+    return t.substring(0, 5);
+  }
+
+  return (
+    <div className="card" style={{marginBottom: '1.5rem'}}>
+      <h2>Opening Hours</h2>
+      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
+        Shown in the menu header and the side drawer at <code style={{fontFamily: 'inherit'}}>/menu</code> and <code style={{fontFamily: 'inherit'}}>/takeaway</code>.
+        Leave times blank to mark a day as closed. Use the toggle to temporarily close a day (e.g. holidays).
+      </p>
+
+      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
+
+      {loading && <div className="empty">Loading...</div>}
+
+      {!loading && (
+        <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '.88rem'}}>
+          <thead>
+            <tr>
+              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '22%'}}>Day</th>
+              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '20%'}}>Opens</th>
+              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '20%'}}>Closes</th>
+              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a'}}>Notes</th>
+              <th style={{padding: '.5rem .6rem', borderBottom: '1px solid #2a2a2a', width: '1%'}}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {days.map(d => {
+              const isEditing = editing && editing.day_of_week === d.day_of_week;
+              const closedToday = !d.opens_at || !d.closes_at;
+              const opacity = d.active ? 1 : 0.4;
+              return (
+                <tr key={d.day_of_week} style={{opacity}}>
+                  <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
+                    <strong>{d.day_label}</strong>
+                  </td>
+                  {isEditing ? (
+                    <>
+                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
+                        <input
+                          type="time"
+                          value={editing.opens_at}
+                          onChange={e => setEditing({...editing, opens_at: e.target.value})}
+                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
+                        />
+                      </td>
+                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
+                        <input
+                          type="time"
+                          value={editing.closes_at}
+                          onChange={e => setEditing({...editing, closes_at: e.target.value})}
+                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
+                        />
+                      </td>
+                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
+                        <input
+                          value={editing.notes}
+                          onChange={e => setEditing({...editing, notes: e.target.value})}
+                          placeholder="Optional"
+                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
+                        />
+                      </td>
+                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e', whiteSpace: 'nowrap'}}>
+                        <button className="btn btn-primary btn-small" onClick={saveEdit}>✓</button>{' '}
+                        <button className="btn btn-secondary btn-small" onClick={cancelEdit}>✕</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: closedToday ? '#666' : '#eee'}}>
+                        {closedToday ? '—' : formatTime(d.opens_at)}
+                      </td>
+                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: closedToday ? '#666' : '#eee'}}>
+                        {closedToday ? 'Closed' : formatTime(d.closes_at)}
+                      </td>
+                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: '#888', fontSize: '.82rem'}}>
+                        {d.notes || ''}
+                      </td>
+                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e', whiteSpace: 'nowrap'}}>
+                        <button
+                          className={`btn btn-small ${d.active ? 'btn-primary' : 'btn-secondary'}`}
+                          onClick={() => toggleActive(d)}
+                          style={{marginRight: '.3rem'}}
+                        >{d.active ? 'On' : 'Off'}</button>
+                        <button className="btn btn-blue btn-small" onClick={() => startEdit(d)}>Edit</button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+  
 function NewsEditor(){
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
