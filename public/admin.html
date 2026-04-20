@@ -523,6 +523,298 @@ function Applications({applications,onRefresh}){
 // Add <HoursEditor/> to the MenuEditor return block wherever you want it rendered
 // (suggested: above <NewsEditor/>).
 
+// ── PLAY EDITOR ───────────────────────────────────────────
+// Paste alongside HoursEditor, NewsEditor, PromoEditor in admin.html.
+// Then add <PlayEditor/> to the MenuEditor return block
+// (suggested: above <HoursEditor/>).
+
+function PlayEditor(){
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState(null);
+  const [editingCat, setEditingCat] = useState(null);
+  const [catForm, setCatForm] = useState({name: '', slug: '', sort_order: 100});
+  const [editingItem, setEditingItem] = useState(null);
+  const [itemForm, setItemForm] = useState(blankItem());
+  const [addingItemTo, setAddingItemTo] = useState(null);
+  const [addingCat, setAddingCat] = useState(false);
+
+  function blankItem(){
+    return {
+      title: '', subtitle: '', description: '',
+      when_text: '', href: '', cta_label: '', image_url: '',
+      sort_order: 100,
+    };
+  }
+
+  async function loadAll(){
+    setLoading(true);
+    const [cats, items] = await Promise.all([
+      supabase('/rest/v1/play_categories?order=sort_order'),
+      supabase('/rest/v1/play_items?order=category_id,sort_order'),
+    ]);
+    const grouped = (Array.isArray(cats) ? cats : []).map(c => ({
+      ...c,
+      items: (Array.isArray(items) ? items : []).filter(i => i.category_id === c.id),
+    }));
+    setCategories(grouped);
+    setLoading(false);
+  }
+  useEffect(() => { loadAll(); }, []);
+
+  function flash(msg, type = 'success'){
+    setStatus({type, msg});
+    setTimeout(() => setStatus(null), 2500);
+  }
+
+  // ── Category operations ──
+  async function toggleCatActive(cat){
+    await supabase(`/rest/v1/play_categories?id=eq.${cat.id}`, 'PATCH', {active: !cat.active});
+    loadAll();
+  }
+
+  function slugify(s){
+    return s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 40);
+  }
+
+  async function saveCat(){
+    if (!catForm.name || !catForm.slug){
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const body = {
+      name: catForm.name,
+      slug: catForm.slug,
+      sort_order: parseInt(catForm.sort_order) || 100,
+    };
+    if (editingCat){
+      await supabase(`/rest/v1/play_categories?id=eq.${editingCat}`, 'PATCH', body);
+    } else {
+      await supabase('/rest/v1/play_categories', 'POST', body);
+    }
+    setEditingCat(null);
+    setAddingCat(false);
+    setCatForm({name: '', slug: '', sort_order: 100});
+    flash('Saved.');
+    loadAll();
+  }
+
+  async function deleteCat(id){
+    if (!confirm('Delete this category AND all its items?')) return;
+    await supabase(`/rest/v1/play_categories?id=eq.${id}`, 'DELETE');
+    loadAll();
+  }
+
+  function startEditCat(cat){
+    setEditingCat(cat.id);
+    setAddingCat(false);
+    setCatForm({name: cat.name, slug: cat.slug, sort_order: cat.sort_order});
+  }
+
+  // ── Item operations ──
+  async function toggleItemActive(item){
+    await supabase(`/rest/v1/play_items?id=eq.${item.id}`, 'PATCH', {active: !item.active});
+    loadAll();
+  }
+
+  async function saveItem(categoryId){
+    if (!itemForm.title){
+      flash('Title is required.', 'error');
+      return;
+    }
+    const body = {
+      title: itemForm.title,
+      subtitle: itemForm.subtitle || null,
+      description: itemForm.description || null,
+      when_text: itemForm.when_text || null,
+      href: itemForm.href || null,
+      cta_label: itemForm.cta_label || null,
+      image_url: itemForm.image_url || null,
+      sort_order: parseInt(itemForm.sort_order) || 100,
+    };
+    if (editingItem){
+      await supabase(`/rest/v1/play_items?id=eq.${editingItem}`, 'PATCH', body);
+    } else {
+      body.category_id = categoryId;
+      await supabase('/rest/v1/play_items', 'POST', body);
+    }
+    setEditingItem(null);
+    setAddingItemTo(null);
+    setItemForm(blankItem());
+    flash('Saved.');
+    loadAll();
+  }
+
+  async function deleteItem(id){
+    if (!confirm('Delete this item?')) return;
+    await supabase(`/rest/v1/play_items?id=eq.${id}`, 'DELETE');
+    loadAll();
+  }
+
+  function startEditItem(item){
+    setEditingItem(item.id);
+    setAddingItemTo(null);
+    setItemForm({
+      title: item.title || '',
+      subtitle: item.subtitle || '',
+      description: item.description || '',
+      when_text: item.when_text || '',
+      href: item.href || '',
+      cta_label: item.cta_label || '',
+      image_url: item.image_url || '',
+      sort_order: item.sort_order || 100,
+    });
+  }
+
+  function cancelItemEdit(){
+    setEditingItem(null);
+    setAddingItemTo(null);
+    setItemForm(blankItem());
+  }
+
+  // ── Render ──
+  return (
+    <div className="card" style={{marginBottom: '1.5rem'}}>
+      <h2>Play — Serious Play at the Artyst</h2>
+      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
+        Activities shown on the <strong>Play</strong> tab at <code style={{fontFamily: 'inherit'}}>/menu</code>.
+        Not food and drink — chess nights, board games, the BedeGame, etc.
+      </p>
+
+      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
+
+      {loading && <div className="empty">Loading...</div>}
+
+      {!loading && categories.map(cat => (
+        <div key={cat.id} style={{marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #222'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.6rem'}}>
+            <span style={{fontSize: '.8rem', letterSpacing: '.1em', textTransform: 'uppercase', color: cat.active ? '#c8a96e' : '#444'}}>
+              {cat.name} <span style={{fontSize: '.7rem', color: '#555', marginLeft: '.4rem'}}>({cat.slug} · sort {cat.sort_order})</span>
+            </span>
+            <div style={{display: 'flex', gap: '.3rem'}}>
+              <button
+                className={`btn btn-small ${cat.active ? 'btn-secondary' : 'btn-primary'}`}
+                onClick={() => toggleCatActive(cat)}
+              >{cat.active ? 'Hide' : 'Show'}</button>
+              <button className="btn btn-blue btn-small" onClick={() => startEditCat(cat)}>Edit</button>
+              <button className="btn btn-secondary btn-small" onClick={() => deleteCat(cat.id)}>Del</button>
+              <button className="btn btn-green btn-small" onClick={() => {setAddingItemTo(addingItemTo === cat.id ? null : cat.id); setEditingItem(null); setItemForm(blankItem());}}>+ Item</button>
+            </div>
+          </div>
+
+          {/* Category edit form */}
+          {editingCat === cat.id && (
+            <div style={{background: '#111', border: '1px solid #2a5a7c', borderRadius: '2px', padding: '.8rem', marginBottom: '.8rem'}}>
+              <div className="form-grid">
+                <div className="form-group"><label>Name</label><input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value}))}/></div>
+                <div className="form-group"><label>Slug</label><input value={catForm.slug} onChange={e => setCatForm(f => ({...f, slug: e.target.value}))}/></div>
+                <div className="form-group"><label>Sort order</label><input type="number" value={catForm.sort_order} onChange={e => setCatForm(f => ({...f, sort_order: e.target.value}))}/></div>
+                <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
+                  <button className="btn btn-secondary btn-small" onClick={() => {setEditingCat(null); setCatForm({name: '', slug: '', sort_order: 100});}}>Cancel</button>
+                  <button className="btn btn-primary btn-small" onClick={saveCat}>Save</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Items */}
+          {cat.items.map(item => (
+            <div key={item.id} style={{padding: '.6rem 0', borderBottom: '1px solid #1e1e1e', opacity: item.active ? 1 : 0.45}}>
+              {editingItem === item.id ? (
+                <ItemForm form={itemForm} setForm={setItemForm} onSave={() => saveItem(item.category_id)} onCancel={cancelItemEdit}/>
+              ) : (
+                <div style={{display: 'flex', alignItems: 'flex-start', gap: '.8rem'}}>
+                  <div style={{flex: 1, minWidth: 0}}>
+                    <div style={{fontSize: '.95rem', fontWeight: 600, color: '#eee'}}>{item.title}</div>
+                    {item.subtitle && <div style={{fontSize: '.78rem', color: '#888', marginTop: '2px'}}>{item.subtitle}</div>}
+                    {item.when_text && <div style={{fontSize: '.72rem', color: '#c8a96e', marginTop: '4px', letterSpacing: '.06em', textTransform: 'uppercase'}}>{item.when_text}</div>}
+                    {item.description && <div style={{fontSize: '.82rem', color: '#aaa', marginTop: '6px', lineHeight: 1.5}}>{item.description}</div>}
+                    {item.href && <div style={{fontSize: '.72rem', color: '#5aafff', marginTop: '4px'}}>→ {item.cta_label || 'Open link'} · {item.href}</div>}
+                  </div>
+                  <div style={{display: 'flex', gap: '.3rem', flexShrink: 0}}>
+                    <button
+                      className={`btn btn-small ${item.active ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={() => toggleItemActive(item)}
+                    >{item.active ? 'On' : 'Off'}</button>
+                    <button className="btn btn-blue btn-small" onClick={() => startEditItem(item)}>Edit</button>
+                    <button className="btn btn-secondary btn-small" onClick={() => deleteItem(item.id)}>Del</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Add item form */}
+          {addingItemTo === cat.id && (
+            <div style={{background: '#111', border: '1px solid #2a5a2a', borderRadius: '2px', padding: '.8rem', marginTop: '.8rem'}}>
+              <ItemForm form={itemForm} setForm={setItemForm} onSave={() => saveItem(cat.id)} onCancel={cancelItemEdit}/>
+            </div>
+          )}
+
+          {cat.items.length === 0 && addingItemTo !== cat.id && (
+            <div style={{fontSize: '.82rem', color: '#555', fontStyle: 'italic', padding: '.5rem 0'}}>
+              No items yet. Click + Item to add one.
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Add new category */}
+      <div style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #222'}}>
+        {!addingCat && !editingCat && (
+          <button className="btn btn-green btn-small" onClick={() => {setAddingCat(true); setCatForm({name: '', slug: '', sort_order: (categories.length + 1) * 10});}}>+ New category</button>
+        )}
+        {addingCat && (
+          <div style={{background: '#111', border: '1px solid #2a5a2a', borderRadius: '2px', padding: '.8rem'}}>
+            <div style={{fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#c8a96e', marginBottom: '.6rem'}}>New category</div>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Name</label>
+                <input value={catForm.name} onChange={e => {
+                  const name = e.target.value;
+                  setCatForm(f => ({...f, name, slug: f._slugEdited ? f.slug : slugify(name)}));
+                }} placeholder="e.g. Regular sessions"/>
+              </div>
+              <div className="form-group">
+                <label>Slug</label>
+                <input value={catForm.slug} onChange={e => setCatForm(f => ({...f, slug: slugify(e.target.value), _slugEdited: true}))} placeholder="e.g. regular"/>
+              </div>
+              <div className="form-group">
+                <label>Sort order</label>
+                <input type="number" value={catForm.sort_order} onChange={e => setCatForm(f => ({...f, sort_order: e.target.value}))}/>
+              </div>
+              <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
+                <button className="btn btn-secondary btn-small" onClick={() => {setAddingCat(false); setCatForm({name: '', slug: '', sort_order: 100});}}>Cancel</button>
+                <button className="btn btn-primary btn-small" onClick={saveCat}>Add category</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Extracted form component reused for add/edit
+function ItemForm({form, setForm, onSave, onCancel}){
+  return (
+    <div className="form-grid">
+      <div className="form-group"><label>Title</label><input value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} placeholder="e.g. Chess night" autoFocus/></div>
+      <div className="form-group"><label>Subtitle</label><input value={form.subtitle} onChange={e => setForm(f => ({...f, subtitle: e.target.value}))} placeholder="Optional"/></div>
+      <div className="form-group full"><label>Description</label><textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} rows={3} placeholder="Longer prose — what it is, who it's for." style={{width: '100%', background: '#111', border: '1px solid #333', color: '#eee', padding: '.5rem .7rem', fontSize: '.88rem', borderRadius: '2px', resize: 'vertical', lineHeight: 1.5}}/></div>
+      <div className="form-group"><label>When · optional</label><input value={form.when_text} onChange={e => setForm(f => ({...f, when_text: e.target.value}))} placeholder="e.g. Thursdays from 7pm"/></div>
+      <div className="form-group"><label>Sort order</label><input type="number" value={form.sort_order} onChange={e => setForm(f => ({...f, sort_order: e.target.value}))}/></div>
+      <div className="form-group"><label>Link URL · optional</label><input value={form.href} onChange={e => setForm(f => ({...f, href: e.target.value}))} placeholder="https://..."/></div>
+      <div className="form-group"><label>CTA label · optional</label><input value={form.cta_label} onChange={e => setForm(f => ({...f, cta_label: e.target.value}))} placeholder="e.g. Learn more, Play now"/></div>
+      <div className="form-group full"><label>Image URL · optional</label><input value={form.image_url} onChange={e => setForm(f => ({...f, image_url: e.target.value}))} placeholder="https://..."/></div>
+      <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
+        <button className="btn btn-secondary btn-small" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-primary btn-small" onClick={onSave}>Save</button>
+      </div>
+    </div>
+  );
+}
+  
 function HoursEditor(){
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
