@@ -1174,7 +1174,8 @@ function MenuEditor(){
 
   return (
     <div>
-      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+{status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+      <NewsEditor/>
       <PromoEditor/>
       <div className="warning-box" style={{marginBottom:'1rem'}}>
         Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway at go.theartyst.co.uk/takeaway. Changes are live immediately.
