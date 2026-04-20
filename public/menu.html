@@ -1304,11 +1304,13 @@ function getItemOrderCount(itemId) {
         fetch('/api/promos'),
         fetch('/api/news?surface=' + getNewsSurface()),
         fetch('/api/hours'),
+        fetch('/api/play'),
       ]);
       var menuRes = results[0];
       var promosRes = results[1];
       var newsRes = results[2];
       var hoursRes = results[3];
+      var playRes = results[4];
       if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
         var data = await menuRes.value.json();
         allCategories = data.categories || [];
