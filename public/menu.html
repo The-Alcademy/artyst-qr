@@ -1052,6 +1052,7 @@ function getItemOrderCount(itemId) {
 
     // ── Body ──────────────────────────────────────────
     function renderBody() {
+      if (TABS[activeTab].play) { renderPlayBody(); return; }
       renderOutdoorNotice();
       var body = document.getElementById('body');
       var slugs = TABS[activeTab].slugs;
