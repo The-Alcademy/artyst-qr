@@ -1103,7 +1103,58 @@ function getItemOrderCount(itemId) {
       }).join('');
     }
 
-    function switchTab(i) { activeTab = i; renderTabs(); renderBody(); window.scrollTo({top:0, behavior:'smooth'}); }
+    function renderPlayBody() {
+      var outdoorContainer = document.getElementById('outdoor-notice-container');
+      if (outdoorContainer) outdoorContainer.innerHTML = '';
+      var slotBar = document.querySelector('.slot-bar');
+      if (slotBar) slotBar.style.display = 'none';
+
+      var body = document.getElementById('body');
+      if (!allPlayCategories || !allPlayCategories.length) {
+        body.innerHTML = '<p class="state">Nothing here yet.</p>';
+        return;
+      }
+
+      var introHtml = '<div class="play-intro">'
+        + '<div class="play-intro-strapline">Your spirit keeps the score</div>'
+        + 'Serious Play at the Artyst. Chess on Thursdays. A game development group. Board games on the shelf, and a menu that turns into a game if you look closely. Behind all of it: an open college called the Invysible College, and a playful atlas called the BedeGame. Come and play.'
+        + '</div>';
+
+      var catsHtml = allPlayCategories.map(function(cat) {
+        if (!cat.items || !cat.items.length) return '';
+        var itemsHtml = cat.items.map(function(it) {
+          var linkHtml = '';
+          if (it.href) {
+            var label = it.cta_label || 'Learn more';
+            linkHtml = '<a class="play-item-cta" href="' + it.href + '" target="_blank" rel="noopener">' + label + ' \u2192</a>';
+          }
+          return '<div class="play-item">'
+            + (it.when_text ? '<div class="play-item-when">' + it.when_text + '</div>' : '')
+            + '<div class="play-item-title">' + it.title + '</div>'
+            + (it.subtitle ? '<div class="play-item-subtitle">' + it.subtitle + '</div>' : '')
+            + (it.description ? '<div class="play-item-description">' + it.description + '</div>' : '')
+            + linkHtml
+            + '</div>';
+        }).join('');
+        return '<div class="play-category">'
+          + '<div class="play-category-name">' + cat.name + '</div>'
+          + itemsHtml
+          + '</div>';
+      }).join('');
+
+      body.innerHTML = introHtml + catsHtml;
+    }
+
+    function switchTab(i) {
+      activeTab = i;
+      if (!TABS[i].play) {
+        var slotBar = document.querySelector('.slot-bar');
+        if (slotBar) slotBar.style.display = '';
+      }
+      renderTabs();
+      renderBody();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
 
     // ── Promos ────────────────────────────────────────
 
