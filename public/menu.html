@@ -1106,6 +1106,11 @@ function getItemOrderCount(itemId) {
         buildPromos(pdata.promos || []);
       }
 
+      if (newsRes.status === 'fulfilled' && newsRes.value.ok) {
+        var ndata = await newsRes.value.json();
+        buildNews(ndata.news || []);
+      }
+
       setInterval(rotatePromo, 4000);
     }
 
