@@ -1632,6 +1632,7 @@ function MenuEditor(){
   return (
     <div>
 {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+      <PlayEditor/>
       <HoursEditor/>
       <NewsEditor/>
       <PromoEditor/>
