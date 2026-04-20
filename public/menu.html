@@ -1082,7 +1082,11 @@ function getItemOrderCount(itemId) {
       currentSlot = detectSlot(); updateSlotUI();
       renderTabs();
 
-      var results = await Promise.allSettled([fetch('/api/menu'), fetch('/api/promos')]);
+      var results = await Promise.allSettled([
+        fetch('/api/menu'),
+        fetch('/api/promos'),
+        fetch('/api/news?surface=' + getNewsSurface()),
+      ]);
       var menuRes = results[0];
       var promosRes = results[1];
 
