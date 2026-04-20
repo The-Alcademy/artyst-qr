@@ -1089,6 +1089,7 @@ function getItemOrderCount(itemId) {
       ]);
       var menuRes = results[0];
       var promosRes = results[1];
+      var newsRes = results[2];
 
       if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
         var data = await menuRes.value.json();
