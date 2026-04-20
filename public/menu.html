@@ -998,6 +998,65 @@ function getItemOrderCount(itemId) {
     function switchTab(i) { activeTab = i; renderTabs(); renderBody(); window.scrollTo({top:0, behavior:'smooth'}); }
 
     // ── Promos ────────────────────────────────────────
+    
+    // ── News notice ───────────────────────────────────
+    var newsItems = [];
+    var newsIndex = 0;
+    var newsInterval = null;
+
+    function getNewsSurface() {
+      return window.location.pathname.indexOf('takeaway') !== -1 ? 'takeaway' : 'menu';
+    }
+
+    function buildNews(items) {
+      var container = document.getElementById('news-notice-container');
+      if (!container) return;
+      if (sessionStorage.getItem('artyst-news-dismissed')) { container.innerHTML = ''; return; }
+      if (!items || !items.length) { container.innerHTML = ''; return; }
+
+      newsItems = items;
+      newsIndex = 0;
+      var single = items.length === 1;
+
+      var itemsHtml = items.map(function(n, i) {
+        var tag = n.href ? 'a' : 'span';
+        var hrefAttr = n.href ? ' href="' + n.href + '" target="_blank" rel="noopener"' : '';
+        var activeClass = single ? 'single' : (i === 0 ? 'active' : '');
+        return '<' + tag + ' class="news-notice-item ' + activeClass + '"' + hrefAttr + '>'
+          + '<span class="news-notice-label">' + n.label + '</span>'
+          + '<span class="news-notice-sep"></span>'
+          + '<span class="news-notice-headline">' + n.headline + '</span>'
+          + (n.href ? '<span class="news-notice-arrow">\u2192</span>' : '')
+          + '</' + tag + '>';
+      }).join('');
+
+      container.innerHTML = '<div class="news-notice visible">'
+        + '<div class="news-notice-inner">' + itemsHtml + '</div>'
+        + '<button class="news-notice-close" onclick="dismissNewsNotice()" aria-label="Dismiss">\u2715</button>'
+        + '</div>';
+
+      if (!single) {
+        if (newsInterval) clearInterval(newsInterval);
+        newsInterval = setInterval(rotateNews, 6000);
+      }
+    }
+
+    function rotateNews() {
+      if (!newsItems.length) return;
+      var items = document.querySelectorAll('#news-notice-container .news-notice-item');
+      if (!items.length) return;
+      items[newsIndex].classList.remove('active');
+      newsIndex = (newsIndex + 1) % newsItems.length;
+      items[newsIndex].classList.add('active');
+    }
+
+    function dismissNewsNotice() {
+      sessionStorage.setItem('artyst-news-dismissed', '1');
+      var container = document.getElementById('news-notice-container');
+      if (container) container.innerHTML = '';
+      if (newsInterval) { clearInterval(newsInterval); newsInterval = null; }
+    }
+    
     function buildPromos(data) {
       var inner = document.getElementById('promo-inner');
       if (!data.length) { inner.innerHTML = ''; return; }
