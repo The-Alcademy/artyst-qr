@@ -1229,6 +1229,12 @@ function getItemOrderCount(itemId) {
         buildNews(ndata.news || []);
       }
 
+if (hoursRes.status === 'fulfilled' && hoursRes.value.ok) {
+        var hdata = await hoursRes.value.json();
+        renderHoursMicro(hdata.state);
+        renderHoursList(hdata.days || []);
+      }
+      
       setInterval(rotatePromo, 4000);
     }
 
