@@ -1336,6 +1336,11 @@ if (hoursRes.status === 'fulfilled' && hoursRes.value.ok) {
         renderHoursMicro(hdata.state);
         renderHoursList(hdata.days || []);
       }
+
+if (playRes.status === 'fulfilled' && playRes.value.ok) {
+        var pdata = await playRes.value.json();
+        allPlayCategories = pdata.categories || [];
+      }
       
       setInterval(rotatePromo, 4000);
     }
