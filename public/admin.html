@@ -211,6 +211,33 @@
     body.light-mode .login-card p{color:#777}
     body.light-mode .crop-wrap{background:#fff}
     body.light-mode .two-col .card{background:#fff}
+    .task-guide{margin-bottom:1.5rem;border:1px solid #2a2a2a;border-radius:4px;overflow:hidden}
+    .task-guide-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;cursor:pointer;user-select:none;background:#1a1a1a}
+    .task-guide-header:hover{background:#222}
+    .task-guide-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888}
+    .task-guide-chevron{font-size:.7rem;color:#555;transition:transform .2s}
+    .task-guide-chevron.open{transform:rotate(180deg)}
+    .task-guide-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;padding:1rem;background:#161616}
+    .task-card{padding:.7rem .9rem;border:1px solid #2a2a2a;border-radius:3px;cursor:pointer;transition:all .15s;background:#111}
+    .task-card:hover{border-color:#c0392b;background:#1a1010}
+    .task-card-label{font-size:.82rem;font-weight:600;color:#eee;margin-bottom:.2rem}
+    .task-card-desc{font-size:.72rem;color:#666;line-height:1.4}
+    .task-card-steps{display:flex;gap:.3rem;margin-top:.5rem;flex-wrap:wrap}
+    .task-step{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.1rem .4rem;border-radius:2px;background:#2a2a2a;color:#888}
+    .task-step.active{background:#c0392b;color:#fff}
+    .tab-group-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#444;padding:.5rem .4rem .2rem;align-self:flex-end;white-space:nowrap}
+    body.light-mode .task-guide{border-color:#e0d8d0}
+    body.light-mode .task-guide-header{background:#f8f5f2}
+    body.light-mode .task-guide-header:hover{background:#f0ebe5}
+    body.light-mode .task-guide-title{color:#888}
+    body.light-mode .task-guide-body{background:#f5f2ef}
+    body.light-mode .task-card{background:#fff;border-color:#e0d8d0}
+    body.light-mode .task-card:hover{border-color:#c0392b;background:#fdf5f5}
+    body.light-mode .task-card-label{color:#1a1512}
+    body.light-mode .task-card-desc{color:#999}
+    body.light-mode .task-step{background:#e8e2da;color:#777}
+    body.light-mode .task-step.active{background:#c0392b;color:#fff}
+    body.light-mode .tab-group-label{color:#bbb}
     .theme-toggle{background:#333;border:1px solid #555;color:#ccc;cursor:pointer;font-size:.75rem;padding:.3rem .7rem;border-radius:2px;letter-spacing:.05em;transition:all .15s}
     .theme-toggle:hover{background:#444;color:#fff;border-color:#888}
     body.light-mode .theme-toggle{background:#e0d8d0;border-color:#bbb;color:#333}
@@ -810,7 +837,7 @@ function OptionsEditor({item,onSaved}){
   return(<div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid #222'}}><div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#c8a96e',marginBottom:'.8rem'}}>Customisation options</div>{status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'.6rem'}}>{status.msg}</div>}{groups.map((group,gi)=>(<div key={gi} className='options-group' style={{borderRadius:'3px',padding:'.8rem',marginBottom:'.6rem'}}><div style={{display:'flex',gap:'.5rem',alignItems:'flex-end',marginBottom:'.6rem',flexWrap:'wrap'}}><div className="form-group" style={{margin:0,flex:'1 1 140px'}}><label>Group name</label><input value={group.name} onChange={e=>updateGroup(gi,'name',e.target.value)} placeholder="e.g. Milk, Syrup, Mixer"/></div><div className="form-group" style={{margin:0,flex:'0 0 auto'}}><label>Default</label><select value={group.default_index} onChange={e=>updateGroup(gi,'default_index',parseInt(e.target.value))}><option value={-1}>None</option>{group.choices.map((c,i)=><option key={i} value={i}>{c.label||`Choice ${i+1}`}</option>)}</select></div><label style={{display:'flex',alignItems:'center',gap:'.3rem',fontSize:'.78rem',color:'#888',cursor:'pointer',flexShrink:0,paddingBottom:'4px'}}><input type="checkbox" checked={group.required} onChange={e=>updateGroup(gi,'required',e.target.checked)} style={{width:'auto'}}/>Required</label><button className="btn btn-secondary btn-small" style={{alignSelf:'flex-end'}} onClick={()=>removeGroup(gi)}>Remove group</button></div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.4rem'}}>Choices</div>{group.choices.map((choice,ci)=>(<div key={ci} style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}><input value={choice.label} onChange={e=>updateChoice(gi,ci,'label',e.target.value)} placeholder="e.g. Oat milk" style={{flex:2,padding:'.3rem .5rem',fontSize:'.82rem',borderRadius:'2px'}}/><div style={{display:'flex',alignItems:'center',gap:'.2rem',flex:'0 0 auto'}}><span style={{fontSize:'.75rem'}}>+£</span><input type="number" value={choice.price_mod} min="0" step="0.50" onChange={e=>updateChoice(gi,ci,'price_mod',e.target.value)} style={{width:'64px',padding:'.3rem .4rem',fontSize:'.82rem',borderRadius:'2px'}}/></div>{group.choices.length>1&&<button className="btn btn-secondary btn-small" onClick={()=>removeChoice(gi,ci)} style={{padding:'.3rem .5rem',flexShrink:0}}>✕</button>}</div>))}<button className="btn btn-secondary btn-small" style={{marginTop:'.4rem'}} onClick={()=>addChoice(gi)}>+ Add choice</button></div>))}<div style={{display:'flex',gap:'.5rem',marginTop:'.6rem'}}><button className="btn btn-secondary btn-small" onClick={addGroup}>+ Add option group</button><button className="btn btn-primary btn-small" onClick={save}>Save options</button>{groups.length>0&&<button className="btn btn-secondary btn-small" onClick={()=>{if(confirm('Remove all options?')){setGroups([]);}}}>Clear all</button>}</div></div>);
 }
 
-function MenuEditor(){
+function MenuEditor({anchor,onAnchorUsed}){
   const [categories,setCategories]=useState([]);
   const [loading,setLoading]=useState(true);
   const [editingItem,setEditingItem]=useState(null);
@@ -824,6 +851,11 @@ function MenuEditor(){
   const ALL_SLOTS=[{key:'brunch',label:'Brunch',hours:'8am–12pm'},{key:'lunch',label:'Lunch',hours:'12–2pm'},{key:'tea',label:'Tea',hours:'2–5pm'},{key:'evening',label:'Evening',hours:'5pm–close'}];
   async function loadMenu(){setLoading(true);const[cats,items]=await Promise.all([supabase('/rest/v1/menu_categories?order=side,sort_order'),supabase('/rest/v1/menu_items?order=category_id,sort_order')]);const grouped=(Array.isArray(cats)?cats:[]).map(cat=>({...cat,items:(Array.isArray(items)?items:[]).filter(i=>i.category_id===cat.id)}));setCategories(grouped);setLoading(false);}
   useEffect(()=>{loadMenu();},[]);
+  useEffect(()=>{
+    if(!anchor) return;
+    const el=document.getElementById(anchor);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});if(onAnchorUsed) onAnchorUsed();}
+  },[anchor]);
   function flash(msg,type='success'){setStatus({type,msg});setTimeout(()=>setStatus(null),2500);}
   async function toggleAvailable(item){await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{available:!item.available});loadMenu();}
   async function toggleTakeaway(item){await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{takeaway:!item.takeaway});loadMenu();}
@@ -979,16 +1011,59 @@ function MenuEditor(){
   return(
     <div>
       {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
-      <HoursEditor/>
+      <div id="menu-hours"><HoursEditor/></div>
+      <div id="menu-items"></div>
       <div className="warning-box" style={{marginBottom:'1rem'}}>
         Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway. Changes are live immediately.
       </div>
       {loading&&<div className="empty">Loading menu...</div>}
       {!loading&&renderSection(cafe,'Cafe and food')}
       {!loading&&renderSection(bar,'Bar')}
-      <PlayEditor/>
-      <NewsEditor/>
-      <PromoEditor/>
+      <div id="menu-play"><PlayEditor/></div>
+      <div id="menu-news"><NewsEditor/></div>
+      <div id="menu-promos"><PromoEditor/></div>
+    </div>
+  );
+}
+
+// ── TASK GUIDE ───────────────────────────────────────────
+const TASKS = [
+  {id:'promote-event', label:'Promote an event', desc:'Create a QR code, make a poster and send it out', tab:'create', steps:['New Code','Poster','Distribute','Screens']},
+  {id:'hire', label:'Hire someone', desc:'Post a job listing and review applicants', tab:'create', steps:['New Code','Distribute','Applications']},
+  {id:'whatsapp-email', label:'Send to WhatsApp or email', desc:'Push a QR code to your subscriber lists', tab:'distribute', steps:['Distribute']},
+  {id:'update-screens', label:'Update a venue screen', desc:'Change what QR codes show on the window, bar or wall screens', tab:'screens', steps:['Screens']},
+  {id:'update-menu', label:'Update the menu', desc:'Edit café and bar items, prices and availability', tab:'menu', anchor:'menu-items', steps:['Menu Editor']},
+  {id:'update-hours', label:'Change opening hours', desc:'Set opening and closing times for each day', tab:'menu', anchor:'menu-hours', steps:['Menu Editor → Hours']},
+  {id:'add-news', label:'Add a news notice', desc:'Add a rotating banner message shown on the menu', tab:'menu', anchor:'menu-news', steps:['Menu Editor → News']},
+  {id:'update-promos', label:'Update footer promos', desc:'Edit the promotional messages at the bottom of the menu page', tab:'menu', anchor:'menu-promos', steps:['Menu Editor → Promos']},
+  {id:'update-play', label:'Update Play section', desc:'Add or edit activities shown on the Play tab', tab:'menu', anchor:'menu-play', steps:['Menu Editor → Play']},
+  {id:'check-stats', label:'Check scan stats', desc:'See which QR codes are being scanned and when', tab:'reports', steps:['Reports']},
+  {id:'review-apps', label:'Review job applications', desc:'Read, shortlist and manage applicants', tab:'applications', steps:['Applications']},
+  {id:'add-destination', label:'Add a destination URL', desc:'Register a URL so you can point QR codes at it', tab:'destinations', steps:['Destinations','New Code']},
+];
+
+function TaskGuide({onSelectTask}){
+  const [open,setOpen]=useState(()=>sessionStorage.getItem('ca022_guide_closed')!=='1');
+  function toggle(){const next=!open;setOpen(next);if(!next) sessionStorage.setItem('ca022_guide_closed','1');else sessionStorage.removeItem('ca022_guide_closed');}
+  return(
+    <div className="task-guide no-print">
+      <div className="task-guide-header" onClick={toggle}>
+        <span className="task-guide-title">What do you want to do?</span>
+        <span className={"task-guide-chevron"+(open?' open':'')}>▼</span>
+      </div>
+      {open&&(
+        <div className="task-guide-body">
+          {TASKS.map(t=>(
+            <div key={t.id} className="task-card" onClick={()=>onSelectTask(t)}>
+              <div className="task-card-label">{t.label}</div>
+              <div className="task-card-desc">{t.desc}</div>
+              <div className="task-card-steps">
+                {t.steps.map(s=><span key={s} className="task-step">{s}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1021,6 +1096,7 @@ function App(){
   const [applications,setApplications]=useState([]);
   const [printQueue,setPrintQueue]=useState([]);
   const [distributeCode,setDistributeCode]=useState(null);
+  const [menuAnchor,setMenuAnchor]=useState(null);
   const [loading,setLoading]=useState(true);
 
   const isAdmin=user?.role==='admin';
@@ -1045,6 +1121,11 @@ function App(){
   }
 
   useEffect(()=>{if(user) loadAll();},[user]);
+
+  function handleSelectTask(task){
+    setTab(task.tab);
+    if(task.anchor) setMenuAnchor(task.anchor);
+  }
 
   function logout(){
     const token=sessionStorage.getItem('ca022_token');
@@ -1090,13 +1171,32 @@ function App(){
           <button className="btn btn-secondary btn-small" onClick={logout}>Sign Out</button>
         </div>
       </header>
+      <TaskGuide onSelectTask={handleSelectTask}/>
       <div className="stats-grid no-print">
         <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
         <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
         <div className="stat"><div className="number">{totalScans}</div><div className="label">Total Scans</div></div>
         <div className="stat" style={warnings?{borderColor:'#5a3a1a'}:{}}><div className="number" style={warnings?{color:'#ffaa5a'}:{}}>{warnings}</div><div className="label">Destination Warnings</div></div>
       </div>
-      <div className="tabs no-print">{TABS.map(([id,label])=>(<button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>))}</div>
+      <div className="tabs no-print">
+        <span className="tab-group-label">Publish</span>
+        {[['create','New Code'],['print',`Print Queue${printQueue.length?` (${printQueue.length})`:''}`],['distribute','Distribute'],['screens','Screens']].filter(([id])=>TABS.find(t=>t[0]===id)).map(([id,label])=>(
+          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
+        ))}
+        <span className="tab-group-label">Manage</span>
+        {[['library',`Library (${codes.length})`],['destinations','Destinations'],['groups','Groups'],['templates',`Templates (${templates.length+designs.length})`]].filter(([id])=>TABS.find(t=>t[0]===id)).map(([id,label])=>(
+          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
+        ))}
+        <span className="tab-group-label">Review</span>
+        {[['history','History'],['reports','Reports'],['applications',newApplications?`Applications (${newApplications} new)`:'Applications']].map(([id,label])=>(
+          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
+        ))}
+        <span className="tab-group-label">Configure</span>
+        {[['menu','Menu Editor'],...(isAdmin?[['users','Users']]:[])]
+          .map(([id,label])=>(
+          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
+        ))}
+      </div>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
         {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin}/>}
@@ -1110,7 +1210,7 @@ function App(){
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
         {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
-        {tab==='menu'&&<MenuEditor/>}
+        {tab==='menu'&&<MenuEditor anchor={menuAnchor} onAnchorUsed={()=>setMenuAnchor(null)}/>}
         {tab==='users'&&isAdmin&&<UsersTab/>}
       </>}
     </div>
