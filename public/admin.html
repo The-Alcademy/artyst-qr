@@ -757,8 +757,8 @@ function CreateForm({destinations,onCreate}){
       }
     }
     // Price
-    const rawPrice=ev.ticket_price||ev.price||ev.price_per_ticket||ev.cost||null;
-const price=rawPrice!=null?(Number(rawPrice)===0?'Free':'£'+Number(rawPrice).toFixed(2)):null;
+    const rawPrice=ev.ticket_price!=null?ev.ticket_price:(ev.price!=null?ev.price:(ev.price_per_ticket!=null?ev.price_per_ticket:(ev.cost!=null?ev.cost:null)));
+const price=rawPrice!=null?(Number(rawPrice)===0?'Free':'£'+Number(rawPrice).toFixed(2)):'£0.00';
     const meta={subtitle:ev.description||ev.short_description||ev.subtitle||'',dateText,price:price||'',url};
     setEventMeta(meta);
     setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId,_eventMeta:meta}));
