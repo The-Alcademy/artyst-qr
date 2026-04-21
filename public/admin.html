@@ -238,6 +238,7 @@
     body.light-mode .task-step{background:#e8e2da;color:#777}
     body.light-mode .task-step.active{background:#c0392b;color:#fff}
     body.light-mode .tab-group-label{color:#bbb}
+    body.light-mode [style*="--assistant-bg"]{--assistant-bg:#fff}
     body.light-mode .no-print[style*='1a3a5c']{background:#deeeff!important;border-color:#88aacc!important}
     body.light-mode .no-print[style*='1a3a5c'] span,body.light-mode .no-print[style*='1a3a5c'] strong{color:#1a4a7c!important}
     body.light-mode .no-print[style*='1a3a5c'] .btn{color:#555}
@@ -653,7 +654,7 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
           <tr>
             <SortTh field="label" label="Label"/>
             <SortTh field="type" label="Type"/>
-            <th>Destination</th>
+            <th>Source</th>
             <SortTh field="scan_count" label="Scans"/>
             <SortTh field="placement" label="Placement"/>
             <SortTh field="active" label="Status"/>
@@ -718,7 +719,7 @@ function CreateForm({destinations,onCreate}){
     if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
     else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate(Array.isArray(res)?res[0]?.id:res?.id);}
   }
-  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{!useCustom?<div className="form-group full"><label>Destination</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a destination —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use destination library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
+  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{!useCustom?<div className="form-group full"><label>Communication Source</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a communication source —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use source library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
 }
 
 function Destinations({destinations,onRefresh,isAdmin}){
@@ -815,7 +816,8 @@ function Applications({applications,onRefresh}){
   const filtered=applications.filter(a=>{if(filterStatus!=='all'&&a.status!==filterStatus) return false;if(filterSlug!=='all'&&a.opportunity_slug!==filterSlug) return false;return true;});
   const newCount=applications.filter(a=>a.status==='new').length;
   const bySlug=slugs.reduce((acc,s)=>{acc[s]=applications.filter(a=>a.opportunity_slug===s).length;return acc;},{});
-  return(<div><div className="stats-grid" style={{marginBottom:'1.5rem'}}><div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div><div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div><div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div><div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div></div><div className="card"><div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Role</label><select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}><option value="all">All roles ({applications.length})</option>{slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}</select></div><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Status</label><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="all">All statuses</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></div></div>{!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}{filtered.map(a=>(<div key={a.id} style={{background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}><div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}><div style={{flex:1,minWidth:0}}><div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div><div style={{fontSize:'.78rem',color:'#555',marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div><span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span></div><span style={{color:'#444',fontSize:'.8rem',marginLeft:'1rem'}}>{expanded===a.id?'▲':'▼'}</span></div>{expanded===a.id&&<div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}><div className="form-grid" style={{marginBottom:'1rem'}}><div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Email</div><a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a></div>{a.phone&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Phone</div><div style={{fontSize:'.88rem'}}>{a.phone}</div></div>}{a.cv_url&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>CV</div><a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a></div>}</div>{a.message&&<div style={{marginBottom:'1rem'}}><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Message</div><div style={{background:'#1a1a1a',border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',color:'#aaa',lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div></div>}<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Update Status</div><div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>{STATUSES.map(s=>(<button key={s} className="btn btn-small" style={{background:a.status===s?STATUS_BG[s]:'#1a1a1a',color:a.status===s?STATUS_FG[s]:'#555',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}} disabled={updating===a.id||a.status===s} onClick={()=>updateStatus(a.id,s)}>{s}</button>))}</div></div></div>}</div>))}</div></div>);
+  return(<div><div className="stats-grid" style={{marginBottom:'1.5rem'}}><div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div><div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div><div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div><div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div></div><div className="card"><div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Role</label><select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}><option value="all">All roles ({applications.length})</option>{slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}</select></div><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Status</label><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="all">All statuses</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></div></div>{!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}{filtered.map(a=>(<div key={a.id} style={{background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}><div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}><div style={{flex:1,minWidth:0}}><div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div><div style={{fontSize:'.78rem',color:'#555',marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div><span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span></div><span style={{color:'#444',fontSize:'.8rem',marginLeft:'1rem'}}>{expanded===a.id?'▲':'▼'}</span></div>{expanded===a.id&&<div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}><div className="form-grid" style={{marginBottom:'1rem'}}><div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Email</div><a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a></div>{a.phone&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Phone</div><div style={{fontSize:'.88rem'}}>{a.phone}</div></div>}{a.cv_url&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>CV</div><a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a></div>}</div>{a.message&&<div style={{marginBottom:'1rem'}}><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Message</div><div style={{background:'#1a1a1a',border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',color:'#aaa',lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div></div>}<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Update Status</div><div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>{STATUSES.map(s=>(<button key={s} className="btn btn-small" style={{background:a.status===s?STATUS_BG[s]:'#1a1a1a',color:a.status===s?STATUS_FG[s]:'#555',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}} disabled={updating===a.id||a.status===s} onClick={()=>updateStatus(a.id,s)}>{s}</button>))}</div></div>
+              <AppAutoReply application={a}/></div>}</div>))}</div></div>);
 }
 
 // ── MENU EDITOR COMPONENTS (from original admin.html) ─────
@@ -1111,6 +1113,303 @@ function MenuEditor({anchor,onAnchorUsed}){
   );
 }
 
+// ── APP AUTO REPLY ───────────────────────────────────────
+const APP_REPLY_TYPES = [
+  {id:'acknowledge', label:'Acknowledge receipt', desc:'Thank them, say you'll be in touch'},
+  {id:'shortlist',   label:'Invite to interview', desc:'Congratulate, propose next steps'},
+  {id:'reject',      label:'Polite rejection',    desc:'Thank them, wish them well'},
+  {id:'more_info',   label:'Request more info',   desc:'Ask a specific follow-up question'},
+];
+
+function AppAutoReply({application}){
+  const [type,setType]=useState('');
+  const [draft,setDraft]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [sent,setSent]=useState(false);
+  const [error,setError]=useState('');
+  const [open,setOpen]=useState(false);
+
+  async function generate(){
+    if(!type) return;
+    setLoading(true);setDraft('');setError('');
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:1000,
+          messages:[{role:'user',content:`You are writing on behalf of The Artyst, a cultural café, bar and events venue in Cambridge honouring Syd Barrett's legacy. Write a brief, warm, professional email response to a job application.
+
+Applicant name: ${application.name}
+Role applied for: ${application.opportunity_slug}
+Response type: ${APP_REPLY_TYPES.find(t=>t.id===type)?.label}
+Their message: ${application.message||'(none provided)'}
+
+Write only the email body (no subject line, no "Dear" or sign-off needed — those will be added). Keep it under 100 words. Warm but professional. Reflect The Artyst's character — cultural, human, not corporate.`}]
+        })
+      });
+      const data=await res.json();
+      setDraft(data.content?.[0]?.text||'');
+    }catch(e){setError('Generation failed.');}
+    setLoading(false);
+  }
+
+  async function sendReply(){
+    if(!draft||!application.email) return;
+    setLoading(true);
+    try{
+      const res=await fetch('/api/send-email',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          to:application.email,
+          subject:`Re: Your application — ${application.opportunity_slug}`,
+          body:draft,
+          reply_to:'matthew@othersyde.co.uk'
+        })
+      });
+      if(res.ok){setSent(true);setOpen(false);}
+      else setError('Send failed.');
+    }catch(e){setError('Send failed.');}
+    setLoading(false);
+  }
+
+  if(sent) return <div className="success" style={{marginTop:'.8rem'}}>Response sent to {application.email}</div>;
+
+  return(
+    <div style={{marginTop:'.8rem',paddingTop:'.8rem',borderTop:'1px solid #222'}}>
+      {!open?(
+        <button className="btn btn-blue btn-small" onClick={()=>setOpen(true)}>Send response email</button>
+      ):(
+        <div>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Auto-respond</div>
+          <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap',marginBottom:'.6rem'}}>
+            {APP_REPLY_TYPES.map(t=>(
+              <div key={t.id} onClick={()=>setType(t.id)}
+                style={{padding:'.35rem .7rem',borderRadius:'2px',cursor:'pointer',fontSize:'.78rem',
+                  background:type===t.id?'#1a3a5c':'inherit',
+                  color:type===t.id?'#5aafff':'inherit',
+                  border:'1px solid '+(type===t.id?'#2a5a7c':'#333')}}>
+                {t.label}
+              </div>
+            ))}
+          </div>
+          {type&&!draft&&<button className="btn btn-secondary btn-small" onClick={generate} disabled={loading}>{loading?'Writing...':'Generate draft'}</button>}
+          {draft&&(
+            <div style={{marginTop:'.5rem'}}>
+              <textarea value={draft} onChange={e=>setDraft(e.target.value)} rows={5}
+                style={{width:'100%',padding:'.5rem .6rem',fontSize:'.85rem',borderRadius:'2px',lineHeight:1.6,resize:'vertical'}}/>
+              <div style={{display:'flex',gap:'.4rem',marginTop:'.4rem'}}>
+                <button className="btn btn-secondary btn-small" onClick={generate} disabled={loading}>Regenerate</button>
+                <button className="btn btn-primary btn-small" onClick={sendReply} disabled={loading}>{loading?'Sending...':'Send to '+application.email}</button>
+                <button className="btn btn-secondary btn-small" onClick={()=>setOpen(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+          {error&&<div className="error" style={{marginTop:'.4rem'}}>{error}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── REVIEW RESPONDER ─────────────────────────────────────
+function ReviewResponder(){
+  const [reviewText,setReviewText]=useState('');
+  const [rating,setRating]=useState('5');
+  const [draft,setDraft]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [copied,setCopied]=useState(false);
+  const [error,setError]=useState('');
+
+  async function generate(){
+    if(!reviewText.trim()) return;
+    setLoading(true);setDraft('');setError('');setCopied(false);
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:1000,
+          messages:[{role:'user',content:`You are writing a public response to a customer review on behalf of The Artyst — a cultural café, bar and events venue in Cambridge that celebrates Syd Barrett's legacy, hosts live music, exhibitions, and the Invysible College. The venue is warm, intelligent, and distinctive — not corporate.
+
+Review rating: ${rating} stars
+Review text: ${reviewText}
+
+Write a short, genuine public response (under 80 words). If positive: thank them warmly and reflect something specific from their review. If negative or mixed: acknowledge their concern graciously, explain briefly if appropriate, invite them back. Never be defensive. Sound like a person, not a brand. Do not use hollow phrases like "we pride ourselves" or "valued feedback".
+
+Write only the response text.`}]
+        })
+      });
+      const data=await res.json();
+      setDraft(data.content?.[0]?.text||'');
+    }catch(e){setError('Generation failed.');}
+    setLoading(false);
+  }
+
+  function copyToClipboard(){
+    navigator.clipboard.writeText(draft);
+    setCopied(true);
+    setTimeout(()=>setCopied(false),3000);
+  }
+
+  return(
+    <div className="card">
+      <h2>Review Responder</h2>
+      <p style={{fontSize:'.82rem',margin:'-.4rem 0 1rem'}}>Paste a TripAdvisor or Google review, generate a response, then copy and paste it manually into the platform.</p>
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Star rating</label>
+          <select value={rating} onChange={e=>setRating(e.target.value)}>
+            {['5','4','3','2','1'].map(r=><option key={r} value={r}>{r} star{r!=='1'?'s':''}</option>)}
+          </select>
+        </div>
+        <div className="form-group full">
+          <label>Review text</label>
+          <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} rows={4}
+            placeholder="Paste the customer review here..." style={{resize:'vertical'}}/>
+        </div>
+        <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}>
+          <button className="btn btn-primary" onClick={generate} disabled={loading||!reviewText.trim()}>
+            {loading?'Writing...':'Generate response'}
+          </button>
+        </div>
+      </div>
+      {error&&<div className="error">{error}</div>}
+      {draft&&(
+        <div style={{marginTop:'1rem'}}>
+          <label style={{marginBottom:'.4rem',display:'block'}}>Generated response — edit if needed</label>
+          <textarea value={draft} onChange={e=>setDraft(e.target.value)} rows={4}
+            style={{width:'100%',padding:'.5rem .6rem',fontSize:'.88rem',borderRadius:'2px',lineHeight:1.6,resize:'vertical'}}/>
+          <div style={{display:'flex',gap:'.5rem',marginTop:'.5rem'}}>
+            <button className="btn btn-secondary" onClick={generate} disabled={loading}>Regenerate</button>
+            <button className="btn btn-primary" onClick={copyToClipboard}>{copied?'Copied ✓':'Copy to clipboard'}</button>
+            <a href="https://www.tripadvisor.com/Restaurant_Review-g186225-d34333914-Reviews-The_Artyst-Cambridge_Cambridgeshire_England.html"
+              target="_blank" style={{marginLeft:'auto',fontSize:'.8rem',color:'#5aafff',alignSelf:'center',textDecoration:'none'}}>
+              Open TripAdvisor ↗
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ADMIN ASSISTANT ───────────────────────────────────────
+const ASSISTANT_SYSTEM = `You are the admin assistant for The Artyst QR Engine (CA-022). The Artyst is a cultural café, bar and events venue at 54-56 Chesterton Road, Cambridge CB4 1EN. It is the world's only dedicated Syd Barrett heritage venue, operating with Barrett estate approval and exhibiting Mick Rock photography. The venue is a cultural and educational space — not a pub, not a nightclub. Seated, table-service model; events-led.
+
+The QR Engine admin panel has these sections:
+- Library: all QR codes, sortable, with scan counts
+- New Code: create a QR code pointing to a communication source (URL)
+- Print Queue + Poster Editor: design and print posters in various formats
+- Distribute: send QR codes via WhatsApp, email, or log for screen/print channels
+- Screens: assign QR codes to three in-venue screens (Window, POS, Wall)
+- Destinations (Communication Sources): the library of URLs QR codes point to
+- Groups: subscriber groups for email/WhatsApp distribution
+- History: log of all distributions
+- Reports: scan analytics by code, placement, device, time
+- Applications: job applications with status workflow and auto-reply
+- Menu Editor: edit the Artyst menu, opening hours, news notices, footer promos, Play section
+- Users: add/manage admin and viewer accounts
+
+You help staff complete tasks in this system. Be brief, practical, and specific. If asked for poster copy or creative content, write in the voice of The Artyst — warm, intelligent, culturally literate, not corporate. Never use hollow marketing phrases.`;
+
+function AdminAssistant(){
+  const [open,setOpen]=useState(false);
+  const [messages,setMessages]=useState([]);
+  const [input,setInput]=useState('');
+  const [loading,setLoading]=useState(false);
+  const inputRef=useRef(null);
+  const bottomRef=useRef(null);
+
+  useEffect(()=>{
+    if(open&&inputRef.current) inputRef.current.focus();
+  },[open]);
+
+  useEffect(()=>{
+    if(bottomRef.current) bottomRef.current.scrollIntoView({behavior:'smooth'});
+  },[messages]);
+
+  async function send(){
+    if(!input.trim()||loading) return;
+    const userMsg={role:'user',content:input.trim()};
+    const newMessages=[...messages,userMsg];
+    setMessages(newMessages);
+    setInput('');
+    setLoading(true);
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:1000,
+          system:ASSISTANT_SYSTEM,
+          messages:newMessages
+        })
+      });
+      const data=await res.json();
+      const reply=data.content?.[0]?.text||'Sorry, something went wrong.';
+      setMessages(m=>[...m,{role:'assistant',content:reply}]);
+    }catch(e){
+      setMessages(m=>[...m,{role:'assistant',content:'Connection error — please try again.'}]);
+    }
+    setLoading(false);
+  }
+
+  return(
+    <>
+      <button
+        onClick={()=>setOpen(o=>!o)}
+        style={{position:'fixed',bottom:'4.5rem',right:'1.5rem',background:'#c0392b',color:'#fff',
+          border:'none',borderRadius:'50%',width:'40px',height:'40px',fontSize:'1.1rem',
+          cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+          boxShadow:'0 2px 8px rgba(0,0,0,.4)',zIndex:1000,transition:'transform .15s'}}
+        title="Admin assistant">
+        {open?'×':'✦'}
+      </button>
+      {open&&(
+        <div style={{position:'fixed',bottom:'8rem',right:'1.5rem',width:'360px',maxHeight:'500px',
+          display:'flex',flexDirection:'column',borderRadius:'6px',overflow:'hidden',
+          boxShadow:'0 8px 32px rgba(0,0,0,.4)',zIndex:999,
+          background:'var(--assistant-bg,#1a1a1a)',border:'1px solid #2a2a2a'}}>
+          <div style={{padding:'.7rem 1rem',borderBottom:'1px solid #2a2a2a',display:'flex',justifyContent:'space-between',alignItems:'center',background:'#c0392b'}}>
+            <span style={{fontSize:'.82rem',fontWeight:600,color:'#fff',letterSpacing:'.05em'}}>✦ Admin Assistant</span>
+            <button onClick={()=>setMessages([])} style={{background:'none',border:'none',color:'rgba(255,255,255,.7)',cursor:'pointer',fontSize:'.72rem'}}>Clear</button>
+          </div>
+          <div style={{flex:1,overflowY:'auto',padding:'.8rem',display:'flex',flexDirection:'column',gap:'.6rem'}}>
+            {messages.length===0&&(
+              <div style={{fontSize:'.8rem',opacity:.5,textAlign:'center',padding:'1rem 0'}}>
+                Ask me anything about the QR Engine or get help writing copy for The Artyst.
+              </div>
+            )}
+            {messages.map((m,i)=>(
+              <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
+                <div style={{maxWidth:'85%',padding:'.5rem .7rem',borderRadius:'4px',fontSize:'.83rem',lineHeight:1.5,
+                  background:m.role==='user'?'#c0392b':'#2a2a2a',
+                  color:'#fff'}}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {loading&&<div style={{fontSize:'.78rem',opacity:.5}}>Thinking...</div>}
+            <div ref={bottomRef}/>
+          </div>
+          <div style={{padding:'.6rem',borderTop:'1px solid #2a2a2a',display:'flex',gap:'.4rem'}}>
+            <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&send()}
+              placeholder="Ask anything..."
+              style={{flex:1,padding:'.45rem .6rem',fontSize:'.85rem',borderRadius:'3px'}}/>
+            <button className="btn btn-primary btn-small" onClick={send} disabled={loading||!input.trim()}>→</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── BACK TO TOP ──────────────────────────────────────────
 function BackToTop(){
   const [visible,setVisible]=useState(false);
@@ -1268,6 +1567,7 @@ function App(){
     ['reports','Reports'],
     ['applications',newApplications?`Applications (${newApplications} new)`:'Applications'],
     ['menu','Menu Editor'],
+    ['reviews','Review Responder'],
     ...(isAdmin?[['users','Users']]:[]),
   ];
 
@@ -1277,6 +1577,7 @@ function App(){
   return(
     <div className="app">
       <BackToTop/>
+      <AdminAssistant/>
       <header>
         <h1>QR Engine — The Artyst</h1>
         <div className="header-user">
@@ -1338,7 +1639,7 @@ function App(){
           <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
         ))}
         <span className="tab-group-label">Configure</span>
-        {[['menu','Menu Editor'],...(isAdmin?[['users','Users']]:[])]
+        {[['menu','Menu Editor'],['reviews','Review Responder'],...(isAdmin?[['users','Users']]:[])]
           .map(([id,label])=>(
           <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
         ))}
@@ -1358,6 +1659,7 @@ function App(){
         {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
         {tab==='menu'&&<MenuEditor anchor={menuAnchor} onAnchorUsed={()=>setMenuAnchor(null)}/>}
         {tab==='users'&&isAdmin&&<UsersTab/>}
+        {tab==='reviews'&&<ReviewResponder/>}
       </>}
     </div>
   );
