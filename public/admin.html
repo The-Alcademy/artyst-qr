@@ -334,7 +334,7 @@ async function uploadImage(file){
 function slugify(s){return s.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,40);}
 function TypeBadge({type}){return <span className={`badge badge-${type}`}>{type}</span>;}
 
-function QRWidget({url,size=120}){
+const QRWidget=React.memo(function QRWidget({url,size=120}){
   const ref=useRef(null);
   useEffect(()=>{
     if(!ref.current||!url)return;
@@ -490,13 +490,14 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [loadTemplateId,setLoadTemplateId]=useState('');
   const [loadDesignId,setLoadDesignId]=useState('');
   const [downloading,setDownloading]=useState(false);
-  const [generatingImage,setGeneratingImage]=useState(false);
+  const [generatingImage,setGeneratingImage]=useState('');
   const [genError,setGenError]=useState('');
   const [duplex,setDuplex]=useState('none');
   const [backPoster,setBackPoster]=useState({...BLANK_POSTER});
   const [backUploading,setBackUploading]=useState({fg:false,bg:false});
   const posterRef=useRef(null);
   const backPosterRef=useRef(null);
+  const posterBottomRef=useRef(null);
   const fmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
   const codeDesigns=(designs||[]).filter(d=>d.qr_code_id===code?.id);
   const isScreen=isScreenFormat(poster.format);
@@ -519,8 +520,8 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
     setUploading(u=>({...u,[key]:false}));
   }
 
-  async function generateImage(){
-    setGeneratingImage(true);setGenError('');
+  async function generateImage(field='bg'){
+    setGeneratingImage(field);setGenError('');
     try{
       const res=await fetch('/api/generate-image',{
         method:'POST',
@@ -533,9 +534,9 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
       });
       const data=await res.json();
       if(!res.ok){setGenError(data.error||'Generation failed.');return;}
-      setPoster(p=>({...p,bgImage:data.url,bgImageUrl:data.url,overlayOpacity:0.35,overlayColor:'#000000'}));
+      if(field==='fg'){setPoster(p=>({...p,fgImage:data.url,fgImageUrl:data.url}));}else{setPoster(p=>({...p,bgImage:data.url,bgImageUrl:data.url,overlayOpacity:0.35,overlayColor:'#000000'}));}
     }catch(e){setGenError('Connection error.');}
-    finally{setGeneratingImage(false);}
+    finally{setGeneratingImage('');}
   }
 
   async function downloadImage(){
@@ -600,21 +601,27 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           <div className="form-group"><label>Price</label><input value={poster.price} onChange={e=>setPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div>
           <div className="form-group"><label>Call to Action</label><input value={poster.cta} onChange={e=>setPoster(p=>({...p,cta:e.target.value}))}/></div>
           <div className="form-group"><label>Format</label><select value={poster.format} onChange={e=>setPoster(p=>({...p,format:e.target.value}))}><optgroup label="Print">{FORMATS.filter(f=>!f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup><optgroup label="Screen / Social">{FORMATS.filter(f=>f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup></select></div>
-          <div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
+          <div className="form-group"><label>Foreground Image</label>
+            <div style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}>
+              <button className="btn btn-blue btn-small" onClick={()=>generateImage('fg')} disabled={generatingImage==='fg'} type="button">
+                {generatingImage==='fg'?'Generating...':'✦ Generate with AI'}
+              </button>
+            </div>
+            <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
           <div className="form-group"><label>Background Image</label>
             <div style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}>
-              <button className="btn btn-blue btn-small" onClick={generateImage} disabled={generatingImage} type="button">
-                {generatingImage?'Generating...':'✦ Generate with AI'}
+              <button className="btn btn-blue btn-small" onClick={()=>generateImage('bg')} disabled={!!generatingImage} type="button">
+                {generatingImage==='bg'?'Generating...':'✦ Generate with AI'}
               </button>
               {genError&&<span style={{fontSize:'.75rem',color:'#ff7a7a'}}>{genError}</span>}
             </div>
             <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
-          {poster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(poster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={poster.overlayOpacity} onChange={e=>setPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}
-          <div className="form-group"><label>Text Colour</label><input type="color" value={poster.textColor} onChange={e=>setPoster(p=>({...p,textColor:e.target.value}))}/></div>
+
           {!isScreen&&<div className="form-group full"><label>Duplex Printing</label><div style={{display:'flex',gap:'.5rem',marginTop:'.3rem'}}>{[['none','Single sided'],['same','Same on both sides'],['different','Different design on back']].map(([val,lbl])=><div key={val} className={`channel-btn${duplex===val?' selected':''}`} style={{flex:1}} onClick={()=>setDuplex(val)}>{lbl}</div>)}</div></div>}
           <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem',flexWrap:'wrap'}}>
             <button className="btn btn-blue" onClick={()=>setSaveMode('template')}>Save as Template</button>
             {code&&<button className="btn btn-green" onClick={()=>setSaveMode('design')}>Save as Design</button>}
+            <button className="btn btn-secondary" onClick={()=>posterBottomRef.current&&posterBottomRef.current.scrollIntoView({behavior:'smooth'})}>Edit ↓</button>
             {isScreen?<button className="btn btn-primary" onClick={downloadImage} disabled={downloading}>{downloading?'Downloading...':'Download Image'}</button>:<button className="btn btn-primary" onClick={()=>window.print()}>Print</button>}
           </div>
         </div>
@@ -636,6 +643,23 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           })()}
           {duplex==='different'&&<div className="no-print card" style={{marginTop:'2rem'}}><h2>Back Design</h2><div className="form-grid"><div className="form-group"><label>Title</label><input value={backPoster.title} onChange={e=>setBackPoster(p=>({...p,title:e.target.value}))}/></div><div className="form-group"><label>Subtitle</label><input value={backPoster.subtitle} onChange={e=>setBackPoster(p=>({...p,subtitle:e.target.value}))} placeholder="One line description"/></div><div className="form-group"><label>Date & Time</label><input value={backPoster.dateText} onChange={e=>setBackPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/></div><div className="form-group"><label>Price</label><input value={backPoster.price} onChange={e=>setBackPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div><div className="form-group"><label>Call to Action</label><input value={backPoster.cta} onChange={e=>setBackPoster(p=>({...p,cta:e.target.value}))}/></div><div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,fg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,fgImage:url,fgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,fg:false}));}}/>{backUploading.fg&&<span className="uploading">Uploading...</span>}{backPoster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div><div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,bg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,bgImage:url,bgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,bg:false}));}}/>{backUploading.bg&&<span className="uploading">Uploading...</span>}{backPoster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>{backPoster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(backPoster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={backPoster.overlayOpacity} onChange={e=>setBackPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={backPoster.overlayColor} onChange={e=>setBackPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}<div className="form-group"><label>Text Colour</label><input type="color" value={backPoster.textColor} onChange={e=>setBackPoster(p=>({...p,textColor:e.target.value}))}/></div></div></div>}
         </>}
+      </div>
+      {/* ── Controls below poster ─────────────────────── */}
+      <div ref={posterBottomRef} className="no-print card" style={{marginTop:'1rem'}}>
+        <h2>Adjust poster</h2>
+        <div className="form-grid">
+          <div className="form-group"><label>Text Colour</label><input type="color" value={poster.textColor} onChange={e=>setPoster(p=>({...p,textColor:e.target.value}))}/></div>
+          {poster.bgImage&&<>
+            <div className="form-group"><label>Overlay Opacity — {Math.round(poster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={poster.overlayOpacity} onChange={e=>setPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div>
+            <div className="form-group"><label>Overlay Colour</label><input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/></div>
+          </>}
+          <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>
+            {isScreen
+              ? <button className="btn btn-primary" onClick={downloadImage} disabled={downloading}>{downloading?'Downloading...':'Download Image'}</button>
+              : <button className="btn btn-primary" onClick={()=>window.print()}>Print</button>
+            }
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -969,9 +993,87 @@ function Applications({applications,onRefresh}){
   const filtered=applications.filter(a=>{if(filterStatus!=='all'&&a.status!==filterStatus) return false;if(filterSlug!=='all'&&a.opportunity_slug!==filterSlug) return false;return true;});
   const newCount=applications.filter(a=>a.status==='new').length;
   const bySlug=slugs.reduce((acc,s)=>{acc[s]=applications.filter(a=>a.opportunity_slug===s).length;return acc;},{});
-  return(<div><div className="stats-grid" style={{marginBottom:'1.5rem'}}><div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div><div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div><div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div><div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div></div><div className="card"><div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Role</label><select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}><option value="all">All roles ({applications.length})</option>{slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}</select></div><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Status</label><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="all">All statuses</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></div></div>{!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}{filtered.map(a=>(<div key={a.id} style={{background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}><div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}><div style={{flex:1,minWidth:0}}><div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div><div style={{fontSize:'.78rem',color:'#555',marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div><span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span></div><span style={{color:'#444',fontSize:'.8rem',marginLeft:'1rem'}}>{expanded===a.id?'▲':'▼'}</span></div>{expanded===a.id&&<div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}><div className="form-grid" style={{marginBottom:'1rem'}}><div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Email</div><a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a></div>{a.phone&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Phone</div><div style={{fontSize:'.88rem'}}>{a.phone}</div></div>}{a.cv_url&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>CV</div><a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a></div>}</div>{a.message&&<div style={{marginBottom:'1rem'}}><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Message</div><div style={{background:'#1a1a1a',border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',color:'#aaa',lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div></div>}<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Update Status</div><div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>{STATUSES.map(s=>(<button key={s} className="btn btn-small" style={{background:a.status===s?STATUS_BG[s]:'#1a1a1a',color:a.status===s?STATUS_FG[s]:'#555',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}} disabled={updating===a.id||a.status===s} onClick={()=>updateStatus(a.id,s)}>{s}</button>))}</div></div>
-              <AppAutoReply application={a}/></div>}</div>))}</div></div>);
+  return(
+    <div>
+      <div className="stats-grid" style={{marginBottom:'1.5rem'}}>
+        <div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div>
+        <div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div>
+        <div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div>
+        <div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div>
+      </div>
+      <div className="card">
+        <div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}>
+          <div className="form-group" style={{flex:1,minWidth:'160px'}}>
+            <label>Filter by Role</label>
+            <select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}>
+              <option value="all">All roles ({applications.length})</option>
+              {slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{flex:1,minWidth:'160px'}}>
+            <label>Filter by Status</label>
+            <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
+              <option value="all">All statuses</option>
+              {STATUSES.map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        {!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}
+        {filtered.map(a=>(
+          <div key={a.id} style={{background:'inherit',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}>
+              <div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div>
+                  <div style={{fontSize:'.78rem',opacity:.6,marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+                </div>
+                <span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span>
+              </div>
+              <span style={{fontSize:'.8rem',marginLeft:'1rem',opacity:.5}}>{expanded===a.id?'▲':'▼'}</span>
+            </div>
+            {expanded===a.id&&(
+              <div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}>
+                <div className="form-grid" style={{marginBottom:'1rem'}}>
+                  <div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Email</div>
+                    <a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a>
+                  </div>
+                  {a.phone&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Phone</div>
+                    <div style={{fontSize:'.88rem'}}>{a.phone}</div>
+                  </div>}
+                  {a.cv_url&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>CV</div>
+                    <a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a>
+                  </div>}
+                </div>
+                {a.message&&(
+                  <div style={{marginBottom:'1rem'}}>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Message</div>
+                    <div style={{border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',opacity:.8,lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div>
+                  </div>
+                )}
+                <div>
+                  <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Update Status</div>
+                  <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+                    {STATUSES.map(s=>(
+                      <button key={s} className="btn btn-small"
+                        style={{background:a.status===s?STATUS_BG[s]:'inherit',color:a.status===s?STATUS_FG[s]:'inherit',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}}
+                        disabled={updating===a.id||a.status===s}
+                        onClick={()=>updateStatus(a.id,s)}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+                <AppAutoReply application={a}/>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
+
 
 // ── MENU EDITOR COMPONENTS (from original admin.html) ─────
 
@@ -999,8 +1101,99 @@ function PlayEditor({isAdmin}){
   async function deleteItem(id){if(!confirm('Delete this item?'))return;await supabase(`/rest/v1/play_items?id=eq.${id}`,'DELETE');loadAll();}
   function startEditItem(item){setEditingItem(item.id);setAddingItemTo(null);setItemForm({title:item.title||'',subtitle:item.subtitle||'',description:item.description||'',when_text:item.when_text||'',href:item.href||'',cta_label:item.cta_label||'',image_url:item.image_url||'',sort_order:item.sort_order||100});}
   function cancelItemEdit(){setEditingItem(null);setAddingItemTo(null);setItemForm(blankPlayItem());}
-  return(<div className="card" style={{marginBottom:'1.5rem'}}><h2>Play — Serious Play at the Artyst</h2><p style={{fontSize:'.82rem',margin:'-.4rem 0 1rem'}}>Activities shown on the Play tab at /menu.</p>{status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}{loading&&<div className="empty">Loading...</div>}{!loading&&categories.map(cat=>(<div key={cat.id} style={{marginBottom:'1.5rem',paddingBottom:'1.5rem',borderBottom:'1px solid #222'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.6rem'}}><span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',color:cat.active?'#c8a96e':'#999'}}>{cat.name}</span><div style={{display:'flex',gap:'.3rem'}}>{isAdmin&&<><button className={`btn btn-small ${cat.active?'btn-secondary':'btn-primary'}`} onClick={()=>toggleCatActive(cat)}>{cat.active?'Hide':'Show'}</button><button className="btn btn-blue btn-small" onClick={()=>startEditCat(cat)}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>deleteCat(cat.id)}>Del</button><button className="btn btn-green btn-small" onClick={()=>{setAddingItemTo(addingItemTo===cat.id?null:cat.id);setEditingItem(null);setItemForm(blankPlayItem());}}>+ Item</button></>}</div></div>{editingCat===cat.id&&<div style={{border:'1px solid #2a5a7c',borderRadius:'2px',padding:'.8rem',marginBottom:'.8rem'}}><div className="form-grid"><div className="form-group"><label>Name</label><input value={catForm.name} onChange={e=>setCatForm(f=>({...f,name:e.target.value}))}/></div><div className="form-group"><label>Slug</label><input value={catForm.slug} onChange={e=>setCatForm(f=>({...f,slug:e.target.value}))}/></div><div className="form-group"><label>Sort order</label><input type="number" value={catForm.sort_order} onChange={e=>setCatForm(f=>({...f,sort_order:e.target.value}))}/></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>{setEditingCat(null);setCatForm({name:'',slug:'',sort_order:100});}}>Cancel</button><button className="btn btn-primary btn-small" onClick={saveCat}>Save</button></div></div></div>}{cat.items.map(item=>(<div key={item.id} style={{padding:'.6rem 0',borderBottom:'1px solid #1e1e1e',opacity:item.active?1:0.45}}>{editingItem===item.id?(<PlayItemForm form={itemForm} setForm={setItemForm} onSave={()=>saveItem(item.category_id)} onCancel={cancelItemEdit}/>):(<div style={{display:'flex',alignItems:'flex-start',gap:'.8rem'}}><div style={{flex:1,minWidth:0}}><div style={{fontSize:'.95rem',fontWeight:600}}>{item.title}</div>{item.subtitle&&<div style={{fontSize:'.78rem',marginTop:'2px'}}>{item.subtitle}</div>}{item.when_text&&<div style={{fontSize:'.72rem',color:'#c8a96e',marginTop:'4px',letterSpacing:'.06em',textTransform:'uppercase'}}>{item.when_text}</div>}</div><div style={{display:'flex',gap:'.3rem',flexShrink:0}}>{isAdmin&&<><button className={`btn btn-small ${item.active?'btn-primary':'btn-secondary'}`} onClick={()=>toggleItemActive(item)}>{item.active?'On':'Off'}</button><button className="btn btn-blue btn-small" onClick={()=>startEditItem(item)}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>deleteItem(item.id)}>Del</button></>}</div></div>)}</div>))}{addingItemTo===cat.id&&<div style={{border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem',marginTop:'.8rem'}}><PlayItemForm form={itemForm} setForm={setItemForm} onSave={()=>saveItem(cat.id)} onCancel={cancelItemEdit}/></div>}</div>))}<div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid #222'}}>{isAdmin&&!addingCat&&!editingCat&&<button className="btn btn-green btn-small" onClick={()=>{setAddingCat(true);setCatForm({name:'',slug:'',sort_order:(categories.length+1)*10});}}>+ New category</button>}{addingCat&&<div style={{border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem'}}><div className="form-grid"><div className="form-group"><label>Name</label><input value={catForm.name} onChange={e=>{const name=e.target.value;setCatForm(f=>({...f,name,slug:f._slugEdited?f.slug:pSlugify(name)}));}} placeholder="e.g. Regular sessions"/></div><div className="form-group"><label>Slug</label><input value={catForm.slug} onChange={e=>setCatForm(f=>({...f,slug:pSlugify(e.target.value),_slugEdited:true}))} placeholder="e.g. regular"/></div><div className="form-group"><label>Sort order</label><input type="number" value={catForm.sort_order} onChange={e=>setCatForm(f=>({...f,sort_order:e.target.value}))}/></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>{setAddingCat(false);setCatForm({name:'',slug:'',sort_order:100});}}>Cancel</button><button className="btn btn-primary btn-small" onClick={saveCat}>Add category</button></div></div></div>}</div></div>);
+  return(
+    <div className="card" style={{marginBottom:'1.5rem'}}>
+      <h2>Play — Serious Play at the Artyst</h2>
+      <p style={{fontSize:'.82rem',margin:'-.4rem 0 1rem'}}>Activities shown on the Play tab at /menu.</p>
+      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+      {loading&&<div className="empty">Loading...</div>}
+      {!loading&&categories.map(cat=>(
+        <div key={cat.id} style={{marginBottom:'1.5rem',paddingBottom:'1.5rem',borderBottom:'1px solid #222'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.6rem'}}>
+            <span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',color:cat.active?'#c8a96e':'#999'}}>{cat.name}</span>
+            <div style={{display:'flex',gap:'.3rem'}}>
+              {isAdmin&&<>
+                <button className={"btn btn-small "+(cat.active?'btn-secondary':'btn-primary')} onClick={()=>toggleCatActive(cat)}>{cat.active?'Hide':'Show'}</button>
+                <button className="btn btn-blue btn-small" onClick={()=>startEditCat(cat)}>Edit</button>
+                <button className="btn btn-secondary btn-small" onClick={()=>deleteCat(cat.id)}>Del</button>
+                <button className="btn btn-green btn-small" onClick={()=>{setAddingItemTo(addingItemTo===cat.id?null:cat.id);setEditingItem(null);setItemForm(blankPlayItem());}}>+ Item</button>
+              </>}
+            </div>
+          </div>
+          {editingCat===cat.id&&(
+            <div style={{border:'1px solid #2a5a7c',borderRadius:'2px',padding:'.8rem',marginBottom:'.8rem'}}>
+              <div className="form-grid">
+                <div className="form-group"><label>Name</label><input value={catForm.name} onChange={e=>setCatForm(f=>({...f,name:e.target.value}))}/></div>
+                <div className="form-group"><label>Slug</label><input value={catForm.slug} onChange={e=>setCatForm(f=>({...f,slug:e.target.value}))}/></div>
+                <div className="form-group"><label>Sort order</label><input type="number" value={catForm.sort_order} onChange={e=>setCatForm(f=>({...f,sort_order:e.target.value}))}/></div>
+                <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.4rem'}}>
+                  <button className="btn btn-secondary btn-small" onClick={()=>{setEditingCat(null);setCatForm({name:'',slug:'',sort_order:100});}}>Cancel</button>
+                  <button className="btn btn-primary btn-small" onClick={saveCat}>Save</button>
+                </div>
+              </div>
+            </div>
+          )}
+          {cat.items.map(item=>(
+            <div key={item.id} style={{padding:'.6rem 0',borderBottom:'1px solid #1e1e1e',opacity:item.active?1:0.45}}>
+              {editingItem===item.id
+                ? <PlayItemForm form={itemForm} setForm={setItemForm} onSave={()=>saveItem(item.category_id)} onCancel={cancelItemEdit}/>
+                : (
+                  <div style={{display:'flex',alignItems:'flex-start',gap:'.8rem'}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:'.95rem',fontWeight:600}}>{item.title}</div>
+                      {item.subtitle&&<div style={{fontSize:'.78rem',marginTop:'2px',opacity:.7}}>{item.subtitle}</div>}
+                      {item.when_text&&<div style={{fontSize:'.72rem',color:'#c8a96e',marginTop:'4px',letterSpacing:'.06em',textTransform:'uppercase'}}>{item.when_text}</div>}
+                    </div>
+                    <div style={{display:'flex',gap:'.3rem',flexShrink:0}}>
+                      {isAdmin&&<>
+                        <button className={"btn btn-small "+(item.active?'btn-primary':'btn-secondary')} onClick={()=>toggleItemActive(item)}>{item.active?'On':'Off'}</button>
+                        <button className="btn btn-blue btn-small" onClick={()=>startEditItem(item)}>Edit</button>
+                        <button className="btn btn-secondary btn-small" onClick={()=>deleteItem(item.id)}>Del</button>
+                      </>}
+                    </div>
+                  </div>
+                )
+              }
+            </div>
+          ))}
+          {addingItemTo===cat.id&&(
+            <div style={{border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem',marginTop:'.8rem'}}>
+              <PlayItemForm form={itemForm} setForm={setItemForm} onSave={()=>saveItem(cat.id)} onCancel={cancelItemEdit}/>
+            </div>
+          )}
+        </div>
+      ))}
+      <div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid #222'}}>
+        {isAdmin&&!addingCat&&!editingCat&&(
+          <button className="btn btn-green btn-small" onClick={()=>{setAddingCat(true);setCatForm({name:'',slug:'',sort_order:(categories.length+1)*10});}}>+ New category</button>
+        )}
+        {addingCat&&(
+          <div style={{border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem'}}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Name</label>
+                <input value={catForm.name} onChange={e=>{const name=e.target.value;setCatForm(f=>({...f,name,slug:f._slugEdited?f.slug:pSlugify(name)}));}} placeholder="e.g. Regular sessions"/>
+              </div>
+              <div className="form-group">
+                <label>Slug</label>
+                <input value={catForm.slug} onChange={e=>setCatForm(f=>({...f,slug:pSlugify(e.target.value),_slugEdited:true}))} placeholder="e.g. regular"/>
+              </div>
+              <div className="form-group">
+                <label>Sort order</label>
+                <input type="number" value={catForm.sort_order} onChange={e=>setCatForm(f=>({...f,sort_order:e.target.value}))}/>
+              </div>
+              <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.4rem'}}>
+                <button className="btn btn-secondary btn-small" onClick={()=>{setAddingCat(false);setCatForm({name:'',slug:'',sort_order:100});}}>Cancel</button>
+                <button className="btn btn-primary btn-small" onClick={saveCat}>Add category</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
+
 
 function PlayItemForm({form,setForm,onSave,onCancel}){
   return(<div className="form-grid"><div className="form-group"><label>Title</label><input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="e.g. Chess night" autoFocus/></div><div className="form-group"><label>Subtitle</label><input value={form.subtitle} onChange={e=>setForm(f=>({...f,subtitle:e.target.value}))} placeholder="Optional"/></div><div className="form-group full"><label>Description</label><textarea value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} rows={3} placeholder="What it is, who it's for." style={{width:'100%',padding:'.5rem .7rem',fontSize:'.88rem',borderRadius:'2px',resize:'vertical',lineHeight:1.5}}/></div><div className="form-group"><label>When · optional</label><input value={form.when_text} onChange={e=>setForm(f=>({...f,when_text:e.target.value}))} placeholder="e.g. Thursdays from 7pm"/></div><div className="form-group"><label>Sort order</label><input type="number" value={form.sort_order} onChange={e=>setForm(f=>({...f,sort_order:e.target.value}))}/></div><div className="form-group"><label>Link URL · optional</label><input value={form.href} onChange={e=>setForm(f=>({...f,href:e.target.value}))} placeholder="https://..."/></div><div className="form-group"><label>CTA label · optional</label><input value={form.cta_label} onChange={e=>setForm(f=>({...f,cta_label:e.target.value}))} placeholder="e.g. Learn more"/></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={onCancel}>Cancel</button><button className="btn btn-primary btn-small" onClick={onSave}>Save</button></div></div>);
