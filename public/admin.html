@@ -1133,7 +1133,7 @@ function AppAutoReply({application}){
     if(!type) return;
     setLoading(true);setDraft('');setError('');
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
+      const res=await fetch('/api/assistant',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -1227,7 +1227,7 @@ function ReviewResponder(){
     if(!reviewText.trim()) return;
     setLoading(true);setDraft('');setError('');setCopied(false);
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
+      const res=await fetch('/api/assistant',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -1324,7 +1324,7 @@ function AdminAssistant(){
     setInput('');
     setLoading(true);
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
+      const res=await fetch('/api/assistant',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
