@@ -722,12 +722,20 @@ function CreateForm({destinations,onCreate}){
   useEffect(()=>{
     if(form.type==='event'){
       setLoadingEvents(true);
-      supabase('/rest/v1/events?select=id,title,description,starts_at,ends_at,ticket_price,price_display&order=starts_at.asc&starts_at=gte.'+new Date().toISOString()+'&limit=50')
+      setEvents([]);
+      const now=new Date().toISOString();
+      supabase('/rest/v1/events?select=id,title,description,starts_at,ends_at,ticket_price&order=starts_at.asc&starts_at=gte.'+encodeURIComponent(now)+'&limit=50')
         .then(data=>{
-          setEvents(Array.isArray(data)?data:[]);
-          setLoadingEvents(false);
+          if(Array.isArray(data)){
+            setEvents(data);
+          } else {
+            // Try without date filter if first attempt returns error
+            return supabase('/rest/v1/events?select=id,title,description,starts_at,ends_at,ticket_price&order=starts_at.asc&limit=50')
+              .then(d=>setEvents(Array.isArray(d)?d:[]));
+          }
         })
-        .catch(()=>setLoadingEvents(false));
+        .catch(()=>{})
+        .finally(()=>setLoadingEvents(false));
     }
   },[form.type]);
 
@@ -749,7 +757,7 @@ function CreateForm({destinations,onCreate}){
       }
     }
     // Price
-    const price=ev.price_display||(ev.ticket_price?(ev.ticket_price===0?'Free':'£'+Number(ev.ticket_price).toFixed(2)):null);
+    const price=ev.ticket_price!=null?(Number(ev.ticket_price)===0?'Free':'£'+Number(ev.ticket_price).toFixed(2)):null;
     const meta={subtitle:ev.description||'',dateText,price:price||'',url};
     setEventMeta(meta);
     setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId,_eventMeta:meta}));
@@ -768,7 +776,7 @@ function CreateForm({destinations,onCreate}){
     if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
     else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});const _meta=form._eventMeta||null;setForm({label:'',type:'event',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);setSelectedEventId('');setEventMeta(null);onCreate(Array.isArray(res)?res[0]?.id:res?.id,_meta);}
   }
-  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');setEventMeta(null);}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found in CA-017</div>}</div>}
+  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');setEventMeta(null);}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found — check CA-017 has published events</div>}</div>}
       {eventMeta&&selectedEventId&&(
         <div className="form-group full">
           <div style={{padding:'.8rem 1rem',borderRadius:'3px',border:'1px solid #2a5a7c',background:'#111'}}>
