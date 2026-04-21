@@ -613,13 +613,91 @@ function Templates({templates,designs,codes,onRefresh,isAdmin}){
 function PrintQueue({queue,templates,designs,onRemove,onClear,onSaved}){
   const [editing,setEditing]=useState(null);
   if(editing) return <PosterEditor code={editing} templates={templates} designs={designs} onClose={()=>setEditing(null)} onSaved={onSaved}/>;
-  return(<div className="card"><h2>Print Queue ({queue.length})</h2>{!queue.length&&<div className="empty" style={{padding:'1.5rem'}}>No codes in queue — add from the Library</div>}{queue.map(c=>(<div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem',background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.5rem'}}><div style={{display:'flex',flexDirection:'column',gap:'.2rem'}}><strong>{c.label}</strong><span className="slug-display">/e/{c.slug}</span></div><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>setEditing(c)}>Edit Poster</button><button className="btn btn-secondary btn-small" onClick={()=>onRemove(c.id)}>Remove</button></div></div>))}{queue.length>0&&<div style={{display:'flex',gap:'.5rem',marginTop:'1rem',justifyContent:'flex-end'}}><button className="btn btn-secondary" onClick={onClear}>Clear Queue</button></div>}</div>);
+  return(<div className="card"><h2>Print Queue ({queue.length})</h2>{!queue.length&&<div className="empty" style={{padding:'1.5rem'}}>No codes in queue — add from the Library</div>}{queue.map(c=>(<div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.5rem'}}><div style={{display:'flex',flexDirection:'column',gap:'.2rem'}}><strong>{c.label}</strong><span className="slug-display">/e/{c.slug}</span></div><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>setEditing(c)}>Edit Poster</button><button className="btn btn-secondary btn-small" onClick={()=>onRemove(c.id)}>Remove</button></div></div>))}{queue.length>0&&<div style={{display:'flex',gap:'.5rem',marginTop:'1rem',justifyContent:'flex-end'}}><button className="btn btn-secondary" onClick={onClear}>Clear Queue</button></div>}</div>);
 }
 
-function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin}){
+function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin,sortField,setSortField,sortDir,setSortDir,newCodeId}){
   async function toggleActive(code){await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`,'PATCH',{active:!code.active});onRefresh();}
+
+  function handleSort(field){
+    if(sortField===field){setSortDir(d=>d==='asc'?'desc':'asc');}
+    else{setSortField(field);setSortDir('asc');}
+  }
+
+  const sorted=[...codes].sort((a,b)=>{
+    let av=a[sortField],bv=b[sortField];
+    if(sortField==='scan_count'){av=av||0;bv=bv||0;return sortDir==='asc'?av-bv:bv-av;}
+    if(sortField==='label'){av=(av||'').toLowerCase();bv=(bv||'').toLowerCase();}
+    else{av=av||'';bv=bv||'';}
+    if(av<bv) return sortDir==='asc'?-1:1;
+    if(av>bv) return sortDir==='asc'?1:-1;
+    return 0;
+  });
+
+  function SortTh({field,label}){
+    const active=sortField===field;
+    return(
+      <th onClick={()=>handleSort(field)}
+        style={{cursor:'pointer',userSelect:'none',whiteSpace:'nowrap'}}
+        title={"Sort by "+label}>
+        {label}{active?' '+(sortDir==='asc'?'↑':'↓'):''}
+      </th>
+    );
+  }
+
   if(!codes.length) return <div className="empty">No QR codes yet</div>;
-  return(<div className="card" style={{padding:0,overflow:'hidden'}}><table><thead><tr><th>Label</th><th>Type</th><th>Destination</th><th>Scans</th><th>Placement</th><th>Status</th><th>Actions</th></tr></thead><tbody>{codes.map(c=>{const warn=hasDestinationWarning(c);const dest=destinations.find(d=>d.id===c.destination_id);return(<tr key={c.id}><td><strong>{c.label}</strong>{c.linked_ca017_event_id&&<div><span className="badge badge-event" style={{marginTop:'.2rem'}}>CA-017</span></div>}{c.linked_ca025_opportunity_id&&<div><span className="badge badge-opportunity" style={{marginTop:'.2rem'}}>CA-025</span></div>}<br/><span className="slug-display">/e/{c.slug}</span></td><td><TypeBadge type={c.type}/></td><td><div style={{fontSize:'.8rem'}}>{dest?<span style={{color:'#aaa'}}>{dest.label}</span>:<span className="slug-display">{c.destination_url?.substring(0,40)}...</span>}{warn&&<div><span className="badge badge-warning" style={{marginTop:'.2rem'}}>⚠ Destination changed</span></div>}</div></td><td><span className="scan-count">{c.scan_count}</span></td><td><span style={{color:'#666',fontSize:'.8rem'}}>{c.placement||'—'}</span></td><td><span className={`badge badge-${c.active?'active':'inactive'}`}>{c.active?'active':'inactive'}</span></td><td><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>onAddToPrintQueue(c)}>Poster</button>{isAdmin&&<button className="btn btn-green btn-small" onClick={()=>onDistribute(c)}>Distribute</button>}{isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>toggleActive(c)}>{c.active?'Deactivate':'Activate'}</button>}</div></td></tr>);})}</tbody></table></div>);
+  return(
+    <div className="card" style={{padding:0,overflow:'hidden'}}>
+      <table>
+        <thead>
+          <tr>
+            <SortTh field="label" label="Label"/>
+            <SortTh field="type" label="Type"/>
+            <th>Destination</th>
+            <SortTh field="scan_count" label="Scans"/>
+            <SortTh field="placement" label="Placement"/>
+            <SortTh field="active" label="Status"/>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map(c=>{
+            const warn=hasDestinationWarning(c);
+            const dest=destinations.find(d=>d.id===c.destination_id);
+            const isNew=c.id===newCodeId;
+            return(
+              <tr key={c.id} style={isNew?{background:'#1a3a1a',outline:'2px solid #2a7a2a'}:{}}>
+                <td>
+                  {isNew&&<span style={{fontSize:'.65rem',background:'#2a7a2a',color:'#5aff7a',padding:'.1rem .4rem',borderRadius:'2px',marginRight:'.4rem',textTransform:'uppercase',letterSpacing:'.06em'}}>New</span>}
+                  <strong>{c.label}</strong>
+                  {c.linked_ca017_event_id&&<div><span className="badge badge-event" style={{marginTop:'.2rem'}}>CA-017</span></div>}
+                  {c.linked_ca025_opportunity_id&&<div><span className="badge badge-opportunity" style={{marginTop:'.2rem'}}>CA-025</span></div>}
+                  <br/><span className="slug-display">/e/{c.slug}</span>
+                </td>
+                <td><TypeBadge type={c.type}/></td>
+                <td>
+                  <div style={{fontSize:'.8rem'}}>
+                    {dest?<span>{dest.label}</span>:<span className="slug-display">{c.destination_url?.substring(0,40)}...</span>}
+                    {warn&&<div><span className="badge badge-warning" style={{marginTop:'.2rem'}}>⚠ Destination changed</span></div>}
+                  </div>
+                </td>
+                <td><span className="scan-count">{c.scan_count}</span></td>
+                <td><span style={{fontSize:'.8rem'}}>{c.placement||'—'}</span></td>
+                <td><span className={`badge badge-${c.active?'active':'inactive'}`}>{c.active?'active':'inactive'}</span></td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-secondary btn-small" onClick={()=>onAddToPrintQueue(c)}>Poster</button>
+                    {isAdmin&&<button className="btn btn-green btn-small" onClick={()=>onDistribute(c)}>Distribute</button>}
+                    {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>toggleActive(c)}>{c.active?'Deactivate':'Activate'}</button>}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function CreateForm({destinations,onCreate}){
@@ -638,7 +716,7 @@ function CreateForm({destinations,onCreate}){
     const res=await supabase('/rest/v1/qr_codes','POST',{slug:form.slug,type:form.type,label:form.label,destination_url:finalUrl,destination_id:(!useCustom&&form.destination_id)||null,placement:form.placement||null},'return=representation');
     setLoading(false);
     if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
-    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate();}
+    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate(Array.isArray(res)?res[0]?.id:res?.id);}
   }
   return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{!useCustom?<div className="form-group full"><label>Destination</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a destination —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use destination library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
 }
@@ -1124,6 +1202,10 @@ function App(){
   const [distributeCode,setDistributeCode]=useState(null);
   const [menuAnchor,setMenuAnchor]=useState(null);
   const [activeTask,setActiveTask]=useState(null);
+  const [sortField,setSortField]=useState('created_at');
+  const [sortDir,setSortDir]=useState('desc');
+  const [newCodeId,setNewCodeId]=useState(null);
+  const [visitedTabs,setVisitedTabs]=useState([]);
   const [loading,setLoading]=useState(true);
 
   const isAdmin=user?.role==='admin';
@@ -1148,11 +1230,15 @@ function App(){
   }
 
   useEffect(()=>{if(user) loadAll();},[user]);
+  useEffect(()=>{
+    if(activeTask) setVisitedTabs(v=>[...new Set([...v,tab])]);
+  },[tab]);
 
   function handleSelectTask(task){
     setTab(task.tab);
     if(task.anchor) setMenuAnchor(task.anchor);
     setActiveTask(task);
+    setVisitedTabs([task.tab]);
   }
 
   function logout(){
@@ -1216,7 +1302,14 @@ function App(){
               <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap'}}>
                 {activeTask.steps.map((s,i)=>{
                   const isCurrent=i===currentIdx||(currentIdx===-1&&i===0);
-                  return <span key={s} style={{fontSize:'.7rem',padding:'.15rem .5rem',borderRadius:'2px',background:isCurrent?'#c0392b':'#2a4a6c',color:isCurrent?'#fff':'#88aacc'}}>{s}</span>;
+                  const isVisited=i<currentIdx||(currentIdx===-1?false:i<currentIdx);
+                  const TAB_FOR_STEP={'New Code':'create','Print Queue':'print','Poster':'print','Distribute':'distribute','Screens':'screens','Menu Editor':'menu','Reports':'reports','Applications':'applications','Destinations':'destinations'};
+                  const stepTab=TAB_FOR_STEP[s.split(' → ')[0]];
+                  const isDone=stepTab&&visitedTabs.includes(stepTab)&&!isCurrent;
+                  return <span key={s} style={{fontSize:'.7rem',padding:'.15rem .5rem',borderRadius:'2px',
+                    background:isCurrent?'#c0392b':isDone?'#1a5c1a':'#2a4a6c',
+                    color:isCurrent?'#fff':isDone?'#5aff7a':'#88aacc',
+                    textDecoration:isDone?'line-through':'none'}}>{s}</span>;
                 })}
               </div>
               {nextStep&&<span style={{fontSize:'.75rem',color:'#88aacc'}}>→ Next: <strong style={{color:'#fff'}}>{nextStep}</strong></span>}
@@ -1252,8 +1345,8 @@ function App(){
       </div>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
-        {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin}/>}
-        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={()=>{loadAll();setTab('library');}}/>}
+        {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId}/>}
+        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id)=>{loadAll();setTab('library');if(id){setNewCodeId(id);setTimeout(()=>setNewCodeId(null),8000);}}}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
         {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
         {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
