@@ -299,6 +299,38 @@ const CHANNELS = {
 const CHANNEL_SECTIONS = ['Physical','Screens','Messaging','Social'];
 const SCREEN_FORMATS = ['instagram-feed','instagram-story','facebook-post','facebook-link','x-twitter','tablet-portrait','tablet-landscape','tv-landscape'];
 const SMALL_PHYSICAL = ['business-card','playing-card','tarot-card','beer-mat','third-a4','a5-portrait'];
+const IMAGE_STYLES = [
+  {id:'photographic', label:'Photo'},
+  {id:'oil painting', label:'Oil painting'},
+  {id:'watercolour', label:'Watercolour'},
+  {id:'pencil drawing', label:'Drawing'},
+  {id:'linocut print', label:'Linocut'},
+  {id:'vintage poster', label:'Vintage poster'},
+  {id:'psychedelic art', label:'Psychedelic'},
+  {id:'ink illustration', label:'Ink illustration'},
+  {id:'dark moody cinematic', label:'Cinematic'},
+];
+
+const EVENT_KEYWORDS = {
+  wine_tasting:     ['wine glasses','cellar','candlelight','bottles','vineyard','sommelier','elegant'],
+  music_performance:['concert','stage lights','guitar','crowd','microphone','spotlight','band'],
+  talk_lecture:     ['books','podium','lecture','audience','Cambridge','chalk','intellectual'],
+  workshop:         ['hands making','craft','tools','creative','studio','materials'],
+  quiz_night:       ['chalkboard','pub','friends','questions','team','evening gathering'],
+  exhibition:       ['gallery','artwork','white walls','paintings','visitors','art'],
+  book_reading:     ['open book','library','lamp','reading','pages','quiet'],
+  game_playing:     ['chess pieces','board game','strategy','focus','evening','candlelight'],
+  dining:           ['table setting','food','restaurant','candlelight','plates','intimate'],
+  afternoon_tea:    ['teacups','cake','afternoon light','scones','fine china'],
+  salsa:            ['salsa dancing','latin music','couple dancing','colourful','movement','energy'],
+  dance:            ['dancing','movement','stage','lights','performers','energy'],
+  comedy:           ['microphone','spotlight','laughter','stage','crowd'],
+  tour:             ['Cambridge streets','architecture','history','morning light','heritage'],
+  default:          ['Cambridge','venue','evening','atmosphere','cultural','intimate'],
+};
+
+const ARTYST_KEYWORDS = ['Syd Barrett','Cambridge','candlelight','atmospheric','warm tones','intimate','cultural venue','psychedelic'];
+
 const BLANK_POSTER = {title:'',subtitle:'',dateText:'',price:'',cta:'Scan to find out more',format:'a5-portrait',fgImage:null,fgImageUrl:null,bgImage:null,bgImageUrl:null,overlayOpacity:0.5,overlayColor:'#000000',textColor:'#111111'};
 
 function isScreenFormat(id){return SCREEN_FORMATS.includes(id);}
@@ -476,6 +508,92 @@ function UsersTab(){
   );
 }
 
+function DuplexBack({poster,backPoster,backPosterRef,setBackPoster,setSaveStatus,backUploading,setBackUploading}){
+  const backFmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
+  const backNeedsCropMarks=SMALL_PHYSICAL.includes(poster.format);
+  const BackContent=(
+    <div ref={backPosterRef} style={{width:backFmt.w,height:backFmt.h,background:backPoster.bgImage?'transparent':'#fff',color:backPoster.textColor,padding:backFmt.small?'4mm':'10mm',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:backNeedsCropMarks?'none':'1px solid #ddd',margin:backNeedsCropMarks?'0':'1rem auto'}}>
+      {backPoster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${backPoster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}
+      {backPoster.bgImage&&<div style={{position:'absolute',inset:0,background:backPoster.overlayColor,opacity:backPoster.overlayOpacity,zIndex:1}}/>}
+      <div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:backFmt.small?'2mm':'3mm',flex:1,minHeight:0}}>
+        {!backFmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}
+        <div style={{width:'100%',height:'3px',background:'#c0392b'}}/>
+        {backPoster.fgImage&&<img src={backPoster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}
+        <div style={{fontSize:backFmt.small?'12pt':'26pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{backPoster.title}</div>
+        {backPoster.subtitle&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{backPoster.subtitle}</div>}
+        {backPoster.dateText&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center'}}>{backPoster.dateText}</div>}
+        {backPoster.price&&<div style={{fontSize:backFmt.small?'10pt':'15pt',fontWeight:'bold',textAlign:'center'}}>{backPoster.price}</div>}
+      </div>
+    </div>
+  );
+  return(
+    <>
+      {backNeedsCropMarks?<div className="crop-wrap"><CropMarks posterW={backFmt.w} posterH={backFmt.h}/>{BackContent}</div>:BackContent}
+      <div className="no-print card" style={{marginTop:'2rem'}}>
+        <h2>Back Design</h2>
+        <div className="form-grid">
+          <div className="form-group"><label>Title</label><input value={backPoster.title} onChange={e=>setBackPoster(p=>({...p,title:e.target.value}))}/></div>
+          <div className="form-group"><label>Subtitle</label><input value={backPoster.subtitle} onChange={e=>setBackPoster(p=>({...p,subtitle:e.target.value}))} placeholder="One line description"/></div>
+          <div className="form-group"><label>Date & Time</label><input value={backPoster.dateText} onChange={e=>setBackPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/></div>
+          <div className="form-group"><label>Price</label><input value={backPoster.price} onChange={e=>setBackPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div>
+          <div className="form-group"><label>Call to Action</label><input value={backPoster.cta} onChange={e=>setBackPoster(p=>({...p,cta:e.target.value}))}/></div>
+          <div className="form-group"><label>Text Colour</label><input type="color" value={backPoster.textColor} onChange={e=>setBackPoster(p=>({...p,textColor:e.target.value}))}/></div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function GenImageOptions({code,selectedStyle,setSelectedStyle,selectedKeywords,setSelectedKeywords,customPrompt,setCustomPrompt,generatingImage,generateImage}){
+  const eventPurpose=code?._eventMeta?.event_purpose||'default';
+  const suggestions=EVENT_KEYWORDS[eventPurpose]||EVENT_KEYWORDS.default;
+  const allKeywords=[...new Set([...suggestions,...ARTYST_KEYWORDS])];
+  return(
+    <div style={{border:'1px solid #2a5a7c',borderRadius:'3px',padding:'.8rem',marginBottom:'.5rem'}}>
+      <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',marginBottom:'.6rem'}}>Style</div>
+      <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap',marginBottom:'1rem'}}>
+        {IMAGE_STYLES.map(s=>(
+          <div key={s.id} onClick={()=>setSelectedStyle(s.id)}
+            style={{padding:'.3rem .7rem',borderRadius:'2px',cursor:'pointer',fontSize:'.78rem',userSelect:'none',
+              background:selectedStyle===s.id?'#c0392b':'inherit',
+              color:selectedStyle===s.id?'#fff':'inherit',
+              border:'1px solid '+(selectedStyle===s.id?'#c0392b':'#333')}}>
+            {s.label}
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',marginBottom:'.4rem'}}>Keywords</div>
+      <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap',marginBottom:'.5rem'}}>
+        {allKeywords.map(k=>{
+          const on=selectedKeywords.includes(k);
+          return(
+            <div key={k} onClick={()=>setSelectedKeywords(prev=>on?prev.filter(x=>x!==k):[...prev,k])}
+              style={{padding:'.2rem .5rem',borderRadius:'2px',cursor:'pointer',fontSize:'.75rem',userSelect:'none',
+                background:on?'#1a3a5c':'inherit',
+                color:on?'#5aafff':'inherit',
+                border:'1px solid '+(on?'#2a5a7c':'#333')}}>
+              {k}
+            </div>
+          );
+        })}
+      </div>
+      {selectedKeywords.length>0&&(
+        <div style={{fontSize:'.72rem',marginBottom:'.5rem',opacity:.6}}>
+          Selected: {selectedKeywords.join(', ')}
+          <span onClick={()=>setSelectedKeywords([])} style={{marginLeft:'.5rem',cursor:'pointer',color:'#ff7a7a'}}>clear</span>
+        </div>
+      )}
+      <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',marginBottom:'.4rem'}}>Additional description</div>
+      <input value={customPrompt} onChange={e=>setCustomPrompt(e.target.value)}
+        placeholder="e.g. outdoor summer evening, blue sky..."
+        style={{width:'100%',marginBottom:'.5rem'}}/>
+      <button className="btn btn-primary btn-small" onClick={()=>generateImage('bg')} disabled={!!generatingImage} type="button">
+        {generatingImage==='bg'?'Generating...':'Generate background image'}
+      </button>
+    </div>
+  );
+}
+
 function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [poster,setPoster]=useState({...BLANK_POSTER,
     title:code?.label||'',
@@ -492,6 +610,10 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [downloading,setDownloading]=useState(false);
   const [generatingImage,setGeneratingImage]=useState('');
   const [genError,setGenError]=useState('');
+  const [showGenOptions,setShowGenOptions]=useState(false);
+  const [selectedKeywords,setSelectedKeywords]=useState([]);
+  const [selectedStyle,setSelectedStyle]=useState('photographic');
+  const [customPrompt,setCustomPrompt]=useState('');
   const [duplex,setDuplex]=useState('none');
   const [backPoster,setBackPoster]=useState({...BLANK_POSTER});
   const [backUploading,setBackUploading]=useState({fg:false,bg:false});
@@ -529,7 +651,10 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
         body:JSON.stringify({
           title:poster.title,
           event_purpose:code?._eventMeta?.event_purpose||'',
-          description:poster.subtitle||''
+          description:poster.subtitle||'',
+          keywords:selectedKeywords,
+          style:selectedStyle,
+          custom:customPrompt
         })
       });
       const data=await res.json();
@@ -608,14 +733,26 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
               </button>
             </div>
             <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
-          <div className="form-group"><label>Background Image</label>
-            <div style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}>
-              <button className="btn btn-blue btn-small" onClick={()=>generateImage('bg')} disabled={!!generatingImage} type="button">
-                {generatingImage==='bg'?'Generating...':'✦ Generate with AI'}
-              </button>
-              {genError&&<span style={{fontSize:'.75rem',color:'#ff7a7a'}}>{genError}</span>}
-            </div>
-            <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
+          <div className="form-group full">
+            <label>Background Image</label>
+            <div style={{marginBottom:'.6rem'}}>
+              <div style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.4rem'}}>
+                <button className="btn btn-blue btn-small" onClick={()=>setShowGenOptions(o=>!o)} type="button">
+                  ✦ AI options {showGenOptions?'▲':'▼'}
+                </button>
+                <button className="btn btn-blue btn-small" onClick={()=>generateImage('bg')} disabled={!!generatingImage} type="button">
+                  {generatingImage==='bg'?'Generating...':'Generate background'}
+                </button>
+                {genError&&<span style={{fontSize:'.75rem',color:'#ff7a7a'}}>{genError}</span>}
+              </div>
+{showGenOptions&&<GenImageOptions
+                code={code}
+                selectedStyle={selectedStyle} setSelectedStyle={setSelectedStyle}
+                selectedKeywords={selectedKeywords} setSelectedKeywords={setSelectedKeywords}
+                customPrompt={customPrompt} setCustomPrompt={setCustomPrompt}
+                generatingImage={generatingImage} generateImage={generateImage}
+              />}
+              <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
 
           {!isScreen&&<div className="form-group full"><label>Duplex Printing</label><div style={{display:'flex',gap:'.5rem',marginTop:'.3rem'}}>{[['none','Single sided'],['same','Same on both sides'],['different','Different design on back']].map(([val,lbl])=><div key={val} className={`channel-btn${duplex===val?' selected':''}`} style={{flex:1}} onClick={()=>setDuplex(val)}>{lbl}</div>)}</div></div>}
           <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem',flexWrap:'wrap'}}>
@@ -634,14 +771,7 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
         {duplex!=='none'&&<>
           <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',margin:'2rem 0 .5rem'}}>Side 2</div>
           {duplex==='same'&&(needsCropMarks?<div className="crop-wrap"><CropMarks posterW={fmt.w} posterH={fmt.h}/>{PosterContent}</div>:PosterContent)}
-          {duplex==='different'&&(()=>{
-            const backFmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
-            const backNeedsCropMarks=SMALL_PHYSICAL.includes(poster.format);
-            const backPosterStyle={width:backFmt.w,height:backFmt.h,background:backPoster.bgImage?'transparent':'#fff',color:backPoster.textColor,padding:backFmt.small?'4mm':'10mm',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:backNeedsCropMarks?'none':'1px solid #ddd',margin:backNeedsCropMarks?'0':'1rem auto'};
-            const BackContent=(<div ref={backPosterRef} style={backPosterStyle}>{backPoster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${backPoster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}{backPoster.bgImage&&<div style={{position:'absolute',inset:0,background:backPoster.overlayColor,opacity:backPoster.overlayOpacity,zIndex:1}}/>}<div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:backFmt.small?'2mm':'3mm',flex:1,minHeight:0}}>{!backFmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}<div style={{width:'100%',height:'3px',background:'#c0392b'}}/>{backPoster.fgImage&&<img src={backPoster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}<div style={{fontSize:backFmt.small?'12pt':'26pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{backPoster.title}</div>{backPoster.subtitle&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{backPoster.subtitle}</div>}{backPoster.dateText&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center'}}>{backPoster.dateText}</div>}{backPoster.price&&<div style={{fontSize:backFmt.small?'10pt':'15pt',fontWeight:'bold',textAlign:'center'}}>{backPoster.price}</div>}</div></div>);
-            return backNeedsCropMarks?<div className="crop-wrap"><CropMarks posterW={backFmt.w} posterH={backFmt.h}/>{BackContent}</div>:BackContent;
-          })()}
-          {duplex==='different'&&<div className="no-print card" style={{marginTop:'2rem'}}><h2>Back Design</h2><div className="form-grid"><div className="form-group"><label>Title</label><input value={backPoster.title} onChange={e=>setBackPoster(p=>({...p,title:e.target.value}))}/></div><div className="form-group"><label>Subtitle</label><input value={backPoster.subtitle} onChange={e=>setBackPoster(p=>({...p,subtitle:e.target.value}))} placeholder="One line description"/></div><div className="form-group"><label>Date & Time</label><input value={backPoster.dateText} onChange={e=>setBackPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/></div><div className="form-group"><label>Price</label><input value={backPoster.price} onChange={e=>setBackPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div><div className="form-group"><label>Call to Action</label><input value={backPoster.cta} onChange={e=>setBackPoster(p=>({...p,cta:e.target.value}))}/></div><div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,fg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,fgImage:url,fgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,fg:false}));}}/>{backUploading.fg&&<span className="uploading">Uploading...</span>}{backPoster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div><div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,bg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,bgImage:url,bgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,bg:false}));}}/>{backUploading.bg&&<span className="uploading">Uploading...</span>}{backPoster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>{backPoster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(backPoster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={backPoster.overlayOpacity} onChange={e=>setBackPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={backPoster.overlayColor} onChange={e=>setBackPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}<div className="form-group"><label>Text Colour</label><input type="color" value={backPoster.textColor} onChange={e=>setBackPoster(p=>({...p,textColor:e.target.value}))}/></div></div></div>}
+          {duplex==='different'&&<DuplexBack poster={poster} backPoster={backPoster} backPosterRef={backPosterRef} setBackPoster={setBackPoster} setSaveStatus={setSaveStatus} backUploading={backUploading} setBackUploading={setBackUploading}/>}
         </>}
       </div>
       {/* ── Controls below poster ─────────────────────── */}
@@ -1847,6 +1977,36 @@ function AdminAssistant(){
   );
 }
 
+function TaskBanner({activeTask,tab,visitedTabs,onDismiss}){
+  const TAB_TO_STEP={'create':'New Code','print':'Print Queue','distribute':'Distribute',
+    'screens':'Screens','menu':'Menu Editor','reports':'Reports','applications':'Applications',
+    'destinations':'Destinations','groups':'Groups','library':'Library','history':'History','reviews':'Review Responder'};
+  const currentStepLabel=TAB_TO_STEP[tab]||'';
+  const currentIdx=activeTask.steps.findIndex(s=>s===currentStepLabel||s.startsWith(currentStepLabel));
+  const nextStep=activeTask.steps[currentIdx+1]||null;
+  return(
+    <div style={{borderRadius:'3px',padding:'.7rem 1rem',marginBottom:'1rem',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem',background:'#1a3a5c',border:'1px solid #2a5a7c'}} className="no-print">
+      <div style={{display:'flex',alignItems:'center',gap:'1rem',flex:1,minWidth:0,flexWrap:'wrap'}}>
+        <span style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',flexShrink:0}}>Task</span>
+        <span style={{fontSize:'.85rem',color:'#fff',fontWeight:600,flexShrink:0}}>{activeTask.label}</span>
+        <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap'}}>
+          {activeTask.steps.map((s,i)=>{
+            const isCurrent=i===currentIdx||(currentIdx===-1&&i===0);
+            const stepTab={'New Code':'create','Print Queue':'print','Poster':'print','Distribute':'distribute','Screens':'screens','Menu Editor':'menu','Reports':'reports','Applications':'applications','Destinations':'destinations'}[s.split(' ')[0]+' '+s.split(' ')[1]];
+            const isDone=stepTab&&visitedTabs.includes(stepTab)&&!isCurrent;
+            return <span key={s} style={{fontSize:'.7rem',padding:'.15rem .5rem',borderRadius:'2px',
+              background:isCurrent?'#c0392b':isDone?'#1a5c1a':'#2a4a6c',
+              color:isCurrent?'#fff':isDone?'#5aff7a':'#88aacc',
+              textDecoration:isDone?'line-through':'none'}}>{s}</span>;
+          })}
+        </div>
+        {nextStep&&<span style={{fontSize:'.75rem',color:'#88aacc'}}>Next: <strong style={{color:'#fff'}}>{nextStep}</strong></span>}
+      </div>
+      <button className="btn btn-secondary btn-small" onClick={onDismiss}>Dismiss</button>
+    </div>
+  );
+}
+
 // ── BACK TO TOP ──────────────────────────────────────────
 function BackToTop(){
   const [visible,setVisible]=useState(false);
@@ -2026,37 +2186,7 @@ function App(){
         </div>
       </header>
       <TaskGuide onSelectTask={handleSelectTask}/>
-      {activeTask&&(()=>{
-        const TAB_TO_STEP={'create':'New Code','print':'Print Queue','distribute':'Distribute',
-          'screens':'Screens','menu':'Menu Editor','reports':'Reports','applications':'Applications',
-          'destinations':'Destinations','groups':'Groups','library':'Library','history':'History'};
-        const currentStepLabel=TAB_TO_STEP[tab]||'';
-        const currentIdx=activeTask.steps.findIndex(s=>s===currentStepLabel||s.startsWith(currentStepLabel));
-        const nextStep=activeTask.steps[currentIdx+1]||null;
-        return(
-          <div style={{borderRadius:'3px',padding:'.7rem 1rem',marginBottom:'1rem',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem',background:'#1a3a5c',border:'1px solid #2a5a7c'}} className="no-print">
-            <div style={{display:'flex',alignItems:'center',gap:'1rem',flex:1,minWidth:0,flexWrap:'wrap'}}>
-              <span style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',flexShrink:0}}>Task</span>
-              <span style={{fontSize:'.85rem',color:'#fff',fontWeight:600,flexShrink:0}}>{activeTask.label}</span>
-              <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap'}}>
-                {activeTask.steps.map((s,i)=>{
-                  const isCurrent=i===currentIdx||(currentIdx===-1&&i===0);
-                  const isVisited=i<currentIdx||(currentIdx===-1?false:i<currentIdx);
-                  const TAB_FOR_STEP={'New Code':'create','Print Queue':'print','Poster':'print','Distribute':'distribute','Screens':'screens','Menu Editor':'menu','Reports':'reports','Applications':'applications','Destinations':'destinations'};
-                  const stepTab=TAB_FOR_STEP[s.split(' → ')[0]];
-                  const isDone=stepTab&&visitedTabs.includes(stepTab)&&!isCurrent;
-                  return <span key={s} style={{fontSize:'.7rem',padding:'.15rem .5rem',borderRadius:'2px',
-                    background:isCurrent?'#c0392b':isDone?'#1a5c1a':'#2a4a6c',
-                    color:isCurrent?'#fff':isDone?'#5aff7a':'#88aacc',
-                    textDecoration:isDone?'line-through':'none'}}>{s}</span>;
-                })}
-              </div>
-              {nextStep&&<span style={{fontSize:'.75rem',color:'#88aacc'}}>→ Next: <strong style={{color:'#fff'}}>{nextStep}</strong></span>}
-            </div>
-            <button className="btn btn-secondary btn-small" onClick={()=>{setActiveTask(null);setVisitedTabs([]);}} style={{flexShrink:0}}>Dismiss</button>
-          </div>
-        );
-      })()}
+      {activeTask&&<TaskBanner activeTask={activeTask} tab={tab} visitedTabs={visitedTabs} onDismiss={()=>{setActiveTask(null);setVisitedTabs([]);}}/>}
       <div className="stats-grid no-print">
         <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
         <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
