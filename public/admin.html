@@ -16,7 +16,6 @@
     .app{max-width:1200px;margin:0 auto;padding:2rem}
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;border-bottom:1px solid #333;padding-bottom:1rem}
     header h1{font-size:1.2rem;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-    header span{font-size:.75rem;color:#666}
     .tabs{display:flex;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap}
     .tab{padding:.5rem 1.2rem;border:1px solid #333;background:none;color:#888;cursor:pointer;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;border-radius:2px;transition:all .15s}
     .tab.active{background:#c0392b;border-color:#c0392b;color:#fff}
@@ -61,6 +60,8 @@
     .badge-sent{background:#1a3a5c;color:#5aafff}
     .badge-failed{background:#3a1a1a;color:#ff5a5a}
     .badge-warning{background:#3a2a1a;color:#ffaa5a}
+    .badge-admin{background:#3a1a5c;color:#c07aff}
+    .badge-viewer{background:#2a2a2a;color:#888}
     .scan-count{font-size:1.1rem;font-weight:bold;color:#fff}
     .slug-display{font-family:monospace;color:#888;font-size:.8rem}
     .actions{display:flex;gap:.4rem;flex-wrap:wrap}
@@ -108,29 +109,20 @@
     .uploading{color:#ffaa5a;font-size:.78rem;margin-top:.3rem}
     .crop-wrap{width:210mm;height:297mm;display:flex;align-items:center;justify-content:center;position:relative;background:#fff;margin:1rem auto;}
     .crop-mark{position:absolute;background:#000;display:none;}
-    .crop-mark.h{height:.3px}
-    .crop-mark.v{width:.3px}
-    @page{size:A4 portrait;margin:0}
-    @media print{
-      body *{visibility:hidden}
-      .poster-wrap,.poster-wrap *,.crop-wrap,.crop-wrap *{visibility:visible}
-      .poster-wrap{position:fixed;top:0;left:0;width:210mm}
-      .crop-mark{visibility:visible!important;display:block!important;background:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .crop-mark.h{width:8mm!important;height:0.5mm!important}
-      .crop-mark.v{width:0.5mm!important;height:8mm!important}
-    }
+    .crop-mark.h{height:.3px}.crop-mark.v{width:.3px}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111}
+    .login-card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:2.5rem;width:100%;max-width:360px}
+    .login-card h1{font-size:1.1rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin-bottom:.4rem}
+    .login-card p{font-size:.78rem;color:#555;margin-bottom:2rem;letter-spacing:.05em}
+    .login-err{color:#ff7a7a;font-size:.8rem;margin-bottom:.8rem}
+    .user-row{display:flex;align-items:center;justify-content:space-between;padding:.8rem;background:#111;border:1px solid #222;border-radius:2px;margin-bottom:.4rem}
+    .user-info{display:flex;flex-direction:column;gap:.2rem}
+    .user-name{font-size:.9rem;font-weight:600}
+    .user-meta{font-size:.75rem;color:#555}
+    .header-user{display:flex;align-items:center;gap:1rem}
+    .header-user span{font-size:.78rem;color:#666}
+    @media print{body{background:#fff}.no-print{display:none!important}.poster-wrap{page-break-after:avoid}.crop-wrap{margin:0;width:210mm;height:297mm}.crop-mark{display:block!important}}
     @media screen{.crop-mark{display:none!important}}
-    .lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111;padding:2rem;}
-    .lock-box{width:100%;max-width:360px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:2rem;text-align:center;}
-    .lock-mark{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-bottom:.4rem;}
-    .lock-title{font-size:1.1rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-bottom:.4rem;}
-    .lock-sub{font-size:.8rem;color:#666;margin-bottom:1.5rem;}
-    .lock-box input{width:100%;background:#111;border:1px solid #333;color:#eee;padding:.7rem .9rem;font-size:.95rem;border-radius:2px;outline:none;text-align:center;letter-spacing:.08em;margin-bottom:.8rem;}
-    .lock-box input:focus{border-color:#c0392b}
-    .lock-box button{width:100%;padding:.7rem;background:#c0392b;color:#fff;border:none;cursor:pointer;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;transition:background .15s;}
-    .lock-box button:hover{background:#e74c3c}
-    .lock-box button:disabled{opacity:.4;cursor:not-allowed}
-    .lock-error{color:#ff7a7a;font-size:.8rem;margin-top:.8rem;}
   </style>
 </head>
 <body>
@@ -159,7 +151,7 @@ const FORMATS = [
   {id:'tablet-landscape',label:'Tablet Landscape',w:'512px',h:'384px',small:true,screen:true},
   {id:'tv-landscape',label:'TV / Monitor',w:'640px',h:'360px',small:true,screen:true},
 ];
-const CHANNELS = {
+const CHANNELS={
   print:{label:'Print',section:'Physical'},
   'screen-window':{label:'Screen — Window',section:'Screens'},
   'screen-pos':{label:'Screen — POS',section:'Screens'},
@@ -173,17 +165,23 @@ const CHANNELS = {
   'social-x':{label:'X / Twitter',section:'Social'},
   'social-tiktok':{label:'TikTok',section:'Social'},
 };
-const CHANNEL_SECTIONS = ['Physical','Screens','Messaging','Social'];
-const SCREEN_FORMATS = ['instagram-feed','instagram-story','facebook-post','facebook-link','x-twitter','tablet-portrait','tablet-landscape','tv-landscape'];
-const SMALL_PHYSICAL = ['business-card','playing-card','tarot-card','beer-mat','third-a4','a5-portrait'];
-const BLANK_POSTER = {title:'',subtitle:'',dateText:'',price:'',cta:'Scan to find out more',format:'a5-portrait',fgImage:null,fgImageUrl:null,bgImage:null,bgImageUrl:null,overlayOpacity:0.5,overlayColor:'#000000',textColor:'#111111'};
+const CHANNEL_SECTIONS=['Physical','Screens','Messaging','Social'];
+const SCREEN_FORMATS=['instagram-feed','instagram-story','facebook-post','facebook-link','x-twitter','tablet-portrait','tablet-landscape','tv-landscape'];
+const SMALL_PHYSICAL=['business-card','playing-card','tarot-card','beer-mat','third-a4','a5-portrait'];
+const BLANK_POSTER={title:'',subtitle:'',dateText:'',price:'',cta:'Scan to find out more',format:'a5-portrait',fgImage:null,fgImageUrl:null,bgImage:null,bgImageUrl:null,overlayOpacity:0.5,overlayColor:'#000000',textColor:'#111111'};
 
 function isScreenFormat(id){return SCREEN_FORMATS.includes(id);}
 function filenamify(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function slugify(s){return s.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,40);}
 
 async function supabase(path,method='GET',body=null,prefer=null){
   const res=await fetch('/api/supabase',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,method,body,prefer})});
   return res.json();
+}
+
+async function authFetch(url,options={}){
+  const token=sessionStorage.getItem('ca022_token');
+  return fetch(url,{...options,headers:{'Content-Type':'application/json','Authorization':token?`Bearer ${token}`:'',...(options.headers||{})}});
 }
 
 async function uploadImage(file){
@@ -203,7 +201,147 @@ async function uploadImage(file){
   });
 }
 
-function slugify(s){return s.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,40);}
+// ── LOGIN ─────────────────────────────────────────────────
+function LoginScreen({onLogin}){
+  const [username,setUsername]=useState('');
+  const [password,setPassword]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState('');
+
+  async function login(){
+    if(!username||!password){setError('Please enter username and password.');return;}
+    setLoading(true);setError('');
+    try{
+      const res=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+      const data=await res.json();
+      if(!res.ok){setError(data.error||'Login failed.');setLoading(false);return;}
+      sessionStorage.setItem('ca022_token',data.token);
+      sessionStorage.setItem('ca022_user',JSON.stringify(data.user));
+      onLogin(data.user);
+    }catch(e){setError('Network error.');setLoading(false);}
+  }
+
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <h1>QR Engine</h1>
+        <p>CA-022 · The Artyst</p>
+        <div className="form-group" style={{marginBottom:'1rem'}}>
+          <label>Username</label>
+          <input value={username} onChange={e=>setUsername(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} autoFocus/>
+        </div>
+        <div className="form-group" style={{marginBottom:'1rem'}}>
+          <label>Password</label>
+          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}/>
+        </div>
+        {error&&<div className="login-err">{error}</div>}
+        <button className="btn btn-primary" style={{width:'100%',marginTop:'.5rem'}} onClick={login} disabled={loading}>{loading?'Signing in...':'Sign In'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── USERS TAB ─────────────────────────────────────────────
+function UsersTab(){
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [form,setForm]=useState({username:'',password:'',name:'',role:'viewer'});
+  const [status,setStatus]=useState(null);
+  const [resetId,setResetId]=useState(null);
+  const [resetPw,setResetPw]=useState('');
+
+  async function loadUsers(){
+    setLoading(true);
+    const res=await authFetch('/api/users');
+    if(res.ok) setUsers(await res.json());
+    setLoading(false);
+  }
+
+  useEffect(()=>{loadUsers();},[]);
+
+  async function createUser(){
+    if(!form.username||!form.password||!form.name){setStatus({type:'error',msg:'All fields required.'});return;}
+    const res=await authFetch('/api/users',{method:'POST',body:JSON.stringify(form)});
+    if(res.ok){setStatus({type:'success',msg:`User "${form.name}" created.`});setForm({username:'',password:'',name:'',role:'viewer'});loadUsers();}
+    else{const d=await res.json();setStatus({type:'error',msg:d.error||'Failed to create user.'});}
+  }
+
+  async function toggleActive(u){
+    await authFetch('/api/users',{method:'PATCH',body:JSON.stringify({id:u.id,active:!u.active})});
+    loadUsers();
+  }
+
+  async function changeRole(u,role){
+    await authFetch('/api/users',{method:'PATCH',body:JSON.stringify({id:u.id,role})});
+    loadUsers();
+  }
+
+  async function resetPassword(){
+    if(!resetPw) return;
+    await authFetch('/api/users',{method:'PATCH',body:JSON.stringify({id:resetId,password:resetPw})});
+    setResetId(null);setResetPw('');
+    setStatus({type:'success',msg:'Password updated.'});
+  }
+
+  return (
+    <div>
+      <div className="card">
+        <h2>Add User</h2>
+        {status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}
+        <div className="form-grid">
+          <div className="form-group"><label>Name</label>
+            <input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Display name"/>
+          </div>
+          <div className="form-group"><label>Username</label>
+            <input value={form.username} onChange={e=>setForm(f=>({...f,username:e.target.value}))} placeholder="Login username"/>
+          </div>
+          <div className="form-group"><label>Password</label>
+            <input type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/>
+          </div>
+          <div className="form-group"><label>Role</label>
+            <select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>
+              <option value="viewer">Viewer — read only</option>
+              <option value="admin">Admin — full access</option>
+            </select>
+          </div>
+          <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}>
+            <button className="btn btn-primary" onClick={createUser}>Add User</button>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <h2>All Users</h2>
+        {loading&&<div className="empty" style={{padding:'1rem'}}>Loading...</div>}
+        {!loading&&users.map(u=>(
+          <div className="user-row" key={u.id} style={{opacity:u.active?1:0.5}}>
+            <div className="user-info">
+              <div className="user-name">{u.name}</div>
+              <div className="user-meta">@{u.username}</div>
+            </div>
+            <div className="actions" style={{alignItems:'center',flexWrap:'wrap'}}>
+              <span className={`badge badge-${u.role}`}>{u.role}</span>
+              <select value={u.role} onChange={e=>changeRole(u,e.target.value)} style={{width:'auto',fontSize:'.75rem',padding:'.3rem .5rem'}}>
+                <option value="admin">Admin</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              {resetId===u.id?(
+                <div style={{display:'flex',gap:'.3rem',alignItems:'center'}}>
+                  <input type="password" value={resetPw} onChange={e=>setResetPw(e.target.value)} placeholder="New password" style={{width:'130px',fontSize:'.8rem',padding:'.3rem .5rem'}}/>
+                  <button className="btn btn-green btn-small" onClick={resetPassword}>Save</button>
+                  <button className="btn btn-secondary btn-small" onClick={()=>setResetId(null)}>Cancel</button>
+                </div>
+              ):(
+                <button className="btn btn-secondary btn-small" onClick={()=>setResetId(u.id)}>Reset PW</button>
+              )}
+              <button className="btn btn-secondary btn-small" onClick={()=>toggleActive(u)}>{u.active?'Deactivate':'Activate'}</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TypeBadge({type}){return <span className={`badge badge-${type}`}>{type}</span>;}
 
 function QRWidget({url,size=120}){
@@ -225,20 +363,17 @@ function hasDestinationWarning(code){
 }
 
 function CropMarks({posterW,posterH}){
-  const pw=parseFloat(posterW);
-  const ph=parseFloat(posterH);
-  const hGap=(210-pw)/2;
-  const vGap=(297-ph)/2;
-  const gap=3;
+  const pw=parseFloat(posterW),ph=parseFloat(posterH);
+  const hGap=(210-pw)/2,vGap=(297-ph)/2;
   const marks=[
-    {cls:'h',style:{top:`${vGap-gap}mm`,left:0,width:`${hGap-gap}mm`}},
-    {cls:'v',style:{left:`${hGap-gap}mm`,top:0,height:`${vGap-gap}mm`}},
-    {cls:'h',style:{top:`${vGap-gap}mm`,right:0,width:`${hGap-gap}mm`}},
-    {cls:'v',style:{right:`${hGap-gap}mm`,top:0,height:`${vGap-gap}mm`}},
-    {cls:'h',style:{bottom:`${vGap-gap}mm`,left:0,width:`${hGap-gap}mm`}},
-    {cls:'v',style:{left:`${hGap-gap}mm`,bottom:0,height:`${vGap-gap}mm`}},
-    {cls:'h',style:{bottom:`${vGap-gap}mm`,right:0,width:`${hGap-gap}mm`}},
-    {cls:'v',style:{right:`${hGap-gap}mm`,bottom:0,height:`${vGap-gap}mm`}},
+    {cls:'h',style:{top:`${vGap-3}mm`,left:0,width:`${hGap-3}mm`}},
+    {cls:'v',style:{left:`${hGap-3}mm`,top:0,height:`${vGap-3}mm`}},
+    {cls:'h',style:{top:`${vGap-3}mm`,right:0,width:`${hGap-3}mm`}},
+    {cls:'v',style:{right:`${hGap-3}mm`,top:0,height:`${vGap-3}mm`}},
+    {cls:'h',style:{bottom:`${vGap-3}mm`,left:0,width:`${hGap-3}mm`}},
+    {cls:'v',style:{left:`${hGap-3}mm`,bottom:0,height:`${vGap-3}mm`}},
+    {cls:'h',style:{bottom:`${vGap-3}mm`,right:0,width:`${hGap-3}mm`}},
+    {cls:'v',style:{right:`${hGap-3}mm`,bottom:0,height:`${vGap-3}mm`}},
   ];
   return <>{marks.map((m,i)=><div key={i} className={`crop-mark ${m.cls}`} style={m.style}/>)}</>;
 }
@@ -252,11 +387,7 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [loadTemplateId,setLoadTemplateId]=useState('');
   const [loadDesignId,setLoadDesignId]=useState('');
   const [downloading,setDownloading]=useState(false);
-  const [duplex,setDuplex]=useState('none');
-  const [backPoster,setBackPoster]=useState({...BLANK_POSTER});
-  const [backUploading,setBackUploading]=useState({fg:false,bg:false});
   const posterRef=useRef(null);
-  const backPosterRef=useRef(null);
   const fmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
   const codeDesigns=(designs||[]).filter(d=>d.qr_code_id===code?.id);
   const isScreen=isScreenFormat(poster.format);
@@ -264,18 +395,13 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
 
   function applyDesign(d){
     setPoster(p=>({...p,title:d.title_override||p.title,subtitle:d.subtitle||'',dateText:d.date_text||'',price:d.price||'',cta:d.cta||'Scan to find out more',format:d.format||'a5-portrait',overlayOpacity:d.overlay_opacity??0.5,overlayColor:d.overlay_color||'#000000',textColor:d.text_color||'#111111',fgImageUrl:d.fg_image_url||null,bgImageUrl:d.bg_image_url||null,fgImage:d.fg_image_url||null,bgImage:d.bg_image_url||null}));
-    if(d.duplex) setDuplex(d.duplex);
-    if(d.back_design) setBackPoster({title:d.back_design.title||'',subtitle:d.back_design.subtitle||'',dateText:d.back_design.date_text||'',price:d.back_design.price||'',cta:d.back_design.cta||'Scan to find out more',format:d.format||'a5-portrait',overlayOpacity:d.back_design.overlay_opacity??0.5,overlayColor:d.back_design.overlay_color||'#000000',textColor:d.back_design.text_color||'#111111',fgImageUrl:d.back_design.fg_image_url||null,bgImageUrl:d.back_design.bg_image_url||null,fgImage:d.back_design.fg_image_url||null,bgImage:d.back_design.bg_image_url||null});
   }
-
-  function handleLoadTemplate(id){setLoadTemplateId(id);const t=templates.find(t=>t.id===id);if(t) applyDesign(t);}
-  function handleLoadDesign(id){setLoadDesignId(id);const d=codeDesigns.find(d=>d.id===id);if(d) applyDesign(d);}
 
   async function handleImageUpload(file,key){
     if(!file)return;
     setUploading(u=>({...u,[key]:true}));
     try{const url=await uploadImage(file);setPoster(p=>({...p,[key+'Image']:url,[key+'ImageUrl']:url}));}
-    catch(err){setSaveStatus({type:'error',msg:'Image upload failed: '+err.message});}
+    catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}
     setUploading(u=>({...u,[key]:false}));
   }
 
@@ -285,39 +411,42 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
     try{
       const canvas=await html2canvas(posterRef.current,{useCORS:true,allowTaint:true,scale:2,backgroundColor:poster.bgImage?null:'#ffffff'});
       const link=document.createElement('a');
-      const title=filenamify(poster.title||code?.label||'poster');
-      link.download=`${title}-${poster.format}.png`;
-      link.href=canvas.toDataURL('image/png');
-      link.click();
+      link.download=`${filenamify(poster.title||code?.label||'poster')}-${poster.format}.png`;
+      link.href=canvas.toDataURL('image/png');link.click();
     }catch(err){setSaveStatus({type:'error',msg:'Download failed: '+err.message});}
     setDownloading(false);
   }
 
   async function saveDesign(){
     if(!saveName){setSaveStatus({type:'error',msg:'Please enter a name.'});return;}
-    const backDesignPayload=duplex==='different'?{title:backPoster.title||null,subtitle:backPoster.subtitle||null,date_text:backPoster.dateText||null,price:backPoster.price||null,cta:backPoster.cta||null,text_color:backPoster.textColor,overlay_color:backPoster.overlayColor,overlay_opacity:backPoster.overlayOpacity,fg_image_url:backPoster.fgImageUrl||null,bg_image_url:backPoster.bgImageUrl||null}:null;
-    const payload={name:saveName,format:poster.format,title_override:poster.title||null,subtitle:poster.subtitle||null,date_text:poster.dateText||null,price:poster.price||null,cta:poster.cta||null,text_color:poster.textColor,overlay_color:poster.overlayColor,overlay_opacity:poster.overlayOpacity,fg_image_url:poster.fgImageUrl||null,bg_image_url:poster.bgImageUrl||null,duplex:duplex,back_design:backDesignPayload};
-    const table=saveMode==='template'?'poster_templates':'poster_designs';
-    if(saveMode==='design') payload.qr_code_id=code?.id;
-    const res=await supabase('/rest/v1/'+table,'POST',payload,'return=representation');
-    if(res.error||(Array.isArray(res)&&res[0]?.code)){setSaveStatus({type:'error',msg:res.message||res[0]?.message||'Save failed.'});}
-    else{setSaveStatus({type:'success',msg:saveMode==='template'?'Template saved.':'Design saved.'});setSaveMode(null);setSaveName('');if(onSaved) onSaved();}
+    const payload={name:saveName,format:poster.format,title_override:poster.title||null,subtitle:poster.subtitle||null,date_text:poster.dateText||null,price:poster.price||null,cta:poster.cta||null,text_color:poster.textColor,overlay_color:poster.overlayColor,overlay_opacity:poster.overlayOpacity,fg_image_url:poster.fgImageUrl||null,bg_image_url:poster.bgImageUrl||null};
+    if(saveMode==='template'){await supabase('/rest/v1/poster_templates','POST',payload);setSaveStatus({type:'success',msg:`Template "${saveName}" saved.`});}
+    else{await supabase('/rest/v1/poster_designs','POST',{...payload,qr_code_id:code?.id});setSaveStatus({type:'success',msg:`Design "${saveName}" saved.`});}
+    setSaveMode(null);setSaveName('');
+    if(onSaved) onSaved();
   }
 
   const posterStyle={width:fmt.w,height:fmt.h,background:poster.bgImage?'transparent':'#fff',color:poster.textColor,padding:fmt.small?'4mm':'10mm',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:needsCropMarks?'none':'1px solid #ddd',margin:needsCropMarks?'0':'1rem auto'};
+
   const PosterContent=(
     <div ref={posterRef} style={posterStyle}>
       {poster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${poster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}
       {poster.bgImage&&<div style={{position:'absolute',inset:0,background:poster.overlayColor,opacity:poster.overlayOpacity,zIndex:1}}/>}
       <div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:fmt.small?'2mm':'3mm',flex:1,minHeight:0}}>
-        {!fmt.small&&<div style={{fontSize:'9pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}
+        {!fmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}
         <div style={{width:'100%',height:'3px',background:'#c0392b'}}/>
         {poster.fgImage&&<img src={poster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}
-        <div style={{fontSize:fmt.small?'12pt':'26pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{poster.title}</div>
-        {poster.subtitle&&<div style={{fontSize:fmt.small?'9pt':'12pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{poster.subtitle}</div>}
-        {poster.dateText&&<div style={{fontSize:fmt.small?'9pt':'12pt',textAlign:'center'}}>{poster.dateText}</div>}
-        {poster.price&&<div style={{fontSize:fmt.small?'10pt':'15pt',fontWeight:'bold',textAlign:'center'}}>{poster.price}</div>}
-        {code&&(<div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'2mm',marginTop:'auto',paddingTop:'3mm'}}><QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?60:140}/><div style={{fontSize:fmt.small?'6pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',opacity:.6,textAlign:'center'}}>{poster.cta}</div><div style={{fontSize:'6pt',fontFamily:'monospace',opacity:.4,textAlign:'center'}}>{BASE_URL}/e/{code.slug}</div></div>)}
+        <div style={{fontSize:fmt.small?'10pt':'20pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{poster.title}</div>
+        {poster.subtitle&&<div style={{fontSize:fmt.small?'7pt':'9pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{poster.subtitle}</div>}
+        {poster.dateText&&<div style={{fontSize:fmt.small?'7pt':'9pt',textAlign:'center'}}>{poster.dateText}</div>}
+        {poster.price&&<div style={{fontSize:fmt.small?'9pt':'12pt',fontWeight:'bold',textAlign:'center'}}>{poster.price}</div>}
+        {code&&(
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'2mm',marginTop:'auto',paddingTop:'3mm'}}>
+            <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?60:140}/>
+            <div style={{fontSize:fmt.small?'6pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',opacity:.6,textAlign:'center'}}>{poster.cta}</div>
+            <div style={{fontSize:'6pt',fontFamily:'monospace',opacity:.4,textAlign:'center'}}>{BASE_URL}/e/{code.slug}</div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -330,8 +459,8 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           {onClose&&<button className="btn btn-secondary btn-small" onClick={onClose}>← Back</button>}
         </div>
         <div className="form-grid" style={{marginBottom:'1rem',paddingBottom:'1rem',borderBottom:'1px solid #222'}}>
-          {templates.length>0&&<div className="form-group"><label>Load Template</label><select value={loadTemplateId} onChange={e=>handleLoadTemplate(e.target.value)}><option value="">— select a template —</option>{templates.map(t=><option key={t.id} value={t.id}>{t.name} ({t.format})</option>)}</select></div>}
-          {codeDesigns.length>0&&<div className="form-group"><label>Load Saved Design</label><select value={loadDesignId} onChange={e=>handleLoadDesign(e.target.value)}><option value="">— select a design —</option>{codeDesigns.map(d=><option key={d.id} value={d.id}>{d.name} ({d.format})</option>)}</select></div>}
+          {templates.length>0&&<div className="form-group"><label>Load Template</label><select value={loadTemplateId} onChange={e=>{setLoadTemplateId(e.target.value);const t=templates.find(t=>t.id===e.target.value);if(t)applyDesign(t);}}><option value="">— select —</option>{templates.map(t=><option key={t.id} value={t.id}>{t.name} ({t.format})</option>)}</select></div>}
+          {codeDesigns.length>0&&<div className="form-group"><label>Load Design</label><select value={loadDesignId} onChange={e=>{setLoadDesignId(e.target.value);const d=codeDesigns.find(d=>d.id===e.target.value);if(d)applyDesign(d);}}><option value="">— select —</option>{codeDesigns.map(d=><option key={d.id} value={d.id}>{d.name} ({d.format})</option>)}</select></div>}
         </div>
         {saveStatus&&<div className={saveStatus.type==='error'?'error':'success'}>{saveStatus.msg}</div>}
         <div className="form-grid">
@@ -340,57 +469,132 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           <div className="form-group"><label>Date & Time</label><input value={poster.dateText} onChange={e=>setPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/></div>
           <div className="form-group"><label>Price</label><input value={poster.price} onChange={e=>setPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div>
           <div className="form-group"><label>Call to Action</label><input value={poster.cta} onChange={e=>setPoster(p=>({...p,cta:e.target.value}))}/></div>
-          <div className="form-group"><label>Format</label><select value={poster.format} onChange={e=>setPoster(p=>({...p,format:e.target.value}))}><optgroup label="Print">{FORMATS.filter(f=>!f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup><optgroup label="Screen / Social">{FORMATS.filter(f=>f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup></select></div>
-          <div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
-          <div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
-          {poster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(poster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={poster.overlayOpacity} onChange={e=>setPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}
+          <div className="form-group"><label>Format</label>
+            <select value={poster.format} onChange={e=>setPoster(p=>({...p,format:e.target.value}))}>
+              <optgroup label="Print">{FORMATS.filter(f=>!f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup>
+              <optgroup label="Screen / Social">{FORMATS.filter(f=>f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup>
+            </select>
+          </div>
+          <div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a'}}>✓ Uploaded</span>}</div>
+          <div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a'}}>✓ Uploaded</span>}</div>
+          {poster.bgImage&&<>
+            <div className="form-group"><label>Overlay Opacity — {Math.round(poster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={poster.overlayOpacity} onChange={e=>setPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div>
+            <div className="form-group"><label>Overlay Colour</label><input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/></div>
+          </>}
           <div className="form-group"><label>Text Colour</label><input type="color" value={poster.textColor} onChange={e=>setPoster(p=>({...p,textColor:e.target.value}))}/></div>
-          {!isScreen&&<div className="form-group full"><label>Duplex Printing</label><div style={{display:'flex',gap:'.5rem',marginTop:'.3rem'}}>{[['none','Single sided'],['same','Same on both sides'],['different','Different design on back']].map(([val,lbl])=><div key={val} className={`channel-btn${duplex===val?' selected':''}`} style={{flex:1}} onClick={()=>setDuplex(val)}>{lbl}</div>)}</div></div>}
           <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem',flexWrap:'wrap'}}>
             <button className="btn btn-blue" onClick={()=>setSaveMode('template')}>Save as Template</button>
             {code&&<button className="btn btn-green" onClick={()=>setSaveMode('design')}>Save as Design</button>}
             {isScreen?<button className="btn btn-primary" onClick={downloadImage} disabled={downloading}>{downloading?'Downloading...':'Download Image'}</button>:<button className="btn btn-primary" onClick={()=>window.print()}>Print</button>}
           </div>
         </div>
-        {saveMode&&<div className="save-panel"><h3>Save as {saveMode==='template'?'Template':'Design'}</h3><div style={{display:'flex',gap:'.5rem',alignItems:'flex-end'}}><div className="form-group" style={{flex:1}}><label>Name</label><input value={saveName} onChange={e=>setSaveName(e.target.value)} placeholder={saveMode==='template'?'e.g. Standard A5 Dark':'e.g. Wine Tasting April version'}/></div><button className="btn btn-secondary" onClick={()=>setSaveMode(null)}>Cancel</button><button className="btn btn-primary" onClick={saveDesign}>Save</button></div></div>}
-        {isScreen&&<div className="warning-box" style={{marginTop:'1rem'}}>Screen format — use Download Image to export. Print is not available for screen formats.</div>}
+        {saveMode&&(
+          <div className="save-panel">
+            <h3>Save as {saveMode==='template'?'Template':'Design'}</h3>
+            <div style={{display:'flex',gap:'.5rem',alignItems:'flex-end'}}>
+              <div className="form-group" style={{flex:1}}><label>Name</label><input value={saveName} onChange={e=>setSaveName(e.target.value)} placeholder="e.g. Standard A5 Dark"/></div>
+              <button className="btn btn-secondary" onClick={()=>setSaveMode(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveDesign}>Save</button>
+            </div>
+          </div>
+        )}
+        {isScreen&&<div className="warning-box" style={{marginTop:'1rem'}}>Screen format — use Download Image. Print not available.</div>}
       </div>
       <div className="poster-wrap">
-        <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',marginBottom:'.5rem'}}>{duplex!=='none'?'Side 1':''}</div>
         {needsCropMarks?<div className="crop-wrap"><CropMarks posterW={fmt.w} posterH={fmt.h}/>{PosterContent}</div>:PosterContent}
-        {duplex!=='none'&&<>
-          <div className="no-print" style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',color:'#555',textAlign:'center',margin:'2rem 0 .5rem'}}>Side 2</div>
-          {duplex==='same'&&(needsCropMarks?<div className="crop-wrap"><CropMarks posterW={fmt.w} posterH={fmt.h}/>{PosterContent}</div>:PosterContent)}
-          {duplex==='different'&&(()=>{
-            const backFmt=FORMATS.find(f=>f.id===poster.format)||FORMATS[0];
-            const backNeedsCropMarks=SMALL_PHYSICAL.includes(poster.format);
-            const backPosterStyle={width:backFmt.w,height:backFmt.h,background:backPoster.bgImage?'transparent':'#fff',color:backPoster.textColor,padding:backFmt.small?'4mm':'10mm',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:backNeedsCropMarks?'none':'1px solid #ddd',margin:backNeedsCropMarks?'0':'1rem auto'};
-            const BackContent=(<div ref={backPosterRef} style={backPosterStyle}>{backPoster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${backPoster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}{backPoster.bgImage&&<div style={{position:'absolute',inset:0,background:backPoster.overlayColor,opacity:backPoster.overlayOpacity,zIndex:1}}/>}<div style={{position:'relative',zIndex:2,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:backFmt.small?'2mm':'3mm',flex:1,minHeight:0}}>{!backFmt.small&&<div style={{fontSize:'8pt',letterSpacing:'.2em',textTransform:'uppercase',opacity:.6,width:'100%'}}>The Artyst · Cambridge</div>}<div style={{width:'100%',height:'3px',background:'#c0392b'}}/>{backPoster.fgImage&&<img src={backPoster.fgImage} style={{width:'100%',flex:1,minHeight:0,objectFit:'contain',objectPosition:'center'}}/>}<div style={{fontSize:backFmt.small?'12pt':'26pt',fontWeight:'bold',textAlign:'center',lineHeight:1.2}}>{backPoster.title}</div>{backPoster.subtitle&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center',opacity:.8,lineHeight:1.5}}>{backPoster.subtitle}</div>}{backPoster.dateText&&<div style={{fontSize:backFmt.small?'9pt':'12pt',textAlign:'center'}}>{backPoster.dateText}</div>}{backPoster.price&&<div style={{fontSize:backFmt.small?'10pt':'15pt',fontWeight:'bold',textAlign:'center'}}>{backPoster.price}</div>}</div></div>);
-            return backNeedsCropMarks?<div className="crop-wrap"><CropMarks posterW={backFmt.w} posterH={backFmt.h}/>{BackContent}</div>:BackContent;
-          })()}
-          {duplex==='different'&&<div className="no-print card" style={{marginTop:'2rem'}}><h2>Back Design</h2><div className="form-grid"><div className="form-group"><label>Title</label><input value={backPoster.title} onChange={e=>setBackPoster(p=>({...p,title:e.target.value}))}/></div><div className="form-group"><label>Subtitle</label><input value={backPoster.subtitle} onChange={e=>setBackPoster(p=>({...p,subtitle:e.target.value}))} placeholder="One line description"/></div><div className="form-group"><label>Date & Time</label><input value={backPoster.dateText} onChange={e=>setBackPoster(p=>({...p,dateText:e.target.value}))} placeholder="Friday 25 April · 7pm"/></div><div className="form-group"><label>Price</label><input value={backPoster.price} onChange={e=>setBackPoster(p=>({...p,price:e.target.value}))} placeholder="£18 per person"/></div><div className="form-group"><label>Call to Action</label><input value={backPoster.cta} onChange={e=>setBackPoster(p=>({...p,cta:e.target.value}))}/></div><div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,fg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,fgImage:url,fgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,fg:false}));}}/>{backUploading.fg&&<span className="uploading">Uploading...</span>}{backPoster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div><div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={async e=>{if(!e.target.files[0])return;setBackUploading(u=>({...u,bg:true}));try{const url=await uploadImage(e.target.files[0]);setBackPoster(p=>({...p,bgImage:url,bgImageUrl:url}));}catch(err){setSaveStatus({type:'error',msg:'Upload failed: '+err.message});}setBackUploading(u=>({...u,bg:false}));}}/>{backUploading.bg&&<span className="uploading">Uploading...</span>}{backPoster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>{backPoster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(backPoster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={backPoster.overlayOpacity} onChange={e=>setBackPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={backPoster.overlayColor} onChange={e=>setBackPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}<div className="form-group"><label>Text Colour</label><input type="color" value={backPoster.textColor} onChange={e=>setBackPoster(p=>({...p,textColor:e.target.value}))}/></div></div></div>}
-        </>}
       </div>
     </div>
   );
 }
 
-function Templates({templates,designs,codes,onRefresh}){
+function Templates({templates,designs,codes,onRefresh,isAdmin}){
   async function deleteTemplate(id){await supabase(`/rest/v1/poster_templates?id=eq.${id}`,'DELETE');onRefresh();}
   async function deleteDesign(id){await supabase(`/rest/v1/poster_designs?id=eq.${id}`,'DELETE');onRefresh();}
-  return(<div><div className="card"><h2>Reusable Templates ({templates.length})</h2>{!templates.length&&<div className="empty" style={{padding:'1.5rem'}}>No templates saved yet — create one from the Poster Editor</div>}{templates.map(t=>(<div className="template-card" key={t.id}><div className="template-preview" style={{background:t.bg_image_url?`url(${t.bg_image_url}) center/cover`:'#222'}}>{!t.bg_image_url&&<span>{t.format}</span>}</div><div className="template-info" style={{flex:1}}><div className="template-name">{t.name}</div><div className="template-meta">{t.format} · Text: {t.text_color}</div>{t.title_override&&<div className="template-meta">Title: {t.title_override}</div>}</div><button className="btn btn-secondary btn-small" onClick={()=>deleteTemplate(t.id)}>Delete</button></div>))}</div><div className="card"><h2>Per-Code Designs ({designs.length})</h2>{!designs.length&&<div className="empty" style={{padding:'1.5rem'}}>No designs saved yet</div>}{designs.map(d=>{const code=codes.find(c=>c.id===d.qr_code_id);return(<div className="template-card" key={d.id}><div className="template-preview" style={{background:d.bg_image_url?`url(${d.bg_image_url}) center/cover`:'#222'}}>{!d.bg_image_url&&<span>{d.format}</span>}</div><div className="template-info" style={{flex:1}}><div className="template-name">{d.name}</div><div className="template-meta">{d.format} · Code: {code?.label||'Unknown'}</div></div><button className="btn btn-secondary btn-small" onClick={()=>deleteDesign(d.id)}>Delete</button></div>);})}</div></div>);
+  return (
+    <div>
+      <div className="card">
+        <h2>Reusable Templates ({templates.length})</h2>
+        {!templates.length&&<div className="empty" style={{padding:'1.5rem'}}>No templates yet</div>}
+        {templates.map(t=>(
+          <div className="template-card" key={t.id}>
+            <div className="template-preview" style={{background:t.bg_image_url?`url(${t.bg_image_url}) center/cover`:'#222'}}>{!t.bg_image_url&&<span>{t.format}</span>}</div>
+            <div className="template-info" style={{flex:1}}><div className="template-name">{t.name}</div><div className="template-meta">{t.format}</div></div>
+            {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>deleteTemplate(t.id)}>Delete</button>}
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <h2>Per-Code Designs ({designs.length})</h2>
+        {!designs.length&&<div className="empty" style={{padding:'1.5rem'}}>No designs yet</div>}
+        {designs.map(d=>{
+          const code=codes.find(c=>c.id===d.qr_code_id);
+          return (
+            <div className="template-card" key={d.id}>
+              <div className="template-preview" style={{background:d.bg_image_url?`url(${d.bg_image_url}) center/cover`:'#222'}}>{!d.bg_image_url&&<span>{d.format}</span>}</div>
+              <div className="template-info" style={{flex:1}}><div className="template-name">{d.name}</div><div className="template-meta">{d.format} · {code?.label||'Unknown'}</div></div>
+              {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>deleteDesign(d.id)}>Delete</button>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function PrintQueue({queue,templates,designs,onRemove,onClear,onSaved}){
   const [editing,setEditing]=useState(null);
   if(editing) return <PosterEditor code={editing} templates={templates} designs={designs} onClose={()=>setEditing(null)} onSaved={onSaved}/>;
-  return(<div className="card"><h2>Print Queue ({queue.length})</h2>{!queue.length&&<div className="empty" style={{padding:'1.5rem'}}>No codes in queue — add from the Library</div>}{queue.map(c=>(<div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem',background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.5rem'}}><div style={{display:'flex',flexDirection:'column',gap:'.2rem'}}><strong>{c.label}</strong><span className="slug-display">/e/{c.slug}</span></div><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>setEditing(c)}>Edit Poster</button><button className="btn btn-secondary btn-small" onClick={()=>onRemove(c.id)}>Remove</button></div></div>))}{queue.length>0&&<div style={{display:'flex',gap:'.5rem',marginTop:'1rem',justifyContent:'flex-end'}}><button className="btn btn-secondary" onClick={onClear}>Clear Queue</button></div>}</div>);
+  return (
+    <div className="card">
+      <h2>Print Queue ({queue.length})</h2>
+      {!queue.length&&<div className="empty" style={{padding:'1.5rem'}}>No codes in queue</div>}
+      {queue.map(c=>(
+        <div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem',background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.5rem'}}>
+          <div><strong>{c.label}</strong><br/><span className="slug-display">/e/{c.slug}</span></div>
+          <div className="actions">
+            <button className="btn btn-secondary btn-small" onClick={()=>setEditing(c)}>Edit Poster</button>
+            <button className="btn btn-secondary btn-small" onClick={()=>onRemove(c.id)}>Remove</button>
+          </div>
+        </div>
+      ))}
+      {queue.length>0&&<div style={{display:'flex',justifyContent:'flex-end',marginTop:'1rem'}}><button className="btn btn-secondary" onClick={onClear}>Clear Queue</button></div>}
+    </div>
+  );
 }
 
-function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute}){
+function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin}){
   async function toggleActive(code){await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`,'PATCH',{active:!code.active});onRefresh();}
   if(!codes.length) return <div className="empty">No QR codes yet</div>;
-  return(<div className="card" style={{padding:0,overflow:'hidden'}}><table><thead><tr><th>Label</th><th>Type</th><th>Destination</th><th>Scans</th><th>Placement</th><th>Status</th><th>Actions</th></tr></thead><tbody>{codes.map(c=>{const warn=hasDestinationWarning(c);const dest=destinations.find(d=>d.id===c.destination_id);return(<tr key={c.id}><td><strong>{c.label}</strong>{c.linked_ca017_event_id&&<div><span className="badge badge-event" style={{marginTop:'.2rem'}}>CA-017</span></div>}{c.linked_ca025_opportunity_id&&<div><span className="badge badge-opportunity" style={{marginTop:'.2rem'}}>CA-025</span></div>}<br/><span className="slug-display">/e/{c.slug}</span></td><td><TypeBadge type={c.type}/></td><td><div style={{fontSize:'.8rem'}}>{dest?<span style={{color:'#aaa'}}>{dest.label}</span>:<span className="slug-display">{c.destination_url?.substring(0,40)}...</span>}{warn&&<div><span className="badge badge-warning" style={{marginTop:'.2rem'}}>⚠ Destination changed</span></div>}</div></td><td><span className="scan-count">{c.scan_count}</span></td><td><span style={{color:'#666',fontSize:'.8rem'}}>{c.placement||'—'}</span></td><td><span className={`badge badge-${c.active?'active':'inactive'}`}>{c.active?'active':'inactive'}</span></td><td><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>onAddToPrintQueue(c)}>Poster</button><button className="btn btn-green btn-small" onClick={()=>onDistribute(c)}>Distribute</button><button className="btn btn-secondary btn-small" onClick={()=>toggleActive(c)}>{c.active?'Deactivate':'Activate'}</button></div></td></tr>);})}</tbody></table></div>);
+  return (
+    <div className="card" style={{padding:0,overflow:'hidden'}}>
+      <table>
+        <thead><tr><th>Label</th><th>Type</th><th>Destination</th><th>Scans</th><th>Placement</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {codes.map(c=>{
+            const warn=hasDestinationWarning(c);
+            const dest=destinations.find(d=>d.id===c.destination_id);
+            return (
+              <tr key={c.id}>
+                <td><strong>{c.label}</strong>{c.linked_ca017_event_id&&<div><span className="badge badge-event" style={{marginTop:'.2rem'}}>CA-017</span></div>}<br/><span className="slug-display">/e/{c.slug}</span></td>
+                <td><TypeBadge type={c.type}/></td>
+                <td><div style={{fontSize:'.8rem'}}>{dest?<span style={{color:'#aaa'}}>{dest.label}</span>:<span className="slug-display">{c.destination_url?.substring(0,40)}...</span>}{warn&&<div><span className="badge badge-warning" style={{marginTop:'.2rem'}}>⚠ Destination changed</span></div>}</div></td>
+                <td><span className="scan-count">{c.scan_count}</span></td>
+                <td><span style={{color:'#666',fontSize:'.8rem'}}>{c.placement||'—'}</span></td>
+                <td><span className={`badge badge-${c.active?'active':'inactive'}`}>{c.active?'active':'inactive'}</span></td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-secondary btn-small" onClick={()=>onAddToPrintQueue(c)}>Poster</button>
+                    {isAdmin&&<button className="btn btn-green btn-small" onClick={()=>onDistribute(c)}>Distribute</button>}
+                    {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>toggleActive(c)}>{c.active?'Deactivate':'Activate'}</button>}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function CreateForm({destinations,onCreate}){
@@ -398,36 +602,93 @@ function CreateForm({destinations,onCreate}){
   const [useCustom,setUseCustom]=useState(false);
   const [status,setStatus]=useState(null);
   const [loading,setLoading]=useState(false);
-  function set(k,v){setForm(f=>{const n={...f,[k]:v};if(k==='label'&&!f._slugEdited) n.slug=slugify(v);if(k==='type'){n.destination_id='';n.custom_url='';}return n;});}
+
+  function set(k,v){setForm(f=>{const n={...f,[k]:v};if(k==='label'&&!f._slugEdited)n.slug=slugify(v);if(k==='type'){n.destination_id='';n.custom_url='';}return n;});}
   const filteredDests=destinations.filter(d=>d.type===form.type||d.type==='generic');
   const selectedDest=destinations.find(d=>d.id===form.destination_id);
   const finalUrl=useCustom?form.custom_url:(selectedDest?.url||'');
+
   async function submit(){
-    if(!form.label||!form.slug){setStatus({type:'error',msg:'Label and slug are required.'});return;}
-    if(!finalUrl){setStatus({type:'error',msg:'Please select a destination or enter a custom URL.'});return;}
+    if(!form.label||!form.slug){setStatus({type:'error',msg:'Label and slug required.'});return;}
+    if(!finalUrl){setStatus({type:'error',msg:'Please select a destination or enter a URL.'});return;}
     setLoading(true);setStatus(null);
     const res=await supabase('/rest/v1/qr_codes','POST',{slug:form.slug,type:form.type,label:form.label,destination_url:finalUrl,destination_id:(!useCustom&&form.destination_id)||null,placement:form.placement||null},'return=representation');
     setLoading(false);
-    if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
-    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate();}
+    if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error.'});}
+    else{setStatus({type:'success',msg:`Created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate();}
   }
-  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{!useCustom?<div className="form-group full"><label>Destination</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a destination —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use destination library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
+
+  return (
+    <div className="card">
+      <h2>New QR Code</h2>
+      {status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}
+      <div className="form-grid">
+        <div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div>
+        <div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        {!useCustom?(
+          <div className="form-group full"><label>Destination</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL</button></div></div>
+        ):(
+          <div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use destination library</button></div></div>
+        )}
+        <div className="form-group"><label>Slug</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="auto-generated"/></div>
+        <div className="form-group"><label>Placement</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>
+        {form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}
+        <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div>
+      </div>
+    </div>
+  );
 }
 
-function Destinations({destinations,onRefresh}){
+function Destinations({destinations,onRefresh,isAdmin}){
   const [form,setForm]=useState({label:'',url:'',type:'generic',pinned:false});
   const [editing,setEditing]=useState(null);
   const [status,setStatus]=useState(null);
+
   async function save(){
-    if(!form.label||!form.url){setStatus({type:'error',msg:'Label and URL are required.'});return;}
-    if(editing){await supabase(`/rest/v1/destinations?id=eq.${editing}`,'PATCH',{label:form.label,url:form.url,type:form.type,pinned:form.pinned});setStatus({type:'success',msg:'Destination updated.'});setEditing(null);}
-    else{await supabase('/rest/v1/destinations','POST',{label:form.label,url:form.url,type:form.type,pinned:form.pinned});setStatus({type:'success',msg:'Destination created.'});}
+    if(!form.label||!form.url){setStatus({type:'error',msg:'Label and URL required.'});return;}
+    if(editing){await supabase(`/rest/v1/destinations?id=eq.${editing}`,'PATCH',{label:form.label,url:form.url,type:form.type,pinned:form.pinned});setStatus({type:'success',msg:'Updated.'});setEditing(null);}
+    else{await supabase('/rest/v1/destinations','POST',{label:form.label,url:form.url,type:form.type,pinned:form.pinned});setStatus({type:'success',msg:'Created.'});}
     setForm({label:'',url:'',type:'generic',pinned:false});onRefresh();
   }
-  async function remove(id){await supabase(`/rest/v1/destinations?id=eq.${id}`,'DELETE');onRefresh();}
-  function startEdit(d){setEditing(d.id);setForm({label:d.label,url:d.url,type:d.type,pinned:d.pinned});}
+
   const byType=TYPES.reduce((acc,t)=>{acc[t]=destinations.filter(d=>d.type===t);return acc;},{});
-  return(<div><div className="card"><h2>{editing?'Edit Destination':'New Destination'}</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. Wine Tasting April — Tickets"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div><div className="form-group full"><label>URL</label><input value={form.url} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://..."/></div><div className="form-group full"><label style={{flexDirection:'row',display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer'}}><input type="checkbox" checked={form.pinned} onChange={e=>setForm(f=>({...f,pinned:e.target.checked}))}/>Pin — never auto-update QR codes pointing here</label></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>{editing&&<button className="btn btn-secondary" onClick={()=>{setEditing(null);setForm({label:'',url:'',type:'generic',pinned:false});}}>Cancel</button>}<button className="btn btn-primary" onClick={save}>{editing?'Save Changes':'Add Destination'}</button></div></div></div>{TYPES.map(type=>{const items=byType[type]||[];if(!items.length) return null;return(<div key={type} className="card"><h2><TypeBadge type={type}/><span style={{marginLeft:'.5rem'}}>{type} destinations</span></h2>{items.map(d=>(<div className="dest-item" key={d.id}><div className="dest-info"><div className="dest-label">{d.label}{d.pinned&&<span className="pin-badge">PINNED</span>}</div><div className="dest-url">{d.url}</div></div><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>startEdit(d)}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>remove(d.id)}>Delete</button></div></div>))}</div>);})}{!destinations.length&&<div className="empty">No destinations yet</div>}</div>);
+
+  return (
+    <div>
+      {isAdmin&&(
+        <div className="card">
+          <h2>{editing?'Edit Destination':'New Destination'}</h2>
+          {status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}
+          <div className="form-grid">
+            <div className="form-group"><label>Label</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. Wine Tasting — Tickets"/></div>
+            <div className="form-group"><label>Type</label><select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div className="form-group full"><label>URL</label><input value={form.url} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://..."/></div>
+            <div className="form-group full"><label style={{flexDirection:'row',display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer'}}><input type="checkbox" checked={form.pinned} onChange={e=>setForm(f=>({...f,pinned:e.target.checked}))}/>Pin — never auto-update</label></div>
+            <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>
+              {editing&&<button className="btn btn-secondary" onClick={()=>{setEditing(null);setForm({label:'',url:'',type:'generic',pinned:false});}}>Cancel</button>}
+              <button className="btn btn-primary" onClick={save}>{editing?'Save':'Add Destination'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {TYPES.map(type=>{
+        const items=byType[type]||[];
+        if(!items.length) return null;
+        return (
+          <div key={type} className="card">
+            <h2><TypeBadge type={type}/><span style={{marginLeft:'.5rem'}}>{type} destinations</span></h2>
+            {items.map(d=>(
+              <div className="dest-item" key={d.id}>
+                <div className="dest-info"><div className="dest-label">{d.label}{d.pinned&&<span className="pin-badge">PINNED</span>}</div><div className="dest-url">{d.url}</div></div>
+                {isAdmin&&<div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>{setEditing(d.id);setForm({label:d.label,url:d.url,type:d.type,pinned:d.pinned});}}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>{supabase(`/rest/v1/destinations?id=eq.${d.id}`,'DELETE');onRefresh();}}>Delete</button></div>}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+      {!destinations.length&&<div className="empty">No destinations yet</div>}
+    </div>
+  );
 }
 
 function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initialCode}){
@@ -438,47 +699,149 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
   const [staffName,setStaffName]=useState('');
   const [staffSuggestions,setStaffSuggestions]=useState([]);
   const [note,setNote]=useState('');
-  const [replyTo,setReplyTo]=useState('jobs@theartyst.co.uk');
   const [status,setStatus]=useState(null);
   const [loading,setLoading]=useState(false);
-  useEffect(()=>{if(initialCode) setSelectedCode(initialCode.id);},[initialCode]);
+
+  useEffect(()=>{if(initialCode)setSelectedCode(initialCode.id);},[initialCode]);
   function toggleChannel(ch){setSelectedChannels(s=>s.includes(ch)?s.filter(c=>c!==ch):[...s,ch]);}
   function toggleGroup(id){setSelectedGroups(s=>s.includes(id)?s.filter(g=>g!==id):[...s,id]);}
   function handleStaffInput(val){setStaffName(val);if(val.length<2){setStaffSuggestions([]);return;}setStaffSuggestions(staffList.filter(s=>s.name.toLowerCase().includes(val.toLowerCase())));}
+
   async function confirmDistribute(){
     if(!staffName){setStatus({type:'error',msg:'Please enter your name.'});return;}
     setLoading(true);
-    const code=codes.find(c=>c.id===selectedCode);
-    const errors=[];
-    if(selectedChannels.includes('email')){try{const res=await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr_code_id:selectedCode,slug:code?.slug,label:code?.label,type:code?.type,redirect_url:`${BASE_URL}/e/${code?.slug}`,destination_url:code?.destination_url,group_ids:selectedGroups,staff_name:staffName,note:note||null,reply_to:replyTo})});const data=await res.json();if(!res.ok) errors.push('Email: '+(data.error||'failed'));}catch(e){errors.push('Email: network error');}}
-    if(selectedChannels.includes('whatsapp')){try{const res=await fetch('/api/send-whatsapp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr_code_id:selectedCode,slug:code?.slug,label:code?.label,type:code?.type,redirect_url:`${BASE_URL}/e/${code?.slug}`,channel:'artyst',staff_name:staffName,note:note||null})});const data=await res.json();if(!res.ok) errors.push('WhatsApp: '+(data.error||'failed'));}catch(e){errors.push('WhatsApp: network error');}}
-    const otherChannels=selectedChannels.filter(c=>c!=='whatsapp');
-    if(otherChannels.length>0){let staffId;const existing=staffList.find(s=>s.name.toLowerCase()===staffName.toLowerCase());if(existing){staffId=existing.id;}else{const res=await supabase('/rest/v1/staff','POST',{name:staffName},'return=representation');staffId=Array.isArray(res)?res[0]?.id:res?.id;if(staffId) onStaffCreated();}await supabase('/rest/v1/distributions','POST',{qr_code_id:selectedCode,staff_id:staffId,note:note||null,channels:otherChannels,groups:selectedGroups,status:'sent'});await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode}`,'PATCH',{last_distributed_at:new Date().toISOString()});}
-    setLoading(false);
-    if(errors.length>0){setStatus({type:'error',msg:errors.join(' · ')});}
-    else{setStatus({type:'success',msg:'Sent successfully.'});setConfirming(false);setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');setReplyTo('jobs@theartyst.co.uk');onDistributed();}
+    let staffId;
+    const existing=staffList.find(s=>s.name.toLowerCase()===staffName.toLowerCase());
+    if(existing){staffId=existing.id;}
+    else{const res=await supabase('/rest/v1/staff','POST',{name:staffName},'return=representation');staffId=Array.isArray(res)?res[0]?.id:res?.id;if(staffId)onStaffCreated();}
+    await supabase('/rest/v1/distributions','POST',{qr_code_id:selectedCode,staff_id:staffId,note:note||null,channels:selectedChannels,groups:selectedGroups,status:'sent'});
+    await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode}`,'PATCH',{last_distributed_at:new Date().toISOString()});
+    setLoading(false);setStatus({type:'success',msg:'Distribution logged.'});setConfirming(false);
+    setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');
+    onDistributed();
   }
+
   const code=codes.find(c=>c.id===selectedCode);
-  const needsGroups=selectedChannels.includes('email');
-  return(<div className="card"><h2>Distribute</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-group" style={{marginBottom:'1.5rem'}}><label>Select Code</label><select value={selectedCode} onChange={e=>setSelectedCode(e.target.value)}><option value="">— select a code —</option>{codes.map(c=><option key={c.id} value={c.id}>{c.label} · /e/{c.slug}</option>)}</select></div>{CHANNEL_SECTIONS.map(section=>(<div className="channel-section" key={section}><h3>{section}</h3><div className="channel-grid">{Object.entries(CHANNELS).filter(([,v])=>v.section===section).map(([id,{label}])=>(<div key={id} className={`channel-btn${selectedChannels.includes(id)?' selected':''}`} onClick={()=>toggleChannel(id)}>{label}</div>))}</div></div>))}{needsGroups&&<div className="channel-section"><h3>Target Groups</h3>{!groups.length&&<div style={{fontSize:'.82rem',color:'#555'}}>No groups yet — create them in the Groups tab</div>}<div className="channel-grid">{groups.map(g=>(<div key={g.id} className={`channel-btn${selectedGroups.includes(g.id)?' selected':''}`} onClick={()=>toggleGroup(g.id)}>{g.name}</div>))}</div></div>}{selectedCode&&selectedChannels.length>0&&<div style={{display:'flex',justifyContent:'flex-end',marginTop:'1rem'}}><button className="btn btn-primary" onClick={()=>setConfirming(true)}>Review & Send</button></div>}{confirming&&<div className="confirm-panel"><h3>Confirm Distribution</h3><ul className="confirm-list"><li><strong>Code:</strong> {code?.label}</li><li><strong>Channels:</strong> {selectedChannels.map(c=>CHANNELS[c]?.label).join(', ')}</li>{selectedGroups.length>0&&<li><strong>Groups:</strong> {selectedGroups.map(id=>groups.find(g=>g.id===id)?.name).join(', ')}</li>}</ul><div className="form-grid"><div className="form-group"><label>Your Name</label><input value={staffName} onChange={e=>handleStaffInput(e.target.value)} placeholder="Start typing..."/>{staffSuggestions.length>0&&<div style={{background:'#222',border:'1px solid #333',borderRadius:'2px',marginTop:'2px'}}>{staffSuggestions.map(s=><div key={s.id} style={{padding:'.5rem .8rem',cursor:'pointer',fontSize:'.85rem'}} onClick={()=>{setStaffName(s.name);setStaffSuggestions([]);}}>{s.name}</div>)}</div>}</div><div className="form-group"><label>Note (optional)</label><input value={note} onChange={e=>setNote(e.target.value)} placeholder="e.g. Pre-event push"/></div>{selectedChannels.includes('email')&&<div className="form-group full"><label>Reply-to address</label><select value={replyTo} onChange={e=>setReplyTo(e.target.value)}><option value="jobs@theartyst.co.uk">jobs@theartyst.co.uk</option><option value="hello@theartyst.co.uk">hello@theartyst.co.uk</option><option value="events@theartyst.co.uk">events@theartyst.co.uk</option><option value="matthew@othersyde.co.uk">matthew@othersyde.co.uk</option><option value="bookings@alcademy.co.uk">bookings@alcademy.co.uk</option></select></div>}</div><div style={{display:'flex',gap:'.5rem',justifyContent:'flex-end',marginTop:'1rem'}}><button className="btn btn-secondary" onClick={()=>setConfirming(false)}>Cancel</button><button className="btn btn-primary" onClick={confirmDistribute} disabled={loading}>{loading?'Logging...':'Confirm & Send'}</button></div></div>}</div>);
+  const needsGroups=selectedChannels.some(c=>['whatsapp','email'].includes(c));
+
+  return (
+    <div className="card">
+      <h2>Distribute</h2>
+      {status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}
+      <div className="form-group" style={{marginBottom:'1.5rem'}}><label>Select Code</label><select value={selectedCode} onChange={e=>setSelectedCode(e.target.value)}><option value="">— select —</option>{codes.map(c=><option key={c.id} value={c.id}>{c.label} · /e/{c.slug}</option>)}</select></div>
+      {CHANNEL_SECTIONS.map(section=>(
+        <div className="channel-section" key={section}>
+          <h3>{section}</h3>
+          <div className="channel-grid">{Object.entries(CHANNELS).filter(([,v])=>v.section===section).map(([id,{label}])=>(<div key={id} className={`channel-btn${selectedChannels.includes(id)?' selected':''}`} onClick={()=>toggleChannel(id)}>{label}</div>))}</div>
+        </div>
+      ))}
+      {needsGroups&&<div className="channel-section"><h3>Target Groups</h3>{!groups.length&&<div style={{fontSize:'.82rem',color:'#555'}}>No groups yet</div>}<div className="channel-grid">{groups.map(g=>(<div key={g.id} className={`channel-btn${selectedGroups.includes(g.id)?' selected':''}`} onClick={()=>toggleGroup(g.id)}>{g.name}</div>))}</div></div>}
+      {selectedCode&&selectedChannels.length>0&&<div style={{display:'flex',justifyContent:'flex-end',marginTop:'1rem'}}><button className="btn btn-primary" onClick={()=>setConfirming(true)}>Review & Send</button></div>}
+      {confirming&&(
+        <div className="confirm-panel">
+          <h3>Confirm Distribution</h3>
+          <ul className="confirm-list">
+            <li><strong>Code:</strong> {code?.label}</li>
+            <li><strong>Channels:</strong> {selectedChannels.map(c=>CHANNELS[c]?.label).join(', ')}</li>
+            {selectedGroups.length>0&&<li><strong>Groups:</strong> {selectedGroups.map(id=>groups.find(g=>g.id===id)?.name).join(', ')}</li>}
+          </ul>
+          <div className="form-grid">
+            <div className="form-group"><label>Your Name</label><input value={staffName} onChange={e=>handleStaffInput(e.target.value)} placeholder="Start typing..."/>{staffSuggestions.length>0&&<div style={{background:'#222',border:'1px solid #333',borderRadius:'2px',marginTop:'2px'}}>{staffSuggestions.map(s=><div key={s.id} style={{padding:'.5rem .8rem',cursor:'pointer',fontSize:'.85rem'}} onClick={()=>{setStaffName(s.name);setStaffSuggestions([]);}}>{s.name}</div>)}</div>}</div>
+            <div className="form-group"><label>Note (optional)</label><input value={note} onChange={e=>setNote(e.target.value)} placeholder="e.g. Pre-event push"/></div>
+          </div>
+          <div style={{display:'flex',gap:'.5rem',justifyContent:'flex-end',marginTop:'1rem'}}>
+            <button className="btn btn-secondary" onClick={()=>setConfirming(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={confirmDistribute} disabled={loading}>{loading?'Logging...':'Confirm & Send'}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function Screens({codes,zones,assignments,onRefresh}){
+function Screens({codes,zones,assignments,onRefresh,isAdmin}){
   async function assignCode(zoneId,codeId){if(!codeId)return;await supabase('/rest/v1/screen_assignments','POST',{zone_id:zoneId,qr_code_id:codeId,active:true});onRefresh();}
   async function removeAssignment(id){await supabase(`/rest/v1/screen_assignments?id=eq.${id}`,'DELETE');onRefresh();}
-  return(<div>{zones.map(zone=>{const za=assignments.filter(a=>a.zone_id===zone.id);return(<div className="zone-card" key={zone.id}><h3><span>{zone.name}</span><a href={`${BASE_URL}/display/${zone.slug}`} target="_blank" style={{fontSize:'.7rem',color:'#c0392b',textDecoration:'none',letterSpacing:'.05em'}}>OPEN DISPLAY ↗</a></h3><div className="zone-url">{BASE_URL}/display/{zone.slug}</div>{!za.length&&<div style={{color:'#444',fontSize:'.82rem',marginBottom:'.5rem'}}>Nothing assigned</div>}{za.map(a=>{const code=codes.find(c=>c.id===a.qr_code_id);return(<div className="assigned-code" key={a.id}><span>{code?.label||'Unknown'} <span className="slug-display">/e/{code?.slug}</span></span><button className="btn btn-secondary btn-small" onClick={()=>removeAssignment(a.id)}>Remove</button></div>);})}<select defaultValue="" style={{marginTop:'.8rem',width:'100%'}} onChange={e=>assignCode(zone.id,e.target.value)}><option value="">Add a code to this zone...</option>{codes.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></div>);})}</div>);
+  return (
+    <div>
+      {zones.map(zone=>{
+        const za=assignments.filter(a=>a.zone_id===zone.id);
+        return (
+          <div className="zone-card" key={zone.id}>
+            <h3><span>{zone.name}</span><a href={`${BASE_URL}/display/${zone.slug}`} target="_blank" style={{fontSize:'.7rem',color:'#c0392b',textDecoration:'none',letterSpacing:'.05em'}}>OPEN DISPLAY ↗</a></h3>
+            <div className="zone-url">{BASE_URL}/display/{zone.slug}</div>
+            {!za.length&&<div style={{color:'#444',fontSize:'.82rem',marginBottom:'.5rem'}}>Nothing assigned</div>}
+            {za.map(a=>{const code=codes.find(c=>c.id===a.qr_code_id);return(<div className="assigned-code" key={a.id}><span>{code?.label||'Unknown'} <span className="slug-display">/e/{code?.slug}</span></span>{isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>removeAssignment(a.id)}>Remove</button>}</div>);})}
+            {isAdmin&&<select defaultValue="" style={{marginTop:'.8rem',width:'100%'}} onChange={e=>assignCode(zone.id,e.target.value)}><option value="">Add a code...</option>{codes.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select>}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-function Groups({groups,onRefresh}){
+function Groups({groups,onRefresh,isAdmin}){
   const [form,setForm]=useState({name:'',type:'both',description:''});
   const [status,setStatus]=useState(null);
-  async function createGroup(){if(!form.name){setStatus({type:'error',msg:'Name required.'});return;}await supabase('/rest/v1/distribution_groups','POST',{name:form.name,type:form.type,description:form.description||null});setForm({name:'',type:'both',description:''});setStatus({type:'success',msg:`Group "${form.name}" created.`});onRefresh();}
-  return(<div><div className="card"><h2>New Group</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Group Name</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. All Subscribers"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}><option value="both">Email + WhatsApp</option><option value="email">Email only</option><option value="whatsapp">WhatsApp only</option></select></div><div className="form-group full"><label>Description (optional)</label><input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Who is in this group?"/></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={createGroup}>Create Group</button></div></div></div><div className="card" style={{padding:0,overflow:'hidden'}}><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>{!groups.length&&<tr><td colSpan={3}><div className="empty">No groups yet</div></td></tr>}{groups.map(g=>(<tr key={g.id}><td><strong>{g.name}</strong></td><td><span className="badge badge-generic">{g.type}</span></td><td style={{color:'#666',fontSize:'.82rem'}}>{g.description||'—'}</td></tr>))}</tbody></table></div></div>);
+  async function createGroup(){
+    if(!form.name){setStatus({type:'error',msg:'Name required.'});return;}
+    await supabase('/rest/v1/distribution_groups','POST',{name:form.name,type:form.type,description:form.description||null});
+    setForm({name:'',type:'both',description:''});setStatus({type:'success',msg:`Group "${form.name}" created.`});onRefresh();
+  }
+  return (
+    <div>
+      {isAdmin&&(
+        <div className="card">
+          <h2>New Group</h2>
+          {status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}
+          <div className="form-grid">
+            <div className="form-group"><label>Name</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. All Subscribers"/></div>
+            <div className="form-group"><label>Type</label><select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}><option value="both">Email + WhatsApp</option><option value="email">Email only</option><option value="whatsapp">WhatsApp only</option></select></div>
+            <div className="form-group full"><label>Description</label><input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Who is in this group?"/></div>
+            <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={createGroup}>Create Group</button></div>
+          </div>
+        </div>
+      )}
+      <div className="card" style={{padding:0,overflow:'hidden'}}>
+        <table>
+          <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            {!groups.length&&<tr><td colSpan={3}><div className="empty">No groups yet</div></td></tr>}
+            {groups.map(g=><tr key={g.id}><td><strong>{g.name}</strong></td><td><span className="badge badge-generic">{g.type}</span></td><td style={{color:'#666',fontSize:'.82rem'}}>{g.description||'—'}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 function History({distributions,codes,groups,staff}){
   if(!distributions.length) return <div className="card"><div className="empty">No distributions yet</div></div>;
-  return(<div className="card" style={{padding:0,overflow:'hidden'}}><table><thead><tr><th>Code</th><th>Channels</th><th>Groups</th><th>Sent By</th><th>Note</th><th>When</th><th>Status</th></tr></thead><tbody>{distributions.map(d=>{const code=codes.find(c=>c.id===d.qr_code_id);const member=staff.find(s=>s.id===d.staff_id);const dGroups=(d.groups||[]).map(id=>groups.find(g=>g.id===id)?.name).filter(Boolean);return(<tr key={d.id} style={{fontSize:'.82rem'}}><td><strong>{code?.label||'—'}</strong><br/><span className="slug-display">/e/{code?.slug}</span></td><td>{(d.channels||[]).map(c=><span key={c} className="group-tag">{CHANNELS[c]?.label||c}</span>)}</td><td>{dGroups.length?dGroups.map(g=><span key={g} className="group-tag">{g}</span>):'—'}</td><td>{member?.name||'—'}</td><td><span className="note-text">{d.note||'—'}</span></td><td style={{fontSize:'.78rem',color:'#666'}}>{new Date(d.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td><span className={`badge badge-${d.status}`}>{d.status}</span></td></tr>);})}</tbody></table></div>);
+  return (
+    <div className="card" style={{padding:0,overflow:'hidden'}}>
+      <table>
+        <thead><tr><th>Code</th><th>Channels</th><th>Groups</th><th>Sent By</th><th>Note</th><th>When</th><th>Status</th></tr></thead>
+        <tbody>
+          {distributions.map(d=>{
+            const code=codes.find(c=>c.id===d.qr_code_id);
+            const member=staff.find(s=>s.id===d.staff_id);
+            const dGroups=(d.groups||[]).map(id=>groups.find(g=>g.id===id)?.name).filter(Boolean);
+            return (
+              <tr key={d.id} style={{fontSize:'.82rem'}}>
+                <td><strong>{code?.label||'—'}</strong><br/><span className="slug-display">/e/{code?.slug}</span></td>
+                <td>{(d.channels||[]).map(c=><span key={c} className="group-tag">{CHANNELS[c]?.label||c}</span>)}</td>
+                <td>{dGroups.length?dGroups.map(g=><span key={g} className="group-tag">{g}</span>):'—'}</td>
+                <td>{member?.name||'—'}</td>
+                <td><span className="note-text">{d.note||'—'}</span></td>
+                <td style={{fontSize:'.78rem',color:'#666'}}>{new Date(d.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                <td><span className={`badge badge-${d.status}`}>{d.status}</span></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function Reports({codes,scanEvents}){
@@ -489,1164 +852,34 @@ function Reports({codes,scanEvents}){
   const byDay=scanEvents.reduce((acc,e)=>{const d=new Date(e.scanned_at).toLocaleDateString('en-GB',{weekday:'short'});acc[d]=(acc[d]||0)+1;return acc;},{});
   const byHour=scanEvents.reduce((acc,e)=>{const h=`${new Date(e.scanned_at).getHours()}:00`;acc[h]=(acc[h]||0)+1;return acc;},{});
   const topHours=Object.entries(byHour).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const byPlacement=codes.reduce((acc,c)=>{if(c.placement) acc[c.placement]=(acc[c.placement]||0)+c.scan_count;return acc;},{});
+  const byPlacement=codes.reduce((acc,c)=>{if(c.placement)acc[c.placement]=(acc[c.placement]||0)+c.scan_count;return acc;},{});
   const maxPlacement=Math.max(...Object.values(byPlacement),1);
   function Bar({value,max}){return <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:`${(value/max)*100}%`}}/></div>;}
-  return(<div><div className="two-col"><div className="card"><h2>Top Codes by Scans</h2>{topCodes.map(c=>(<div className="report-row" key={c.id}><div className="report-label"><span>{c.label}</span><span>{c.scan_count}</span></div><Bar value={c.scan_count} max={maxScans}/></div>))}{!topCodes.length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div><div className="card"><h2>Scans by Device</h2>{Object.entries(byDevice).map(([type,count])=>(<div className="report-row" key={type}><div className="report-label"><span style={{textTransform:'capitalize'}}>{type}</span><span>{Math.round((count/totalScans)*100)}%</span></div><Bar value={count} max={totalScans}/></div>))}{!Object.keys(byDevice).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div></div><div className="two-col"><div className="card"><h2>Scans by Placement</h2>{Object.entries(byPlacement).sort((a,b)=>b[1]-a[1]).map(([p,count])=>(<div className="report-row" key={p}><div className="report-label"><span>{p}</span><span>{count}</span></div><Bar value={count} max={maxPlacement}/></div>))}{!Object.keys(byPlacement).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div><div className="card"><h2>Peak Scan Hours</h2>{topHours.map(([h,count])=>(<div className="report-row" key={h}><div className="report-label"><span>{h}</span><span>{count}</span></div><Bar value={count} max={topHours[0]?.[1]||1}/></div>))}{!topHours.length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div></div><div className="card"><h2>Scans by Day of Week</h2><div style={{display:'flex',gap:'1rem',alignItems:'flex-end',height:'80px',marginTop:'.5rem'}}>{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>{const count=byDay[d]||0;const max=Math.max(...Object.values(byDay),1);return(<div key={d} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}><div style={{width:'100%',background:'#c0392b',height:`${(count/max)*60}px`,borderRadius:'2px',minHeight:count?'4px':'0'}}/><span style={{fontSize:'.7rem',color:'#555'}}>{d}</span></div>);})}</div>{!Object.keys(byDay).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div></div>);
-}
-
-function Applications({applications,onRefresh}){
-  const [filterStatus,setFilterStatus]=useState('all');
-  const [filterSlug,setFilterSlug]=useState('all');
-  const [updating,setUpdating]=useState(null);
-  const [expanded,setExpanded]=useState(null);
-  const STATUSES=['new','reviewed','shortlisted','rejected'];
-  const STATUS_BG={new:'#1a3a5c',reviewed:'#2a2a1a',shortlisted:'#1a3a1a',rejected:'#3a1a1a'};
-  const STATUS_FG={new:'#5aafff',reviewed:'#ffee5a',shortlisted:'#5aff7a',rejected:'#ff5a5a'};
-  async function updateStatus(id,status){setUpdating(id);await supabase('/rest/v1/applications?id=eq.'+id,'PATCH',{status});await onRefresh();setUpdating(null);}
-  const slugs=[...new Set(applications.map(a=>a.opportunity_slug))];
-  const filtered=applications.filter(a=>{if(filterStatus!=='all'&&a.status!==filterStatus) return false;if(filterSlug!=='all'&&a.opportunity_slug!==filterSlug) return false;return true;});
-  const newCount=applications.filter(a=>a.status==='new').length;
-  const bySlug=slugs.reduce((acc,s)=>{acc[s]=applications.filter(a=>a.opportunity_slug===s).length;return acc;},{});
-  return(<div><div className="stats-grid" style={{marginBottom:'1.5rem'}}><div className="stat"><div className="number">{applications.length}</div><div className="label">Total Applications</div></div><div className="stat" style={newCount?{borderColor:'#2a5a7c'}:{}}><div className="number" style={newCount?{color:'#5aafff'}:{}}>{newCount}</div><div className="label">Unreviewed</div></div><div className="stat"><div className="number">{applications.filter(a=>a.status==='shortlisted').length}</div><div className="label">Shortlisted</div></div><div className="stat"><div className="number">{slugs.length}</div><div className="label">Open Roles</div></div></div><div className="card"><div style={{display:'flex',gap:'1rem',marginBottom:'1.2rem',flexWrap:'wrap'}}><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Role</label><select value={filterSlug} onChange={e=>setFilterSlug(e.target.value)}><option value="all">All roles ({applications.length})</option>{slugs.map(s=><option key={s} value={s}>{s} ({bySlug[s]})</option>)}</select></div><div className="form-group" style={{flex:1,minWidth:'160px'}}><label>Filter by Status</label><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="all">All statuses</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></div></div>{!filtered.length&&<div className="empty" style={{padding:'2rem'}}>No applications match these filters</div>}{filtered.map(a=>(<div key={a.id} style={{background:'#111',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.6rem',overflow:'hidden'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}><div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}><div style={{flex:1,minWidth:0}}><div style={{fontWeight:'bold',fontSize:'.92rem'}}>{a.name}</div><div style={{fontSize:'.78rem',color:'#555',marginTop:'.1rem'}}>{a.opportunity_slug} &middot; {new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div><span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span></div><span style={{color:'#444',fontSize:'.8rem',marginLeft:'1rem'}}>{expanded===a.id?'▲':'▼'}</span></div>{expanded===a.id&&<div style={{borderTop:'1px solid #1e1e1e',padding:'1rem'}}><div className="form-grid" style={{marginBottom:'1rem'}}><div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Email</div><a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a></div>{a.phone&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>Phone</div><div style={{fontSize:'.88rem'}}>{a.phone}</div></div>}{a.cv_url&&<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.3rem'}}>CV</div><a href={a.cv_url} target="_blank" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a></div>}</div>{a.message&&<div style={{marginBottom:'1rem'}}><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Message</div><div style={{background:'#1a1a1a',border:'1px solid #2a2a2a',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',color:'#aaa',lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div></div>}<div><div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.5rem'}}>Update Status</div><div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>{STATUSES.map(s=>(<button key={s} className="btn btn-small" style={{background:a.status===s?STATUS_BG[s]:'#1a1a1a',color:a.status===s?STATUS_FG[s]:'#555',border:'1px solid '+(a.status===s?STATUS_BG[s]:'#2a2a2a'),opacity:updating===a.id?0.5:1}} disabled={updating===a.id||a.status===s} onClick={()=>updateStatus(a.id,s)}>{s}</button>))}</div></div></div>}</div>))}</div></div>);
-}
-
-// ── MENU EDITOR ───────────────────────────────────────────
-
-  // ── NEWS EDITOR ───────────────────────────────────────────
-// Paste this function into admin.html alongside PromoEditor.
-// Then add <NewsEditor/> to the main admin JSX wherever you want it rendered
-// (e.g. above <PromoEditor/> in the MenuEditor return block).
-
-// ── HOURS EDITOR ──────────────────────────────────────────
-// Paste alongside NewsEditor and PromoEditor in admin.html.
-// Add <HoursEditor/> to the MenuEditor return block wherever you want it rendered
-// (suggested: above <NewsEditor/>).
-
-// ── PLAY EDITOR ───────────────────────────────────────────
-// Paste alongside HoursEditor, NewsEditor, PromoEditor in admin.html.
-// Then add <PlayEditor/> to the MenuEditor return block
-// (suggested: above <HoursEditor/>).
-
-function PlayEditor(){
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState(null);
-  const [editingCat, setEditingCat] = useState(null);
-  const [catForm, setCatForm] = useState({name: '', slug: '', sort_order: 100});
-  const [editingItem, setEditingItem] = useState(null);
-  const [itemForm, setItemForm] = useState(blankItem());
-  const [addingItemTo, setAddingItemTo] = useState(null);
-  const [addingCat, setAddingCat] = useState(false);
-
-  function blankItem(){
-    return {
-      title: '', subtitle: '', description: '',
-      when_text: '', href: '', cta_label: '', image_url: '',
-      sort_order: 100,
-    };
-  }
-
-  async function loadAll(){
-    setLoading(true);
-    const [cats, items] = await Promise.all([
-      supabase('/rest/v1/play_categories?order=sort_order'),
-      supabase('/rest/v1/play_items?order=category_id,sort_order'),
-    ]);
-    const grouped = (Array.isArray(cats) ? cats : []).map(c => ({
-      ...c,
-      items: (Array.isArray(items) ? items : []).filter(i => i.category_id === c.id),
-    }));
-    setCategories(grouped);
-    setLoading(false);
-  }
-  useEffect(() => { loadAll(); }, []);
-
-  function flash(msg, type = 'success'){
-    setStatus({type, msg});
-    setTimeout(() => setStatus(null), 2500);
-  }
-
-  // ── Category operations ──
-  async function toggleCatActive(cat){
-    await supabase(`/rest/v1/play_categories?id=eq.${cat.id}`, 'PATCH', {active: !cat.active});
-    loadAll();
-  }
-
-  function slugify(s){
-    return s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 40);
-  }
-
-  async function saveCat(){
-    if (!catForm.name || !catForm.slug){
-      flash('Name and slug are required.', 'error');
-      return;
-    }
-    const body = {
-      name: catForm.name,
-      slug: catForm.slug,
-      sort_order: parseInt(catForm.sort_order) || 100,
-    };
-    if (editingCat){
-      await supabase(`/rest/v1/play_categories?id=eq.${editingCat}`, 'PATCH', body);
-    } else {
-      await supabase('/rest/v1/play_categories', 'POST', body);
-    }
-    setEditingCat(null);
-    setAddingCat(false);
-    setCatForm({name: '', slug: '', sort_order: 100});
-    flash('Saved.');
-    loadAll();
-  }
-
-  async function deleteCat(id){
-    if (!confirm('Delete this category AND all its items?')) return;
-    await supabase(`/rest/v1/play_categories?id=eq.${id}`, 'DELETE');
-    loadAll();
-  }
-
-  function startEditCat(cat){
-    setEditingCat(cat.id);
-    setAddingCat(false);
-    setCatForm({name: cat.name, slug: cat.slug, sort_order: cat.sort_order});
-  }
-
-  // ── Item operations ──
-  async function toggleItemActive(item){
-    await supabase(`/rest/v1/play_items?id=eq.${item.id}`, 'PATCH', {active: !item.active});
-    loadAll();
-  }
-
-  async function saveItem(categoryId){
-    if (!itemForm.title){
-      flash('Title is required.', 'error');
-      return;
-    }
-    const body = {
-      title: itemForm.title,
-      subtitle: itemForm.subtitle || null,
-      description: itemForm.description || null,
-      when_text: itemForm.when_text || null,
-      href: itemForm.href || null,
-      cta_label: itemForm.cta_label || null,
-      image_url: itemForm.image_url || null,
-      sort_order: parseInt(itemForm.sort_order) || 100,
-    };
-    if (editingItem){
-      await supabase(`/rest/v1/play_items?id=eq.${editingItem}`, 'PATCH', body);
-    } else {
-      body.category_id = categoryId;
-      await supabase('/rest/v1/play_items', 'POST', body);
-    }
-    setEditingItem(null);
-    setAddingItemTo(null);
-    setItemForm(blankItem());
-    flash('Saved.');
-    loadAll();
-  }
-
-  async function deleteItem(id){
-    if (!confirm('Delete this item?')) return;
-    await supabase(`/rest/v1/play_items?id=eq.${id}`, 'DELETE');
-    loadAll();
-  }
-
-  function startEditItem(item){
-    setEditingItem(item.id);
-    setAddingItemTo(null);
-    setItemForm({
-      title: item.title || '',
-      subtitle: item.subtitle || '',
-      description: item.description || '',
-      when_text: item.when_text || '',
-      href: item.href || '',
-      cta_label: item.cta_label || '',
-      image_url: item.image_url || '',
-      sort_order: item.sort_order || 100,
-    });
-  }
-
-  function cancelItemEdit(){
-    setEditingItem(null);
-    setAddingItemTo(null);
-    setItemForm(blankItem());
-  }
-
-  // ── Render ──
-  return (
-    <div className="card" style={{marginBottom: '1.5rem'}}>
-      <h2>Play — Serious Play at the Artyst</h2>
-      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
-        Activities shown on the <strong>Play</strong> tab at <code style={{fontFamily: 'inherit'}}>/menu</code>.
-        Not food and drink — chess nights, board games, the BedeGame, etc.
-      </p>
-
-      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
-
-      {loading && <div className="empty">Loading...</div>}
-
-      {!loading && categories.map(cat => (
-        <div key={cat.id} style={{marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #222'}}>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.6rem'}}>
-            <span style={{fontSize: '.8rem', letterSpacing: '.1em', textTransform: 'uppercase', color: cat.active ? '#c8a96e' : '#444'}}>
-              {cat.name} <span style={{fontSize: '.7rem', color: '#555', marginLeft: '.4rem'}}>({cat.slug} · sort {cat.sort_order})</span>
-            </span>
-            <div style={{display: 'flex', gap: '.3rem'}}>
-              <button
-                className={`btn btn-small ${cat.active ? 'btn-secondary' : 'btn-primary'}`}
-                onClick={() => toggleCatActive(cat)}
-              >{cat.active ? 'Hide' : 'Show'}</button>
-              <button className="btn btn-blue btn-small" onClick={() => startEditCat(cat)}>Edit</button>
-              <button className="btn btn-secondary btn-small" onClick={() => deleteCat(cat.id)}>Del</button>
-              <button className="btn btn-green btn-small" onClick={() => {setAddingItemTo(addingItemTo === cat.id ? null : cat.id); setEditingItem(null); setItemForm(blankItem());}}>+ Item</button>
-            </div>
-          </div>
-
-          {/* Category edit form */}
-          {editingCat === cat.id && (
-            <div style={{background: '#111', border: '1px solid #2a5a7c', borderRadius: '2px', padding: '.8rem', marginBottom: '.8rem'}}>
-              <div className="form-grid">
-                <div className="form-group"><label>Name</label><input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value}))}/></div>
-                <div className="form-group"><label>Slug</label><input value={catForm.slug} onChange={e => setCatForm(f => ({...f, slug: e.target.value}))}/></div>
-                <div className="form-group"><label>Sort order</label><input type="number" value={catForm.sort_order} onChange={e => setCatForm(f => ({...f, sort_order: e.target.value}))}/></div>
-                <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
-                  <button className="btn btn-secondary btn-small" onClick={() => {setEditingCat(null); setCatForm({name: '', slug: '', sort_order: 100});}}>Cancel</button>
-                  <button className="btn btn-primary btn-small" onClick={saveCat}>Save</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Items */}
-          {cat.items.map(item => (
-            <div key={item.id} style={{padding: '.6rem 0', borderBottom: '1px solid #1e1e1e', opacity: item.active ? 1 : 0.45}}>
-              {editingItem === item.id ? (
-                <ItemForm form={itemForm} setForm={setItemForm} onSave={() => saveItem(item.category_id)} onCancel={cancelItemEdit}/>
-              ) : (
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '.8rem'}}>
-                  <div style={{flex: 1, minWidth: 0}}>
-                    <div style={{fontSize: '.95rem', fontWeight: 600, color: '#eee'}}>{item.title}</div>
-                    {item.subtitle && <div style={{fontSize: '.78rem', color: '#888', marginTop: '2px'}}>{item.subtitle}</div>}
-                    {item.when_text && <div style={{fontSize: '.72rem', color: '#c8a96e', marginTop: '4px', letterSpacing: '.06em', textTransform: 'uppercase'}}>{item.when_text}</div>}
-                    {item.description && <div style={{fontSize: '.82rem', color: '#aaa', marginTop: '6px', lineHeight: 1.5}}>{item.description}</div>}
-                    {item.href && <div style={{fontSize: '.72rem', color: '#5aafff', marginTop: '4px'}}>→ {item.cta_label || 'Open link'} · {item.href}</div>}
-                  </div>
-                  <div style={{display: 'flex', gap: '.3rem', flexShrink: 0}}>
-                    <button
-                      className={`btn btn-small ${item.active ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => toggleItemActive(item)}
-                    >{item.active ? 'On' : 'Off'}</button>
-                    <button className="btn btn-blue btn-small" onClick={() => startEditItem(item)}>Edit</button>
-                    <button className="btn btn-secondary btn-small" onClick={() => deleteItem(item.id)}>Del</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Add item form */}
-          {addingItemTo === cat.id && (
-            <div style={{background: '#111', border: '1px solid #2a5a2a', borderRadius: '2px', padding: '.8rem', marginTop: '.8rem'}}>
-              <ItemForm form={itemForm} setForm={setItemForm} onSave={() => saveItem(cat.id)} onCancel={cancelItemEdit}/>
-            </div>
-          )}
-
-          {cat.items.length === 0 && addingItemTo !== cat.id && (
-            <div style={{fontSize: '.82rem', color: '#555', fontStyle: 'italic', padding: '.5rem 0'}}>
-              No items yet. Click + Item to add one.
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Add new category */}
-      <div style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #222'}}>
-        {!addingCat && !editingCat && (
-          <button className="btn btn-green btn-small" onClick={() => {setAddingCat(true); setCatForm({name: '', slug: '', sort_order: (categories.length + 1) * 10});}}>+ New category</button>
-        )}
-        {addingCat && (
-          <div style={{background: '#111', border: '1px solid #2a5a2a', borderRadius: '2px', padding: '.8rem'}}>
-            <div style={{fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#c8a96e', marginBottom: '.6rem'}}>New category</div>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Name</label>
-                <input value={catForm.name} onChange={e => {
-                  const name = e.target.value;
-                  setCatForm(f => ({...f, name, slug: f._slugEdited ? f.slug : slugify(name)}));
-                }} placeholder="e.g. Regular sessions"/>
-              </div>
-              <div className="form-group">
-                <label>Slug</label>
-                <input value={catForm.slug} onChange={e => setCatForm(f => ({...f, slug: slugify(e.target.value), _slugEdited: true}))} placeholder="e.g. regular"/>
-              </div>
-              <div className="form-group">
-                <label>Sort order</label>
-                <input type="number" value={catForm.sort_order} onChange={e => setCatForm(f => ({...f, sort_order: e.target.value}))}/>
-              </div>
-              <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
-                <button className="btn btn-secondary btn-small" onClick={() => {setAddingCat(false); setCatForm({name: '', slug: '', sort_order: 100});}}>Cancel</button>
-                <button className="btn btn-primary btn-small" onClick={saveCat}>Add category</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Extracted form component reused for add/edit
-function ItemForm({form, setForm, onSave, onCancel}){
-  return (
-    <div className="form-grid">
-      <div className="form-group"><label>Title</label><input value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} placeholder="e.g. Chess night" autoFocus/></div>
-      <div className="form-group"><label>Subtitle</label><input value={form.subtitle} onChange={e => setForm(f => ({...f, subtitle: e.target.value}))} placeholder="Optional"/></div>
-      <div className="form-group full"><label>Description</label><textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} rows={3} placeholder="Longer prose — what it is, who it's for." style={{width: '100%', background: '#111', border: '1px solid #333', color: '#eee', padding: '.5rem .7rem', fontSize: '.88rem', borderRadius: '2px', resize: 'vertical', lineHeight: 1.5}}/></div>
-      <div className="form-group"><label>When · optional</label><input value={form.when_text} onChange={e => setForm(f => ({...f, when_text: e.target.value}))} placeholder="e.g. Thursdays from 7pm"/></div>
-      <div className="form-group"><label>Sort order</label><input type="number" value={form.sort_order} onChange={e => setForm(f => ({...f, sort_order: e.target.value}))}/></div>
-      <div className="form-group"><label>Link URL · optional</label><input value={form.href} onChange={e => setForm(f => ({...f, href: e.target.value}))} placeholder="https://..."/></div>
-      <div className="form-group"><label>CTA label · optional</label><input value={form.cta_label} onChange={e => setForm(f => ({...f, cta_label: e.target.value}))} placeholder="e.g. Learn more, Play now"/></div>
-      <div className="form-group full"><label>Image URL · optional</label><input value={form.image_url} onChange={e => setForm(f => ({...f, image_url: e.target.value}))} placeholder="https://..."/></div>
-      <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.4rem'}}>
-        <button className="btn btn-secondary btn-small" onClick={onCancel}>Cancel</button>
-        <button className="btn btn-primary btn-small" onClick={onSave}>Save</button>
-      </div>
-    </div>
-  );
-}
-  
-function HoursEditor(){
-  const [days, setDays] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState(null);
-  const [editing, setEditing] = useState(null); // {day_of_week, opens_at, closes_at, notes}
-
-  async function loadDays(){
-    setLoading(true);
-    const res = await supabase('/rest/v1/opening_hours?order=day_of_week');
-    setDays(Array.isArray(res) ? res : []);
-    setLoading(false);
-  }
-  useEffect(() => { loadDays(); }, []);
-
-  function flash(msg, type = 'success'){
-    setStatus({type, msg});
-    setTimeout(() => setStatus(null), 2500);
-  }
-
-  async function toggleActive(day){
-    await supabase(`/rest/v1/opening_hours?day_of_week=eq.${day.day_of_week}`, 'PATCH', {
-      active: !day.active,
-    });
-    loadDays();
-  }
-
-  function startEdit(day){
-    setEditing({
-      day_of_week: day.day_of_week,
-      day_label: day.day_label,
-      opens_at: day.opens_at ? day.opens_at.substring(0, 5) : '',
-      closes_at: day.closes_at ? day.closes_at.substring(0, 5) : '',
-      notes: day.notes || '',
-    });
-  }
-
-  function cancelEdit(){ setEditing(null); }
-
-  async function saveEdit(){
-    if (!editing) return;
-    const body = {
-      opens_at: editing.opens_at || null,
-      closes_at: editing.closes_at || null,
-      notes: editing.notes || null,
-    };
-    // Validate: either both times or neither
-    if ((body.opens_at && !body.closes_at) || (!body.opens_at && body.closes_at)){
-      flash('Set both open and close times, or leave both blank for closed.', 'error');
-      return;
-    }
-    if (body.opens_at && body.closes_at && body.opens_at >= body.closes_at){
-      flash('Close time must be after open time.', 'error');
-      return;
-    }
-    await supabase(`/rest/v1/opening_hours?day_of_week=eq.${editing.day_of_week}`, 'PATCH', body);
-    setEditing(null);
-    flash('Saved.');
-    loadDays();
-  }
-
-  function formatTime(t){
-    if (!t) return '';
-    return t.substring(0, 5);
-  }
-
-  return (
-    <div className="card" style={{marginBottom: '1.5rem'}}>
-      <h2>Opening Hours</h2>
-      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
-        Shown in the menu header and the side drawer at <code style={{fontFamily: 'inherit'}}>/menu</code> and <code style={{fontFamily: 'inherit'}}>/takeaway</code>.
-        Leave times blank to mark a day as closed. Use the toggle to temporarily close a day (e.g. holidays).
-      </p>
-
-      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
-
-      {loading && <div className="empty">Loading...</div>}
-
-      {!loading && (
-        <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '.88rem'}}>
-          <thead>
-            <tr>
-              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '22%'}}>Day</th>
-              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '20%'}}>Opens</th>
-              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a', width: '20%'}}>Closes</th>
-              <th style={{textAlign: 'left', padding: '.5rem .6rem', fontSize: '.7rem', textTransform: 'uppercase', letterSpacing: '.06em', color: '#555', borderBottom: '1px solid #2a2a2a'}}>Notes</th>
-              <th style={{padding: '.5rem .6rem', borderBottom: '1px solid #2a2a2a', width: '1%'}}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {days.map(d => {
-              const isEditing = editing && editing.day_of_week === d.day_of_week;
-              const closedToday = !d.opens_at || !d.closes_at;
-              const opacity = d.active ? 1 : 0.4;
-              return (
-                <tr key={d.day_of_week} style={{opacity}}>
-                  <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
-                    <strong>{d.day_label}</strong>
-                  </td>
-                  {isEditing ? (
-                    <>
-                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
-                        <input
-                          type="time"
-                          value={editing.opens_at}
-                          onChange={e => setEditing({...editing, opens_at: e.target.value})}
-                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
-                        />
-                      </td>
-                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
-                        <input
-                          type="time"
-                          value={editing.closes_at}
-                          onChange={e => setEditing({...editing, closes_at: e.target.value})}
-                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
-                        />
-                      </td>
-                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e'}}>
-                        <input
-                          value={editing.notes}
-                          onChange={e => setEditing({...editing, notes: e.target.value})}
-                          placeholder="Optional"
-                          style={{width: '100%', padding: '.25rem .4rem', fontSize: '.82rem', background: '#111', border: '1px solid #c0392b', color: '#eee', borderRadius: '2px'}}
-                        />
-                      </td>
-                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e', whiteSpace: 'nowrap'}}>
-                        <button className="btn btn-primary btn-small" onClick={saveEdit}>✓</button>{' '}
-                        <button className="btn btn-secondary btn-small" onClick={cancelEdit}>✕</button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: closedToday ? '#666' : '#eee'}}>
-                        {closedToday ? '—' : formatTime(d.opens_at)}
-                      </td>
-                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: closedToday ? '#666' : '#eee'}}>
-                        {closedToday ? 'Closed' : formatTime(d.closes_at)}
-                      </td>
-                      <td style={{padding: '.5rem .6rem', borderBottom: '1px solid #1e1e1e', color: '#888', fontSize: '.82rem'}}>
-                        {d.notes || ''}
-                      </td>
-                      <td style={{padding: '.4rem .6rem', borderBottom: '1px solid #1e1e1e', whiteSpace: 'nowrap'}}>
-                        <button
-                          className={`btn btn-small ${d.active ? 'btn-primary' : 'btn-secondary'}`}
-                          onClick={() => toggleActive(d)}
-                          style={{marginRight: '.3rem'}}
-                        >{d.active ? 'On' : 'Off'}</button>
-                        <button className="btn btn-blue btn-small" onClick={() => startEdit(d)}>Edit</button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-  
-function NewsEditor(){
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    label: '', headline: '', href: '',
-    active: true, show_on_menu: true, show_on_takeaway: true,
-    starts_at: '', ends_at: '', sort_order: 100,
-  });
-  const [editing, setEditing] = useState(null);
-  const [status, setStatus] = useState(null);
-
-  async function loadNews(){
-    setLoading(true);
-    const res = await supabase('/rest/v1/news_messages?order=sort_order');
-    setNews(Array.isArray(res) ? res : []);
-    setLoading(false);
-  }
-  useEffect(() => { loadNews(); }, []);
-
-  function flash(msg, type = 'success'){
-    setStatus({type, msg});
-    setTimeout(() => setStatus(null), 2500);
-  }
-
-  function resetForm(){
-    setForm({
-      label: '', headline: '', href: '',
-      active: true, show_on_menu: true, show_on_takeaway: true,
-      starts_at: '', ends_at: '', sort_order: 100,
-    });
-    setEditing(null);
-  }
-
-  async function toggleActive(n){
-    await supabase(`/rest/v1/news_messages?id=eq.${n.id}`, 'PATCH', { active: !n.active });
-    loadNews();
-  }
-
-  async function toggleSurface(n, field){
-    await supabase(`/rest/v1/news_messages?id=eq.${n.id}`, 'PATCH', { [field]: !n[field] });
-    loadNews();
-  }
-
-  async function save(){
-    if (!form.label || !form.headline){
-      flash('Label and headline are required.', 'error');
-      return;
-    }
-    if (form.label.length > 30){
-      flash('Label must be 30 characters or fewer.', 'error');
-      return;
-    }
-    if (form.headline.length > 120){
-      flash('Headline must be 120 characters or fewer.', 'error');
-      return;
-    }
-
-    const body = {
-      label: form.label,
-      headline: form.headline,
-      href: form.href || null,
-      active: form.active,
-      show_on_menu: form.show_on_menu,
-      show_on_takeaway: form.show_on_takeaway,
-      starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-      ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
-      sort_order: parseInt(form.sort_order) || 100,
-    };
-
-    if (editing){
-      await supabase(`/rest/v1/news_messages?id=eq.${editing}`, 'PATCH', body);
-    } else {
-      await supabase('/rest/v1/news_messages', 'POST', body);
-    }
-    resetForm();
-    flash('Saved.');
-    loadNews();
-  }
-
-  async function remove(id){
-    if (!confirm('Delete this news message?')) return;
-    await supabase(`/rest/v1/news_messages?id=eq.${id}`, 'DELETE');
-    loadNews();
-  }
-
-  function startEdit(n){
-    setEditing(n.id);
-    setForm({
-      label: n.label || '',
-      headline: n.headline || '',
-      href: n.href || '',
-      active: !!n.active,
-      show_on_menu: !!n.show_on_menu,
-      show_on_takeaway: !!n.show_on_takeaway,
-      starts_at: n.starts_at ? toLocalDatetime(n.starts_at) : '',
-      ends_at: n.ends_at ? toLocalDatetime(n.ends_at) : '',
-      sort_order: n.sort_order || 100,
-    });
-  }
-
-  // Convert ISO UTC to a value compatible with <input type="datetime-local">
-  function toLocalDatetime(iso){
-    try {
-      const d = new Date(iso);
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    } catch { return ''; }
-  }
-
-  // Is a news message "active right now" considering active flag + date window?
-  function isLiveNow(n){
-    if (!n.active) return false;
-    const now = new Date();
-    if (n.starts_at && new Date(n.starts_at) > now) return false;
-    if (n.ends_at && new Date(n.ends_at) < now) return false;
-    return true;
-  }
-
-  const livePreviewItems = news.filter(isLiveNow);
-
-  return (
-    <div className="card" style={{marginBottom: '1.5rem'}}>
-      <h2>News Notices</h2>
-      <p style={{fontSize: '.82rem', color: '#888', margin: '-.4rem 0 1rem'}}>
-        Rotating banner shown at the top of <code style={{fontFamily: 'inherit'}}>/menu</code> and <code style={{fontFamily: 'inherit'}}>/takeaway</code>.
-        Aim for 3–5 active messages. Keep headlines under 80 characters.
-      </p>
-
-      {status && <div className={status.type === 'error' ? 'error' : 'success'} style={{marginBottom: '1rem'}}>{status.msg}</div>}
-
-      {/* ── LIVE PREVIEW ─────────────────────── */}
-      <div style={{marginBottom: '1.5rem', padding: '.8rem', background: '#0d0d0d', border: '1px solid #2a2a2a', borderRadius: '3px'}}>
-        <div style={{fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#c8a96e', marginBottom: '.6rem'}}>
-          Live preview — what customers see right now
-        </div>
-        {livePreviewItems.length === 0 ? (
-          <div style={{fontSize: '.82rem', color: '#666', fontStyle: 'italic', padding: '.6rem 0'}}>
-            Nothing active. The notice banner will be hidden on the menu.
-          </div>
-        ) : (
-          livePreviewItems.map((n, i) => (
-            <div key={n.id} style={{
-              padding: '10px 14px',
-              marginBottom: i === livePreviewItems.length - 1 ? 0 : '.5rem',
-              background: '#1a1508',
-              borderLeft: '3px solid #c8a96e',
-              borderRadius: '2px',
-              display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap',
-            }}>
-              <span style={{fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: '#c8a96e', flexShrink: 0}}>
-                {n.label}
-              </span>
-              <span style={{fontSize: '.86rem', color: '#e8e4dc', flex: 1, minWidth: 0}}>
-                {n.headline}
-              </span>
-              {n.href && <span style={{fontSize: '.7rem', color: '#888'}}>→</span>}
-              {(!n.show_on_menu || !n.show_on_takeaway) && (
-                <span style={{fontSize: '.65rem', color: '#ffaa5a'}}>
-                  {!n.show_on_menu && '(menu off)'} {!n.show_on_takeaway && '(takeaway off)'}
-                </span>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* ── EXISTING MESSAGES ─────────────────── */}
-      {!loading && news.length === 0 && (
-        <div style={{fontSize: '.85rem', color: '#888', padding: '.8rem 0', fontStyle: 'italic'}}>
-          No news messages yet. Add one below.
-        </div>
-      )}
-
-      {!loading && news.map(n => {
-        const live = isLiveNow(n);
-        return (
-          <div key={n.id} style={{
-            display: 'flex', alignItems: 'center', gap: '.6rem',
-            padding: '.7rem 0', borderBottom: '1px solid #222', flexWrap: 'wrap',
-          }}>
-            <div style={{flex: 1, minWidth: 0}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '.4rem'}}>
-                <span style={{
-                  fontSize: '.68rem', letterSpacing: '.1em', textTransform: 'uppercase',
-                  color: live ? '#c8a96e' : '#555',
-                }}>{n.label}</span>
-                {!live && <span style={{fontSize: '.62rem', color: '#666'}}>· off</span>}
-              </div>
-              <div style={{fontSize: '.82rem', color: live ? '#eee' : '#666', marginTop: '2px'}}>
-                {n.headline}
-              </div>
-              <div style={{fontSize: '.68rem', color: '#666', marginTop: '3px', display: 'flex', gap: '.8rem', flexWrap: 'wrap'}}>
-                <span>sort {n.sort_order}</span>
-                {n.starts_at && <span>from {new Date(n.starts_at).toLocaleString('en-GB')}</span>}
-                {n.ends_at && <span>until {new Date(n.ends_at).toLocaleString('en-GB')}</span>}
-                {n.href && <span style={{color: '#5aafff'}}>→ {n.href.length > 40 ? n.href.substr(0, 40) + '…' : n.href}</span>}
-              </div>
-            </div>
-            <div style={{display: 'flex', gap: '.3rem', flexShrink: 0, alignItems: 'center'}}>
-              <button
-                className={`btn btn-small ${n.show_on_menu ? 'btn-blue' : 'btn-secondary'}`}
-                onClick={() => toggleSurface(n, 'show_on_menu')}
-                title="Show on /menu"
-              >Menu {n.show_on_menu ? '✓' : '✕'}</button>
-              <button
-                className={`btn btn-small ${n.show_on_takeaway ? 'btn-blue' : 'btn-secondary'}`}
-                onClick={() => toggleSurface(n, 'show_on_takeaway')}
-                title="Show on /takeaway"
-              >T/A {n.show_on_takeaway ? '✓' : '✕'}</button>
-              <button
-                className={`btn btn-small ${n.active ? 'btn-primary' : 'btn-secondary'}`}
-                onClick={() => toggleActive(n)}
-              >{n.active ? 'Active' : 'Off'}</button>
-              <button className="btn btn-blue btn-small" onClick={() => startEdit(n)}>Edit</button>
-              <button className="btn btn-secondary btn-small" onClick={() => remove(n.id)}>Del</button>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* ── FORM ─────────────────────────────── */}
-      <div style={{marginTop: '1.4rem', paddingTop: '1rem', borderTop: '1px solid #222'}}>
-        <div style={{fontSize: '.75rem', textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: '.8rem'}}>
-          {editing ? 'Edit message' : 'Add message'}
-        </div>
-
-        <div className="form-grid">
-          <div className="form-group">
-            <label>Label · max 30 <span style={{color: '#666'}}>({form.label.length}/30)</span></label>
-            <input value={form.label} onChange={e => setForm(f => ({...f, label: e.target.value}))} placeholder="e.g. This weekend" maxLength={30}/>
-          </div>
-
-          <div className="form-group">
-            <label>Sort order · lower = earlier</label>
-            <input type="number" value={form.sort_order} onChange={e => setForm(f => ({...f, sort_order: e.target.value}))} />
-          </div>
-
-          <div className="form-group full">
-            <label>Headline · max 120 <span style={{color: '#666'}}>({form.headline.length}/120)</span></label>
-            <input value={form.headline} onChange={e => setForm(f => ({...f, headline: e.target.value}))} placeholder="What's on, one line." maxLength={120}/>
-          </div>
-
-          <div className="form-group full">
-            <label>Link URL · optional</label>
-            <input value={form.href} onChange={e => setForm(f => ({...f, href: e.target.value}))} placeholder="https://..."/>
-          </div>
-
-          <div className="form-group">
-            <label>Starts at · optional</label>
-            <input type="datetime-local" value={form.starts_at} onChange={e => setForm(f => ({...f, starts_at: e.target.value}))} />
-          </div>
-
-          <div className="form-group">
-            <label>Ends at · optional</label>
-            <input type="datetime-local" value={form.ends_at} onChange={e => setForm(f => ({...f, ends_at: e.target.value}))} />
-          </div>
-
-          <div className="form-group full" style={{flexDirection: 'row', gap: '1.2rem', alignItems: 'center', flexWrap: 'wrap'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
-              <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({...f, active: e.target.checked}))} style={{width: 'auto'}}/>
-              <span style={{fontSize: '.82rem'}}>Active</span>
-            </label>
-            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
-              <input type="checkbox" checked={form.show_on_menu} onChange={e => setForm(f => ({...f, show_on_menu: e.target.checked}))} style={{width: 'auto'}}/>
-              <span style={{fontSize: '.82rem'}}>Show on /menu</span>
-            </label>
-            <label style={{display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer', margin: 0}}>
-              <input type="checkbox" checked={form.show_on_takeaway} onChange={e => setForm(f => ({...f, show_on_takeaway: e.target.checked}))} style={{width: 'auto'}}/>
-              <span style={{fontSize: '.82rem'}}>Show on /takeaway</span>
-            </label>
-          </div>
-
-          <div className="form-group full" style={{flexDirection: 'row', justifyContent: 'flex-end', gap: '.5rem'}}>
-            {editing && <button className="btn btn-secondary" onClick={resetForm}>Cancel</button>}
-            <button className="btn btn-primary" onClick={save}>
-              {editing ? 'Save changes' : 'Add message'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-  
-function PromoEditor(){
-  const [promos,setPromos]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [form,setForm]=useState({label:'',text:'',href:''});
-  const [editing,setEditing]=useState(null);
-  const [status,setStatus]=useState(null);
-
-  async function loadPromos(){
-    setLoading(true);
-    const res=await supabase('/rest/v1/promo_messages?order=sort_order');
-    setPromos(Array.isArray(res)?res:[]);
-    setLoading(false);
-  }
-  useEffect(()=>{loadPromos();},[]);
-  function flash(msg,type='success'){setStatus({type,msg});setTimeout(()=>setStatus(null),2500);}
-
-  async function toggleActive(p){await supabase(`/rest/v1/promo_messages?id=eq.${p.id}`,'PATCH',{active:!p.active});loadPromos();}
-
-  async function save(){
-    if(!form.label||!form.text||!form.href){flash('All fields required.','error');return;}
-    if(editing){
-      await supabase(`/rest/v1/promo_messages?id=eq.${editing}`,'PATCH',{label:form.label,text:form.text,href:form.href});
-      setEditing(null);
-    } else {
-      const maxOrder=promos.length?Math.max(...promos.map(p=>p.sort_order))+10:10;
-      await supabase('/rest/v1/promo_messages','POST',{label:form.label,text:form.text,href:form.href,sort_order:maxOrder,active:true});
-    }
-    setForm({label:'',text:'',href:''});flash('Saved.');loadPromos();
-  }
-
-  async function remove(id){if(!confirm('Delete?'))return;await supabase(`/rest/v1/promo_messages?id=eq.${id}`,'DELETE');loadPromos();}
-  function startEdit(p){setEditing(p.id);setForm({label:p.label,text:p.text,href:p.href});}
-
-  return (
-    <div className="card" style={{marginBottom:'1.5rem'}}>
-      <h2>Footer promo messages</h2>
-      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
-      {!loading&&promos.map(p=>(
-        <div key={p.id} style={{display:'flex',alignItems:'center',gap:'.6rem',padding:'.6rem 0',borderBottom:'1px solid #222',flexWrap:'wrap'}}>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:'.82rem',fontWeight:600,color:p.active?'#eee':'#555'}}>{p.label}</div>
-            <div style={{fontSize:'.78rem',color:'#888',marginTop:'2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.text}</div>
-          </div>
-          <div style={{display:'flex',gap:'.3rem',flexShrink:0}}>
-            <button className={`btn btn-small ${p.active?'btn-secondary':'btn-primary'}`} onClick={()=>toggleActive(p)}>{p.active?'Hide':'Show'}</button>
-            <button className="btn btn-blue btn-small" onClick={()=>startEdit(p)}>Edit</button>
-            <button className="btn btn-secondary btn-small" onClick={()=>remove(p.id)}>Del</button>
-          </div>
-        </div>
-      ))}
-      <div style={{marginTop:'1.2rem',paddingTop:'1rem',borderTop:'1px solid #222'}}>
-        <div style={{fontSize:'.75rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#555',marginBottom:'.7rem'}}>{editing?'Edit message':'Add message'}</div>
-        <div className="form-grid">
-          <div className="form-group"><label>Label</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. Support us"/></div>
-          <div className="form-group"><label>Link URL</label><input value={form.href} onChange={e=>setForm(f=>({...f,href:e.target.value}))} placeholder="https://..."/></div>
-          <div className="form-group full"><label>Message text</label><input value={form.text} onChange={e=>setForm(f=>({...f,text:e.target.value}))} placeholder="One line — shown in the footer strip"/></div>
-          <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>
-            {editing&&<button className="btn btn-secondary" onClick={()=>{setEditing(null);setForm({label:'',text:'',href:''});}}>Cancel</button>}
-            <button className="btn btn-primary" onClick={save}>{editing?'Save changes':'Add message'}</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OptionsEditor({item, onSaved}){
-  const [groups, setGroups] = useState([]);
-  const [status, setStatus] = useState(null);
-
-  useEffect(()=>{
-    try { setGroups(item.options ? JSON.parse(JSON.stringify(item.options)) : []); }
-    catch { setGroups([]); }
-  }, [item.id]);
-
-  function flash(msg,type='success'){setStatus({type,msg});setTimeout(()=>setStatus(null),2500);}
-  function addGroup(){setGroups(g=>[...g,{name:'',required:false,default_index:-1,choices:[{label:'',price_mod:0}]}]);}
-  function removeGroup(i){setGroups(g=>g.filter((_,idx)=>idx!==i));}
-  function updateGroup(i,key,val){setGroups(g=>g.map((gp,idx)=>idx===i?{...gp,[key]:val}:gp));}
-  function addChoice(gi){setGroups(g=>g.map((gp,idx)=>idx===gi?{...gp,choices:[...gp.choices,{label:'',price_mod:0}]}:gp));}
-  function removeChoice(gi,ci){setGroups(g=>g.map((gp,idx)=>idx===gi?{...gp,choices:gp.choices.filter((_,cidx)=>cidx!==ci)}:gp));}
-  function updateChoice(gi,ci,key,val){
-    setGroups(g=>g.map((gp,idx)=>idx===gi?{...gp,choices:gp.choices.map((c,cidx)=>cidx===ci?{...c,[key]:key==='price_mod'?parseFloat(val)||0:val}:c)}:gp));
-  }
-
-  async function save(){
-    const valid = groups.every(g => g.name && g.choices.length > 0 && g.choices.every(c => c.label));
-    if(!valid){flash('Every group needs a name and every choice needs a label.','error');return;}
-    await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{options:groups.length>0?groups:null});
-    flash('Options saved.');
-    if(onSaved) onSaved();
-  }
-
-  return (
-    <div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid #222'}}>
-      <div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#c8a96e',marginBottom:'.8rem'}}>
-        Customisation options
-      </div>
-      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'.6rem'}}>{status.msg}</div>}
-      {groups.map((group,gi)=>(
-        <div key={gi} style={{background:'#0d0d0d',border:'1px solid #2a2a2a',borderRadius:'3px',padding:'.8rem',marginBottom:'.6rem'}}>
-          <div style={{display:'flex',gap:'.5rem',alignItems:'flex-end',marginBottom:'.6rem',flexWrap:'wrap'}}>
-            <div className="form-group" style={{margin:0,flex:'1 1 140px'}}>
-              <label>Group name</label>
-              <input value={group.name} onChange={e=>updateGroup(gi,'name',e.target.value)} placeholder="e.g. Milk, Syrup, Mixer"/>
-            </div>
-            <div className="form-group" style={{margin:0,flex:'0 0 auto'}}>
-              <label>Default</label>
-              <select value={group.default_index} onChange={e=>updateGroup(gi,'default_index',parseInt(e.target.value))}>
-                <option value={-1}>None</option>
-                {group.choices.map((c,i)=><option key={i} value={i}>{c.label||`Choice ${i+1}`}</option>)}
-              </select>
-            </div>
-            <label style={{display:'flex',alignItems:'center',gap:'.3rem',fontSize:'.78rem',color:'#888',cursor:'pointer',flexShrink:0,paddingBottom:'4px'}}>
-              <input type="checkbox" checked={group.required} onChange={e=>updateGroup(gi,'required',e.target.checked)} style={{width:'auto'}}/>
-              Required
-            </label>
-            <button className="btn btn-secondary btn-small" style={{alignSelf:'flex-end'}} onClick={()=>removeGroup(gi)}>Remove group</button>
-          </div>
-          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',marginBottom:'.4rem'}}>Choices</div>
-          {group.choices.map((choice,ci)=>(
-            <div key={ci} style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}>
-              <input value={choice.label} onChange={e=>updateChoice(gi,ci,'label',e.target.value)}
-                placeholder="e.g. Oat milk" style={{flex:2,padding:'.3rem .5rem',fontSize:'.82rem',background:'#111',border:'1px solid #333',color:'#eee',borderRadius:'2px'}}/>
-              <div style={{display:'flex',alignItems:'center',gap:'.2rem',flex:'0 0 auto'}}>
-                <span style={{fontSize:'.75rem',color:'#555'}}>+£</span>
-                <input type="number" value={choice.price_mod} min="0" step="0.50"
-                  onChange={e=>updateChoice(gi,ci,'price_mod',e.target.value)}
-                  style={{width:'64px',padding:'.3rem .4rem',fontSize:'.82rem',background:'#111',border:'1px solid #333',color:'#eee',borderRadius:'2px'}}/>
-              </div>
-              {group.choices.length>1&&<button className="btn btn-secondary btn-small" onClick={()=>removeChoice(gi,ci)} style={{padding:'.3rem .5rem',flexShrink:0}}>✕</button>}
-            </div>
-          ))}
-          <button className="btn btn-secondary btn-small" style={{marginTop:'.4rem'}} onClick={()=>addChoice(gi)}>+ Add choice</button>
-        </div>
-      ))}
-      <div style={{display:'flex',gap:'.5rem',marginTop:'.6rem'}}>
-        <button className="btn btn-secondary btn-small" onClick={addGroup}>+ Add option group</button>
-        <button className="btn btn-primary btn-small" onClick={save}>Save options</button>
-        {groups.length > 0 && <button className="btn btn-secondary btn-small" onClick={()=>{if(confirm('Remove all options from this item?')){setGroups([]);}}}>Clear all</button>}
-      </div>
-    </div>
-  );
-}
-
-function MenuEditor(){
-  const [categories,setCategories]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [editingItem,setEditingItem]=useState(null);
-  const [editVal,setEditVal]=useState('');
-  const [editingDetails,setEditingDetails]=useState(null);
-  const [detailVal,setDetailVal]=useState('');
-  const [slotVal,setSlotVal]=useState([]);
-  const [addingTo,setAddingTo]=useState(null);
-  const [newItem,setNewItem]=useState({name:'',description:'',price_display:''});
-  const [status,setStatus]=useState(null);
-
-  const ALL_SLOTS=[
-    {key:'brunch',label:'Brunch',hours:'8am–12pm'},
-    {key:'lunch',label:'Lunch',hours:'12–2pm'},
-    {key:'tea',label:'Tea',hours:'2–5pm'},
-    {key:'evening',label:'Evening',hours:'5pm–close'},
-  ];
-
-  async function loadMenu(){
-    setLoading(true);
-    const [cats,items]=await Promise.all([
-      supabase('/rest/v1/menu_categories?order=side,sort_order'),
-      supabase('/rest/v1/menu_items?order=category_id,sort_order'),
-    ]);
-    const grouped=(Array.isArray(cats)?cats:[]).map(cat=>({
-      ...cat,
-      items:(Array.isArray(items)?items:[]).filter(i=>i.category_id===cat.id),
-    }));
-    setCategories(grouped);setLoading(false);
-  }
-
-  useEffect(()=>{loadMenu();},[]);
-
-  function flash(msg,type='success'){setStatus({type,msg});setTimeout(()=>setStatus(null),2500);}
-
-  async function toggleAvailable(item){await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{available:!item.available});loadMenu();}
-  async function toggleTakeaway(item){await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{takeaway:!item.takeaway});loadMenu();}
-  async function toggleCategoryActive(cat){await supabase(`/rest/v1/menu_categories?id=eq.${cat.id}`,'PATCH',{active:!cat.active});loadMenu();}
-
-  function startEdit(item,field){setEditingDetails(null);setEditingItem({id:item.id,field});setEditVal(item[field]||'');}
-  async function saveEdit(itemId,field){
-    await supabase(`/rest/v1/menu_items?id=eq.${itemId}`,'PATCH',{[field]:editVal||null});
-    setEditingItem(null);flash('Saved.');loadMenu();
-  }
-
-  function startEditDetails(item){
-    setEditingItem(null);
-    if(editingDetails===item.id){setEditingDetails(null);}
-    else{setEditingDetails(item.id);setDetailVal(item.details||'');setSlotVal(item.time_slots||['brunch','lunch','tea','evening']);}
-  }
-
-  function toggleSlot(key){setSlotVal(prev=>prev.includes(key)?prev.filter(s=>s!==key):[...prev,key]);}
-
-  async function saveDetails(itemId){
-    await supabase(`/rest/v1/menu_items?id=eq.${itemId}`,'PATCH',{
-      details:detailVal||null,
-      time_slots:slotVal.length>0?slotVal:['brunch','lunch','tea','evening'],
-    });
-    setEditingDetails(null);flash('Details saved.');loadMenu();
-  }
-
-  async function deleteItem(id){if(!confirm('Delete this item?'))return;await supabase(`/rest/v1/menu_items?id=eq.${id}`,'DELETE');loadMenu();}
-
-  async function addItem(categoryId){
-    if(!newItem.name){flash('Name is required.','error');return;}
-    await supabase('/rest/v1/menu_items','POST',{
-      category_id:categoryId,name:newItem.name,
-      description:newItem.description||null,price_display:newItem.price_display||null,
-      available:true,takeaway:false,sort_order:999,time_slots:['brunch','lunch','tea','evening'],
-    });
-    setNewItem({name:'',description:'',price_display:''});setAddingTo(null);flash('Item added.');loadMenu();
-  }
-
-  const cafe=categories.filter(c=>c.side==='cafe');
-  const bar=categories.filter(c=>c.side==='bar');
-
-  function slotSummary(slots){
-    if(!slots||slots.length===4) return '';
-    if(slots.length===0) return '⚠ hidden always';
-    return slots.join(', ');
-  }
-
-  // Toggle switch component
-  function Toggle({on, onToggle, color='#1a5c1a', offColor='#3a1a1a', label}){
-    return (
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
-        {label&&<span style={{fontSize:'.6rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555'}}>{label}</span>}
-        <div onClick={onToggle}
-          style={{width:'32px',height:'18px',borderRadius:'9px',cursor:'pointer',
-            background:on?color:offColor,
-            border:`1px solid ${on?color.replace('1a','2a').replace('5c','7a'):'#5a2a2a'}`,
-            display:'flex',alignItems:'center',padding:'2px',transition:'background .15s'}}>
-          <div style={{width:'12px',height:'12px',borderRadius:'50%',
-            background:on?'#5aff7a':'#ff5a5a',
-            marginLeft:on?'12px':'0',transition:'margin .15s'}}/>
-        </div>
-      </div>
-    );
-  }
-
-  function renderSection(cats,label){
-    return (
-      <div className="card" key={label}>
-        <h2>{label}</h2>
-        {cats.map(cat=>(
-          <div key={cat.id} style={{marginBottom:'1.5rem',paddingBottom:'1.5rem',borderBottom:'1px solid #222'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.6rem'}}>
-              <span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',color:cat.active?'#888':'#444'}}>{cat.name}</span>
-              <div style={{display:'flex',gap:'.4rem'}}>
-                <button className={`btn btn-small ${cat.active?'btn-secondary':'btn-primary'}`} onClick={()=>toggleCategoryActive(cat)}>
-                  {cat.active?'Hide category':'Show category'}
-                </button>
-                <button className="btn btn-green btn-small" onClick={()=>setAddingTo(addingTo===cat.id?null:cat.id)}>+ Add item</button>
-              </div>
-            </div>
-
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'.82rem'}}>
-              <thead>
-                <tr>
-                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'22%'}}>Name</th>
-                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'20%'}}>Description</th>
-                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'12%'}}>Price</th>
-                  <th style={{textAlign:'left',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'12%'}}>Slots</th>
-                  <th style={{textAlign:'center',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'7%'}}>On</th>
-                  <th style={{textAlign:'center',padding:'.4rem .5rem',fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',color:'#555',borderBottom:'1px solid #2a2a2a',width:'7%'}}>T/A</th>
-                  <th style={{padding:'.4rem .5rem',borderBottom:'1px solid #2a2a2a',width:'20%'}}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cat.items.map(item=>(
-                  <React.Fragment key={item.id}>
-                    <tr style={{opacity:item.available?1:0.45}}>
-                      {['name','description','price_display'].map(field=>(
-                        <td key={field} style={{padding:'.4rem .5rem',borderBottom:editingDetails===item.id?'none':'1px solid #1e1e1e',verticalAlign:'middle'}}>
-                          {editingItem?.id===item.id&&editingItem?.field===field?(
-                            <div style={{display:'flex',gap:'.3rem'}}>
-                              <input value={editVal} onChange={e=>setEditVal(e.target.value)}
-                                onKeyDown={e=>{if(e.key==='Enter')saveEdit(item.id,field);if(e.key==='Escape')setEditingItem(null);}}
-                                autoFocus style={{flex:1,padding:'.3rem .4rem',fontSize:'.8rem',background:'#111',border:'1px solid #c0392b',color:'#eee',borderRadius:'2px'}}/>
-                              <button className="btn btn-primary btn-small" onClick={()=>saveEdit(item.id,field)}>✓</button>
-                              <button className="btn btn-secondary btn-small" onClick={()=>setEditingItem(null)}>✕</button>
-                            </div>
-                          ):(
-                            <span onClick={()=>startEdit(item,field)}
-                              style={{cursor:'text',color:item[field]?'#ccc':'#444',fontStyle:item[field]?'normal':'italic',display:'block',minWidth:'40px',minHeight:'20px'}}
-                              title="Click to edit">{item[field]||'—'}</span>
-                          )}
-                        </td>
-                      ))}
-                      <td style={{padding:'.4rem .5rem',borderBottom:editingDetails===item.id?'none':'1px solid #1e1e1e',verticalAlign:'middle'}}>
-                        <span style={{fontSize:'.72rem',color:(!item.time_slots||item.time_slots.length===4)?'#444':'#ffaa5a'}}>
-                          {slotSummary(item.time_slots)||'all'}
-                        </span>
-                      </td>
-                      <td style={{padding:'.4rem .5rem',textAlign:'center',borderBottom:editingDetails===item.id?'none':'1px solid #1e1e1e'}}>
-                        <Toggle on={item.available} onToggle={()=>toggleAvailable(item)}/>
-                      </td>
-                      <td style={{padding:'.4rem .5rem',textAlign:'center',borderBottom:editingDetails===item.id?'none':'1px solid #1e1e1e'}}>
-                        <Toggle on={!!item.takeaway} onToggle={()=>toggleTakeaway(item)} color='#1a3a5c' offColor='#1a1a2a'/>
-                      </td>
-                      <td style={{padding:'.4rem .5rem',borderBottom:editingDetails===item.id?'none':'1px solid #1e1e1e'}}>
-                        <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap'}}>
-                          <button className={`btn btn-small ${editingDetails===item.id?'btn-blue':'btn-secondary'}`} onClick={()=>startEditDetails(item)}>
-                            {item.details||item.options?'Edit ✓':'+ Details'}
-                          </button>
-                          <button className="btn btn-secondary btn-small" onClick={()=>deleteItem(item.id)}>Del</button>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {editingDetails===item.id&&(
-                      <tr>
-                        <td colSpan={7} style={{padding:'.6rem .5rem',paddingTop:0,borderBottom:'1px solid #1e1e1e',background:'#111'}}>
-                          <div style={{marginBottom:'.8rem'}}>
-                            <div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#555',marginBottom:'.5rem'}}>Show on</div>
-                            <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
-                              {ALL_SLOTS.map(s=>(
-                                <div key={s.key} onClick={()=>toggleSlot(s.key)}
-                                  style={{padding:'.3rem .7rem',borderRadius:'3px',cursor:'pointer',fontSize:'.78rem',
-                                    background:slotVal.includes(s.key)?'#1a3a5c':'#1a1a1a',
-                                    color:slotVal.includes(s.key)?'#5aafff':'#555',
-                                    border:`1px solid ${slotVal.includes(s.key)?'#2a5a7c':'#2a2a2a'}`,
-                                    transition:'all .15s',userSelect:'none'}}>
-                                  {s.label}<span style={{fontSize:'.68rem',opacity:.7,marginLeft:'4px'}}>{s.hours}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#555',marginBottom:'.4rem'}}>
-                            Details (allergens, ABV — one line each)
-                          </div>
-                          <textarea value={detailVal} onChange={e=>setDetailVal(e.target.value)}
-                            rows={4} placeholder={'e.g.\n4.6% ABV\nGluten free\nVegan'}
-                            style={{width:'100%',background:'#0a0a0a',border:'1px solid #c0392b',color:'#eee',borderRadius:'2px',padding:'.5rem .6rem',fontSize:'.85rem',lineHeight:1.7,resize:'vertical',fontFamily:'monospace'}}/>
-                          <div style={{display:'flex',gap:'.4rem',marginTop:'.4rem',justifyContent:'flex-end',marginBottom:'.6rem'}}>
-                            <button className="btn btn-secondary btn-small" onClick={()=>setEditingDetails(null)}>Cancel</button>
-                            <button className="btn btn-primary btn-small" onClick={()=>saveDetails(item.id)}>Save details</button>
-                          </div>
-                          <OptionsEditor item={item} onSaved={loadMenu}/>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-
-            {addingTo===cat.id&&(
-              <div style={{marginTop:'.8rem',background:'#111',border:'1px solid #2a5a2a',borderRadius:'2px',padding:'.8rem'}}>
-                <div style={{display:'grid',gridTemplateColumns:'2fr 2fr 1fr auto auto',gap:'.5rem',alignItems:'end'}}>
-                  <div className="form-group" style={{margin:0}}><label>Name</label><input value={newItem.name} onChange={e=>setNewItem(n=>({...n,name:e.target.value}))} placeholder="Item name" autoFocus/></div>
-                  <div className="form-group" style={{margin:0}}><label>Description</label><input value={newItem.description} onChange={e=>setNewItem(n=>({...n,description:e.target.value}))} placeholder="Optional"/></div>
-                  <div className="form-group" style={{margin:0}}><label>Price</label><input value={newItem.price_display} onChange={e=>setNewItem(n=>({...n,price_display:e.target.value}))} placeholder="£4.50"/></div>
-                  <button className="btn btn-primary" style={{alignSelf:'flex-end'}} onClick={()=>addItem(cat.id)}>Add</button>
-                  <button className="btn btn-secondary" style={{alignSelf:'flex-end'}} onClick={()=>setAddingTo(null)}>Cancel</button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div>
-{status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
-      <PlayEditor/>
-      <HoursEditor/>
-      <NewsEditor/>
-      <PromoEditor/>
-      <div className="warning-box" style={{marginBottom:'1rem'}}>
-        Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway at go.theartyst.co.uk/takeaway. Changes are live immediately.
+      <div className="two-col">
+        <div className="card"><h2>Top Codes by Scans</h2>{topCodes.map(c=>(<div className="report-row" key={c.id}><div className="report-label"><span>{c.label}</span><span>{c.scan_count}</span></div><Bar value={c.scan_count} max={maxScans}/></div>))}{!topCodes.length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div>
+        <div className="card"><h2>Scans by Device</h2>{Object.entries(byDevice).map(([type,count])=>(<div className="report-row" key={type}><div className="report-label"><span style={{textTransform:'capitalize'}}>{type}</span><span>{Math.round((count/totalScans)*100)}%</span></div><Bar value={count} max={totalScans}/></div>))}{!Object.keys(byDevice).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div>
       </div>
-      {loading&&<div className="empty">Loading menu...</div>}
-      {!loading&&renderSection(cafe,'Café & food')}
-      {!loading&&renderSection(bar,'Bar')}
+      <div className="two-col">
+        <div className="card"><h2>Scans by Placement</h2>{Object.entries(byPlacement).sort((a,b)=>b[1]-a[1]).map(([p,count])=>(<div className="report-row" key={p}><div className="report-label"><span>{p}</span><span>{count}</span></div><Bar value={count} max={maxPlacement}/></div>))}{!Object.keys(byPlacement).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div>
+        <div className="card"><h2>Peak Scan Hours</h2>{topHours.map(([h,count])=>(<div className="report-row" key={h}><div className="report-label"><span>{h}</span><span>{count}</span></div><Bar value={count} max={topHours[0]?.[1]||1}/></div>))}{!topHours.length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}</div>
+      </div>
+      <div className="card">
+        <h2>Scans by Day of Week</h2>
+        <div style={{display:'flex',gap:'1rem',alignItems:'flex-end',height:'80px',marginTop:'.5rem'}}>
+          {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>{const count=byDay[d]||0;const max=Math.max(...Object.values(byDay),1);return(<div key={d} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}><div style={{width:'100%',background:'#c0392b',height:`${(count/max)*60}px`,borderRadius:'2px',minHeight:count?'4px':'0'}}/><span style={{fontSize:'.7rem',color:'#555'}}>{d}</span></div>);})}
+        </div>
+        {!Object.keys(byDay).length&&<div className="empty" style={{padding:'1rem'}}>No data yet</div>}
+      </div>
     </div>
   );
 }
+
 // ── APP ───────────────────────────────────────────────────
 function App(){
+  const [user,setUser]=useState(null);
+  const [authChecked,setAuthChecked]=useState(false);
   const [tab,setTab]=useState('library');
   const [codes,setCodes]=useState([]);
   const [destinations,setDestinations]=useState([]);
@@ -1658,96 +891,117 @@ function App(){
   const [scanEvents,setScanEvents]=useState([]);
   const [templates,setTemplates]=useState([]);
   const [designs,setDesigns]=useState([]);
-  const [applications,setApplications]=useState([]);
   const [printQueue,setPrintQueue]=useState([]);
   const [distributeCode,setDistributeCode]=useState(null);
   const [loading,setLoading]=useState(true);
 
+  const isAdmin=user?.role==='admin';
+
+  useEffect(()=>{
+    const token=sessionStorage.getItem('ca022_token');
+    const stored=sessionStorage.getItem('ca022_user');
+    if(token&&stored){
+      try{
+        const u=JSON.parse(stored);
+        fetch('/api/auth?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})})
+          .then(r=>{
+            if(r.ok) r.json().then(d=>{setUser(d.user);setAuthChecked(true);});
+            else{sessionStorage.removeItem('ca022_token');sessionStorage.removeItem('ca022_user');setAuthChecked(true);}
+          }).catch(()=>{setUser(u);setAuthChecked(true);});
+      }catch(e){setAuthChecked(true);}
+    } else {setAuthChecked(true);}
+  },[]);
+
   async function loadAll(){
     setLoading(true);
-    const [c,dest,g,s,d,z,a,se,tmpl,dsgn,apps]=await Promise.all([supabase('/rest/v1/qr_codes?order=created_at.desc'),supabase('/rest/v1/destinations?order=type.asc,label.asc'),supabase('/rest/v1/distribution_groups?order=name.asc'),supabase('/rest/v1/staff?order=name.asc'),supabase('/rest/v1/distributions?order=created_at.desc&limit=100'),supabase('/rest/v1/screen_zones?order=name.asc'),supabase('/rest/v1/screen_assignments?order=display_order.asc'),supabase('/rest/v1/scan_events?order=scanned_at.desc&limit=500'),supabase('/rest/v1/poster_templates?order=name.asc'),supabase('/rest/v1/poster_designs?order=name.asc'),supabase('/rest/v1/applications?order=submitted_at.desc&limit=200')]);
-    setCodes(Array.isArray(c)?c:[]);setDestinations(Array.isArray(dest)?dest:[]);setGroups(Array.isArray(g)?g:[]);setStaffList(Array.isArray(s)?s:[]);setDistributions(Array.isArray(d)?d:[]);setZones(Array.isArray(z)?z:[]);setAssignments(Array.isArray(a)?a:[]);setScanEvents(Array.isArray(se)?se:[]);setTemplates(Array.isArray(tmpl)?tmpl:[]);setDesigns(Array.isArray(dsgn)?dsgn:[]);setApplications(Array.isArray(apps)?apps:[]);setLoading(false);
+    const [c,dest,g,s,d,z,a,se,tmpl,dsgn]=await Promise.all([
+      supabase('/rest/v1/qr_codes?order=created_at.desc'),
+      supabase('/rest/v1/destinations?order=type.asc,label.asc'),
+      supabase('/rest/v1/distribution_groups?order=name.asc'),
+      supabase('/rest/v1/staff?order=name.asc'),
+      supabase('/rest/v1/distributions?order=created_at.desc&limit=100'),
+      supabase('/rest/v1/screen_zones?order=name.asc'),
+      supabase('/rest/v1/screen_assignments?order=display_order.asc'),
+      supabase('/rest/v1/scan_events?order=scanned_at.desc&limit=500'),
+      supabase('/rest/v1/poster_templates?order=name.asc'),
+      supabase('/rest/v1/poster_designs?order=name.asc'),
+    ]);
+    setCodes(Array.isArray(c)?c:[]);setDestinations(Array.isArray(dest)?dest:[]);setGroups(Array.isArray(g)?g:[]);
+    setStaffList(Array.isArray(s)?s:[]);setDistributions(Array.isArray(d)?d:[]);setZones(Array.isArray(z)?z:[]);
+    setAssignments(Array.isArray(a)?a:[]);setScanEvents(Array.isArray(se)?se:[]);setTemplates(Array.isArray(tmpl)?tmpl:[]);setDesigns(Array.isArray(dsgn)?dsgn:[]);
+    setLoading(false);
   }
 
-  useEffect(()=>{loadAll();},[]);
+  useEffect(()=>{if(user) loadAll();},[user]);
 
-  function addToPrintQueue(code){if(!printQueue.find(c=>c.id===code.id)) setPrintQueue(q=>[...q,code]);setTab('print');}
+  function logout(){
+    const token=sessionStorage.getItem('ca022_token');
+    if(token) fetch('/api/auth',{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});
+    sessionStorage.removeItem('ca022_token');sessionStorage.removeItem('ca022_user');setUser(null);
+  }
+
+  function addToPrintQueue(code){if(!printQueue.find(c=>c.id===code.id))setPrintQueue(q=>[...q,code]);setTab('print');}
   function handleDistribute(code){setDistributeCode(code);setTab('distribute');}
 
   const totalScans=codes.reduce((s,c)=>s+c.scan_count,0);
   const activeCodes=codes.filter(c=>c.active).length;
   const warnings=codes.filter(hasDestinationWarning).length;
-  const newApplications=applications.filter(a=>a.status==='new').length;
 
   const TABS=[
     ['library',`Library (${codes.length})`],
-    ['create','New Code'],
+    ...(isAdmin?[['create','New Code']]:[]),
     ['print',`Print Queue${printQueue.length?` (${printQueue.length})`:''}`],
-    ['distribute','Distribute'],
+    ...(isAdmin?[['distribute','Distribute']]:[]),
     ['screens','Screens'],
-    ['groups','Groups'],
+    ...(isAdmin?[['groups','Groups']]:[]),
     ['destinations','Destinations'],
-    ['templates',`Templates (${templates.length+designs.length})`],
+    ...(isAdmin?[['templates',`Templates (${templates.length+designs.length})`]]:[]),
     ['history','History'],
     ['reports','Reports'],
-    ['applications',newApplications?'Applications ('+newApplications+' new)':'Applications'],
-    ['menu','Menu Editor'],
+    ...(isAdmin?[['users','Users']]:[]),
   ];
 
-  return(
+  if(!authChecked) return null;
+  if(!user) return <LoginScreen onLogin={u=>setUser(u)}/>;
+
+  return (
     <div className="app">
-      <header><h1>QR Engine — The Artyst</h1><span>CA-022</span></header>
+      <header>
+        <h1>QR Engine — The Artyst</h1>
+        <div className="header-user">
+          {!isAdmin&&<span style={{fontSize:'.72rem',color:'#5aafff',background:'#1a2a3a',padding:'.2rem .6rem',borderRadius:'2px'}}>Viewer</span>}
+          <span>{user.name}</span>
+          <button className="btn btn-secondary btn-small" onClick={logout}>Sign Out</button>
+        </div>
+      </header>
       <div className="stats-grid no-print">
         <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
         <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
         <div className="stat"><div className="number">{totalScans}</div><div className="label">Total Scans</div></div>
         <div className="stat" style={warnings?{borderColor:'#5a3a1a'}:{}}><div className="number" style={warnings?{color:'#ffaa5a'}:{}}>{warnings}</div><div className="label">Destination Warnings</div></div>
       </div>
-      <div className="tabs no-print">{TABS.map(([id,label])=>(<button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>))}</div>
+      <div className="tabs no-print">
+        {TABS.map(([id,label])=>(<button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>))}
+      </div>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
-        {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute}/>}
-        {tab==='create'&&<CreateForm destinations={destinations} onCreate={()=>{loadAll();setTab('library');}}/>}
+        {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin}/>}
+        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={()=>{loadAll();setTab('library');}}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
-        {tab==='distribute'&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
-        {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll}/>}
-        {tab==='groups'&&<Groups groups={groups} onRefresh={loadAll}/>}
-        {tab==='destinations'&&<Destinations destinations={destinations} onRefresh={loadAll}/>}
-        {tab==='templates'&&<Templates templates={templates} designs={designs} codes={codes} onRefresh={loadAll}/>}
+        {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
+        {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
+        {tab==='groups'&&isAdmin&&<Groups groups={groups} onRefresh={loadAll} isAdmin={isAdmin}/>}
+        {tab==='destinations'&&<Destinations destinations={destinations} onRefresh={loadAll} isAdmin={isAdmin}/>}
+        {tab==='templates'&&isAdmin&&<Templates templates={templates} designs={designs} codes={codes} onRefresh={loadAll} isAdmin={isAdmin}/>}
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
-        {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
-        {tab==='menu'&&<MenuEditor/>}
+        {tab==='users'&&isAdmin&&<UsersTab/>}
       </>}
     </div>
   );
 }
 
-// ── AUTH GATE ─────────────────────────────────────────────
-function AuthGate({children}){
-  const [unlocked,setUnlocked]=useState(()=>{if(typeof window==='undefined') return false;return sessionStorage.getItem('ca022_unlocked')==='1';});
-  const [password,setPassword]=useState('');
-  const [checking,setChecking]=useState(false);
-  const [error,setError]=useState(null);
-  const inputRef=useRef(null);
-  useEffect(()=>{if(!unlocked&&inputRef.current) inputRef.current.focus();},[unlocked]);
-  async function attemptUnlock(e){
-    if(e) e.preventDefault();
-    if(!password){setError('Please enter the password.');return;}
-    setChecking(true);setError(null);
-    try{
-      const res=await fetch('/api/auth-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
-      const data=await res.json();
-      if(data.ok){sessionStorage.setItem('ca022_unlocked','1');setUnlocked(true);}
-      else{setError('Incorrect password.');setPassword('');if(inputRef.current) inputRef.current.focus();}
-    }catch(err){setError('Auth check failed — check your connection.');}
-    setChecking(false);
-  }
-  if(unlocked) return children;
-  return(<div className="lock-screen"><div className="lock-box"><div className="lock-mark">CA-022</div><div className="lock-title">QR Engine</div><div className="lock-sub">Enter admin password to continue.</div><form onSubmit={attemptUnlock}><input ref={inputRef} type="password" value={password} onChange={e=>{setPassword(e.target.value);setError(null);}} placeholder="Password" autoComplete="current-password" disabled={checking}/><button type="submit" disabled={checking||!password}>{checking?'Checking...':'Unlock'}</button></form>{error&&<div className="lock-error">{error}</div>}</div></div>);
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(<AuthGate><App/></AuthGate>);
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
 </html>
