@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -885,16 +886,16 @@ function MenuEditor(){
   return(
     <div>
       {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
-      <PlayEditor/>
       <HoursEditor/>
-      <NewsEditor/>
-      <PromoEditor/>
       <div className="warning-box" style={{marginBottom:'1rem'}}>
         Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway. Changes are live immediately.
       </div>
       {loading&&<div className="empty">Loading menu...</div>}
       {!loading&&renderSection(cafe,'Cafe and food')}
       {!loading&&renderSection(bar,'Bar')}
+      <PlayEditor/>
+      <NewsEditor/>
+      <PromoEditor/>
     </div>
   );
 }
