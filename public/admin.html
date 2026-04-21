@@ -342,7 +342,7 @@ const QRWidget=React.memo(function QRWidget({url,size=120}){
     new QRCode(ref.current,{text:url,width:size,height:size,colorDark:'#111',colorLight:'#fff'});
   },[url,size]);
   return <div ref={ref}/>;
-}
+});
 
 function hasDestinationWarning(code){
   if(!code.destination_history||!code.destination_history.length) return false;
