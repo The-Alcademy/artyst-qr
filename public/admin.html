@@ -1115,7 +1115,7 @@ function MenuEditor({anchor,onAnchorUsed}){
 
 // ── APP AUTO REPLY ───────────────────────────────────────
 const APP_REPLY_TYPES = [
-  {id:'acknowledge', label:'Acknowledge receipt', desc:'Thank them, say you'll be in touch'},
+  {id:'acknowledge', label:'Acknowledge receipt', desc:'Thank them, say you\'ll be in touch'},
   {id:'shortlist',   label:'Invite to interview', desc:'Congratulate, propose next steps'},
   {id:'reject',      label:'Polite rejection',    desc:'Thank them, wish them well'},
   {id:'more_info',   label:'Request more info',   desc:'Ask a specific follow-up question'},
@@ -1298,23 +1298,7 @@ Write only the response text.`}]
 }
 
 // ── ADMIN ASSISTANT ───────────────────────────────────────
-const ASSISTANT_SYSTEM = `You are the admin assistant for The Artyst QR Engine (CA-022). The Artyst is a cultural café, bar and events venue at 54-56 Chesterton Road, Cambridge CB4 1EN. It is the world's only dedicated Syd Barrett heritage venue, operating with Barrett estate approval and exhibiting Mick Rock photography. The venue is a cultural and educational space — not a pub, not a nightclub. Seated, table-service model; events-led.
-
-The QR Engine admin panel has these sections:
-- Library: all QR codes, sortable, with scan counts
-- New Code: create a QR code pointing to a communication source (URL)
-- Print Queue + Poster Editor: design and print posters in various formats
-- Distribute: send QR codes via WhatsApp, email, or log for screen/print channels
-- Screens: assign QR codes to three in-venue screens (Window, POS, Wall)
-- Destinations (Communication Sources): the library of URLs QR codes point to
-- Groups: subscriber groups for email/WhatsApp distribution
-- History: log of all distributions
-- Reports: scan analytics by code, placement, device, time
-- Applications: job applications with status workflow and auto-reply
-- Menu Editor: edit the Artyst menu, opening hours, news notices, footer promos, Play section
-- Users: add/manage admin and viewer accounts
-
-You help staff complete tasks in this system. Be brief, practical, and specific. If asked for poster copy or creative content, write in the voice of The Artyst — warm, intelligent, culturally literate, not corporate. Never use hollow marketing phrases.`;
+const ASSISTANT_SYSTEM = "You are the admin assistant for The Artyst QR Engine (CA-022). The Artyst is a cultural cafe, bar and events venue at 54-56 Chesterton Road, Cambridge. It is the world's only dedicated Syd Barrett heritage venue, operating with Barrett estate approval and exhibiting Mick Rock photography. Seated, table-service, events-led cultural space. Sections: Library (QR codes + scan counts), New Code (create codes), Print Queue + Poster Editor, Distribute (WhatsApp/email/screens), Screens (Window/POS/Wall zones), Communication Sources (URL library), Groups (subscriber lists), History (distribution log), Reports (scan analytics), Applications (job applications + auto-reply), Menu Editor (menu items, hours, news notices, footer promos, Play section), Reviews (generate responses), Users (admin/viewer accounts). Help staff complete tasks. For creative copy write in The Artyst voice: warm, intelligent, culturally literate, not corporate.";
 
 function AdminAssistant(){
   const [open,setOpen]=useState(false);
@@ -1615,7 +1599,7 @@ function App(){
               </div>
               {nextStep&&<span style={{fontSize:'.75rem',color:'#88aacc'}}>→ Next: <strong style={{color:'#fff'}}>{nextStep}</strong></span>}
             </div>
-            <button className="btn btn-secondary btn-small" onClick={()=>setActiveTask(null)} style={{flexShrink:0}}>Dismiss</button>
+            <button className="btn btn-secondary btn-small" onClick={()=>{setActiveTask(null);setVisitedTabs([]);}} style={{flexShrink:0}}>Dismiss</button>
           </div>
         );
       })()}
