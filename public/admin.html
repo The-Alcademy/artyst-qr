@@ -147,6 +147,10 @@
     body.light-mode th{color:#555;border-bottom-color:#e0d8d0}
     body.light-mode td{border-bottom-color:#f0ebe5}
     body.light-mode tr:hover td{background:#faf7f4}
+    body.light-mode td{color:#1a1512}
+    body.light-mode td strong{color:#1a1512}
+    body.light-mode td span{color:inherit}
+    body.light-mode .scan-count{color:#1a1512}
     body.light-mode .badge-generic{background:#e8e2da;color:#555}
     body.light-mode .badge-active{background:#d4f0d4;color:#2a7a2a}
     body.light-mode .badge-inactive{background:#f0d4d4;color:#8a2a2a}
@@ -870,7 +874,7 @@ function MenuEditor(){
                             </div>
                           ):(
                             <span onClick={()=>startEdit(item,field)}
-                              style={{cursor:'text',color:item[field]?'#ccc':'#444',fontStyle:item[field]?'normal':'italic',display:'block',minWidth:'40px',minHeight:'20px'}}
+                              style={{cursor:'text',fontStyle:item[field]?'normal':'italic',display:'block',minWidth:'40px',minHeight:'20px'}}
                               title="Click to edit">{item[field]||'-'}</span>
                           )}
                         </td>
