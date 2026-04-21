@@ -490,6 +490,8 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [loadTemplateId,setLoadTemplateId]=useState('');
   const [loadDesignId,setLoadDesignId]=useState('');
   const [downloading,setDownloading]=useState(false);
+  const [generatingImage,setGeneratingImage]=useState(false);
+  const [genError,setGenError]=useState('');
   const [duplex,setDuplex]=useState('none');
   const [backPoster,setBackPoster]=useState({...BLANK_POSTER});
   const [backUploading,setBackUploading]=useState({fg:false,bg:false});
@@ -515,6 +517,25 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
     try{const url=await uploadImage(file);setPoster(p=>({...p,[key+'Image']:url,[key+'ImageUrl']:url}));}
     catch(err){setSaveStatus({type:'error',msg:'Image upload failed: '+err.message});}
     setUploading(u=>({...u,[key]:false}));
+  }
+
+  async function generateImage(){
+    setGeneratingImage(true);setGenError('');
+    try{
+      const res=await fetch('/api/generate-image',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          title:poster.title,
+          event_purpose:code?._eventMeta?.event_purpose||'',
+          description:poster.subtitle||''
+        })
+      });
+      const data=await res.json();
+      if(!res.ok){setGenError(data.error||'Generation failed.');return;}
+      setPoster(p=>({...p,bgImage:data.url,bgImageUrl:data.url,overlayOpacity:0.35,overlayColor:'#000000'}));
+    }catch(e){setGenError('Connection error.');}
+    finally{setGeneratingImage(false);}
   }
 
   async function downloadImage(){
@@ -580,7 +601,14 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           <div className="form-group"><label>Call to Action</label><input value={poster.cta} onChange={e=>setPoster(p=>({...p,cta:e.target.value}))}/></div>
           <div className="form-group"><label>Format</label><select value={poster.format} onChange={e=>setPoster(p=>({...p,format:e.target.value}))}><optgroup label="Print">{FORMATS.filter(f=>!f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup><optgroup label="Screen / Social">{FORMATS.filter(f=>f.screen).map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</optgroup></select></div>
           <div className="form-group"><label>Foreground Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'fg')}/>{uploading.fg&&<span className="uploading">Uploading...</span>}{poster.fgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
-          <div className="form-group"><label>Background Image</label><input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
+          <div className="form-group"><label>Background Image</label>
+            <div style={{display:'flex',gap:'.4rem',alignItems:'center',marginBottom:'.3rem'}}>
+              <button className="btn btn-blue btn-small" onClick={generateImage} disabled={generatingImage} type="button">
+                {generatingImage?'Generating...':'✦ Generate with AI'}
+              </button>
+              {genError&&<span style={{fontSize:'.75rem',color:'#ff7a7a'}}>{genError}</span>}
+            </div>
+            <input type="file" accept="image/*" onChange={e=>handleImageUpload(e.target.files[0],'bg')}/>{uploading.bg&&<span className="uploading">Uploading...</span>}{poster.bgImageUrl&&<span style={{fontSize:'.72rem',color:'#5aff7a',marginTop:'.2rem'}}>✓ Uploaded</span>}</div>
           {poster.bgImage&&<><div className="form-group"><label>Overlay Opacity — {Math.round(poster.overlayOpacity*100)}%</label><input type="range" min="0" max="1" step="0.05" value={poster.overlayOpacity} onChange={e=>setPoster(p=>({...p,overlayOpacity:parseFloat(e.target.value)}))}/></div><div className="form-group"><label>Overlay Colour</label><input type="color" value={poster.overlayColor} onChange={e=>setPoster(p=>({...p,overlayColor:e.target.value}))}/></div></>}
           <div className="form-group"><label>Text Colour</label><input type="color" value={poster.textColor} onChange={e=>setPoster(p=>({...p,textColor:e.target.value}))}/></div>
           {!isScreen&&<div className="form-group full"><label>Duplex Printing</label><div style={{display:'flex',gap:'.5rem',marginTop:'.3rem'}}>{[['none','Single sided'],['same','Same on both sides'],['different','Different design on back']].map(([val,lbl])=><div key={val} className={`channel-btn${duplex===val?' selected':''}`} style={{flex:1}} onClick={()=>setDuplex(val)}>{lbl}</div>)}</div></div>}
