@@ -709,6 +709,31 @@ function CreateForm({destinations,onCreate}){
   const [useCustom,setUseCustom]=useState(false);
   const [status,setStatus]=useState(null);
   const [loading,setLoading]=useState(false);
+  const [events,setEvents]=useState([]);
+  const [loadingEvents,setLoadingEvents]=useState(false);
+  const [selectedEventId,setSelectedEventId]=useState('');
+
+  useEffect(()=>{
+    if(form.type==='event'){
+      setLoadingEvents(true);
+      supabase('/rest/v1/events?select=id,title,starts_at,event_purpose&order=starts_at.asc&starts_at=gte.'+new Date().toISOString()+'&limit=50')
+        .then(data=>{
+          setEvents(Array.isArray(data)?data:[]);
+          setLoadingEvents(false);
+        })
+        .catch(()=>setLoadingEvents(false));
+    }
+  },[form.type]);
+
+  function selectEvent(eventId){
+    setSelectedEventId(eventId);
+    const ev=events.find(e=>e.id===eventId);
+    if(!ev) return;
+    const label=ev.title;
+    const url=`https://invysible-college-events-engine.vercel.app/book/${ev.id}`;
+    setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId}));
+    setUseCustom(true);
+  }
   function set(k,v){setForm(f=>{const n={...f,[k]:v};if(k==='label'&&!f._slugEdited) n.slug=slugify(v);if(k==='type'){n.destination_id='';n.custom_url='';}return n;});}
   const filteredDests=destinations.filter(d=>d.type===form.type||d.type==='generic');
   const selectedDest=destinations.find(d=>d.id===form.destination_id);
@@ -717,12 +742,12 @@ function CreateForm({destinations,onCreate}){
     if(!form.label||!form.slug){setStatus({type:'error',msg:'Label and slug are required.'});return;}
     if(!finalUrl){setStatus({type:'error',msg:'Please select a destination or enter a custom URL.'});return;}
     setLoading(true);setStatus(null);
-    const res=await supabase('/rest/v1/qr_codes','POST',{slug:form.slug,type:form.type,label:form.label,destination_url:finalUrl,destination_id:(!useCustom&&form.destination_id)||null,placement:form.placement||null},'return=representation');
+    const res=await supabase('/rest/v1/qr_codes','POST',{slug:form.slug,type:form.type,label:form.label,destination_url:finalUrl,destination_id:(!useCustom&&form.destination_id)||null,placement:form.placement||null,linked_ca017_event_id:form._linkedEventId||null},'return=representation');
     setLoading(false);
     if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
-    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);onCreate(Array.isArray(res)?res[0]?.id:res?.id);}
+    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);setSelectedEventId('');onCreate(Array.isArray(res)?res[0]?.id:res?.id);}
   }
-  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>set('type',e.target.value)}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{!useCustom?<div className="form-group full"><label>Communication Source</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a communication source —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use source library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
+  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found in CA-017</div>}</div>}{!useCustom?<div className="form-group full"><label>Communication Source</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a communication source —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use source library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
 }
 
 function Destinations({destinations,onRefresh,isAdmin}){
