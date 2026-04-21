@@ -724,7 +724,7 @@ function CreateForm({destinations,onCreate}){
       setLoadingEvents(true);
       setEvents([]);
       // Fetch all events then filter client-side — avoids PostgREST date encoding issues
-      supabase('/rest/v1/events?select=id,title,description,starts_at,ends_at,ticket_price&order=starts_at.asc&limit=100')
+      supabase('/rest/v1/events?select=*&order=starts_at.asc&limit=100')
         .then(data=>{
           if(Array.isArray(data)){
             const now=new Date();
@@ -757,8 +757,9 @@ function CreateForm({destinations,onCreate}){
       }
     }
     // Price
-    const price=ev.ticket_price!=null?(Number(ev.ticket_price)===0?'Free':'£'+Number(ev.ticket_price).toFixed(2)):null;
-    const meta={subtitle:ev.description||'',dateText,price:price||'',url};
+    const rawPrice=ev.ticket_price||ev.price||ev.price_per_ticket||ev.cost||null;
+const price=rawPrice!=null?(Number(rawPrice)===0?'Free':'£'+Number(rawPrice).toFixed(2)):null;
+    const meta={subtitle:ev.description||ev.short_description||ev.subtitle||'',dateText,price:price||'',url};
     setEventMeta(meta);
     setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId,_eventMeta:meta}));
     setUseCustom(true);
