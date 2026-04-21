@@ -477,7 +477,12 @@ function UsersTab(){
 }
 
 function PosterEditor({code,templates,designs,onClose,onSaved}){
-  const [poster,setPoster]=useState({...BLANK_POSTER,title:code?.label||''});
+  const [poster,setPoster]=useState({...BLANK_POSTER,
+    title:code?.label||'',
+    subtitle:code?._eventMeta?.subtitle||'',
+    dateText:code?._eventMeta?.dateText||'',
+    price:code?._eventMeta?.price||''
+  });
   const [uploading,setUploading]=useState({fg:false,bg:false});
   const [saveMode,setSaveMode]=useState(null);
   const [saveName,setSaveName]=useState('');
@@ -705,18 +710,19 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
 }
 
 function CreateForm({destinations,onCreate}){
-  const [form,setForm]=useState({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});
+  const [form,setForm]=useState({label:'',type:'event',destination_id:'',custom_url:'',placement:'',slug:''});
   const [useCustom,setUseCustom]=useState(false);
   const [status,setStatus]=useState(null);
   const [loading,setLoading]=useState(false);
   const [events,setEvents]=useState([]);
   const [loadingEvents,setLoadingEvents]=useState(false);
   const [selectedEventId,setSelectedEventId]=useState('');
+  const [eventMeta,setEventMeta]=useState(null);
 
   useEffect(()=>{
     if(form.type==='event'){
       setLoadingEvents(true);
-      supabase('/rest/v1/events?select=id,title,starts_at,event_purpose&order=starts_at.asc&starts_at=gte.'+new Date().toISOString()+'&limit=50')
+      supabase('/rest/v1/events?select=id,title,description,starts_at,ends_at,ticket_price,price_display&order=starts_at.asc&starts_at=gte.'+new Date().toISOString()+'&limit=50')
         .then(data=>{
           setEvents(Array.isArray(data)?data:[]);
           setLoadingEvents(false);
@@ -728,10 +734,25 @@ function CreateForm({destinations,onCreate}){
   function selectEvent(eventId){
     setSelectedEventId(eventId);
     const ev=events.find(e=>e.id===eventId);
-    if(!ev) return;
+    if(!ev){setEventMeta(null);return;}
     const label=ev.title;
-    const url=`https://invysible-college-events-engine.vercel.app/book/${ev.id}`;
-    setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId}));
+    const url='https://invysible-college-events-engine.vercel.app/book/'+ev.id;
+    // Format date/time
+    let dateText='';
+    if(ev.starts_at){
+      const d=new Date(ev.starts_at);
+      dateText=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+      dateText+=' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      if(ev.ends_at){
+        const e2=new Date(ev.ends_at);
+        dateText+='–'+e2.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      }
+    }
+    // Price
+    const price=ev.price_display||(ev.ticket_price?(ev.ticket_price===0?'Free':'£'+Number(ev.ticket_price).toFixed(2)):null);
+    const meta={subtitle:ev.description||'',dateText,price:price||'',url};
+    setEventMeta(meta);
+    setForm(f=>({...f,label,slug:slugify(label),destination_id:'',custom_url:url,_slugEdited:false,_linkedEventId:eventId,_eventMeta:meta}));
     setUseCustom(true);
   }
   function set(k,v){setForm(f=>{const n={...f,[k]:v};if(k==='label'&&!f._slugEdited) n.slug=slugify(v);if(k==='type'){n.destination_id='';n.custom_url='';}return n;});}
@@ -745,9 +766,19 @@ function CreateForm({destinations,onCreate}){
     const res=await supabase('/rest/v1/qr_codes','POST',{slug:form.slug,type:form.type,label:form.label,destination_url:finalUrl,destination_id:(!useCustom&&form.destination_id)||null,placement:form.placement||null,linked_ca017_event_id:form._linkedEventId||null},'return=representation');
     setLoading(false);
     if(res.error||(Array.isArray(res)&&res[0]?.code)){setStatus({type:'error',msg:res.message||res[0]?.message||'Error creating code.'});}
-    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});setForm({label:'',type:'generic',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);setSelectedEventId('');onCreate(Array.isArray(res)?res[0]?.id:res?.id);}
+    else{setStatus({type:'success',msg:`Code created: ${BASE_URL}/e/${form.slug}`});const _meta=form._eventMeta||null;setForm({label:'',type:'event',destination_id:'',custom_url:'',placement:'',slug:''});setUseCustom(false);setSelectedEventId('');setEventMeta(null);onCreate(Array.isArray(res)?res[0]?.id:res?.id,_meta);}
   }
-  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found in CA-017</div>}</div>}{!useCustom?<div className="form-group full"><label>Communication Source</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a communication source —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use source library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
+  return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');setEventMeta(null);}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found in CA-017</div>}</div>}
+      {eventMeta&&selectedEventId&&(
+        <div className="form-group full">
+          <div style={{padding:'.8rem 1rem',borderRadius:'3px',border:'1px solid #2a5a7c',background:'#111'}}>
+            <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',marginBottom:'.5rem'}}>Event details — will auto-populate poster</div>
+            {eventMeta.dateText&&<div style={{fontSize:'.85rem',marginBottom:'.2rem'}}>{eventMeta.dateText}</div>}
+            {eventMeta.subtitle&&<div style={{fontSize:'.82rem',opacity:.7,marginBottom:'.2rem'}}>{eventMeta.subtitle}</div>}
+            {eventMeta.price&&<div style={{fontSize:'.85rem',fontWeight:600}}>{eventMeta.price}</div>}
+          </div>
+        </div>
+      )}{!useCustom?<div className="form-group full"><label>Communication Source</label><select value={form.destination_id} onChange={e=>set('destination_id',e.target.value)}><option value="">— select a communication source —</option>{filteredDests.map(d=><option key={d.id} value={d.id}>{d.label} — {d.url}</option>)}</select><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(true)}>Use custom URL instead</button></div></div>:<div className="form-group full"><label>Custom URL</label><input value={form.custom_url} onChange={e=>set('custom_url',e.target.value)} placeholder="https://..."/><div style={{marginTop:'.4rem'}}><button className="btn btn-secondary btn-small" onClick={()=>setUseCustom(false)}>Use source library instead</button></div></div>}<div className="form-group"><label>Slug (auto-generated)</label><input value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value,_slugEdited:true}))} placeholder="e.g. wine-tasting-april"/></div><div className="form-group"><label>Placement (optional)</label><select value={form.placement} onChange={e=>set('placement',e.target.value)}><option value="">— select —</option>{PLACEMENTS.map(p=><option key={p}>{p}</option>)}</select></div>{form.slug&&finalUrl&&<div className="form-group full" style={{flexDirection:'row',alignItems:'center',gap:'1rem'}}><QRWidget url={`${BASE_URL}/e/${form.slug}`} size={72}/><div><div className="slug-display">{BASE_URL}/e/{form.slug}</div><div style={{fontSize:'.75rem',color:'#555',marginTop:'.3rem'}}>→ {finalUrl}</div></div></div>}<div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={submit} disabled={loading}>{loading?'Creating...':'Create Code'}</button></div></div></div>);
 }
 
 function Destinations({destinations,onRefresh,isAdmin}){
@@ -1680,6 +1711,7 @@ function App(){
   const [sortField,setSortField]=useState('created_at');
   const [sortDir,setSortDir]=useState('desc');
   const [newCodeId,setNewCodeId]=useState(null);
+  const [eventMetaMap,setEventMetaMap]=useState({});
   const [visitedTabs,setVisitedTabs]=useState([]);
   const [loading,setLoading]=useState(true);
 
@@ -1722,7 +1754,7 @@ function App(){
     sessionStorage.removeItem('ca022_token');sessionStorage.removeItem('ca022_user');setUser(null);
   }
 
-  function addToPrintQueue(code){if(!printQueue.find(c=>c.id===code.id)) setPrintQueue(q=>[...q,code]);setTab('print');}
+  function addToPrintQueue(code){const enriched={...code,_eventMeta:eventMetaMap[code.id]||null};if(!printQueue.find(c=>c.id===code.id)) setPrintQueue(q=>[...q,enriched]);setTab('print');}
   function handleDistribute(code){setDistributeCode(code);setTab('distribute');}
 
   const totalScans=codes.reduce((s,c)=>s+c.scan_count,0);
@@ -1823,7 +1855,7 @@ function App(){
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
         {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId}/>}
-        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id)=>{loadAll();setTab('library');if(id){setNewCodeId(id);setTimeout(()=>setNewCodeId(null),8000);}}}/>}
+        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);setTimeout(()=>setNewCodeId(null),8000);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
         {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
         {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
