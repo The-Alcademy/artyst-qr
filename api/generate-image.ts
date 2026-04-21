@@ -26,11 +26,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const styleKey = event_purpose && EVENT_STYLES[event_purpose] ? event_purpose : 'default';
   const styleFragment = EVENT_STYLES[styleKey];
 
+  const { keywords = [], style = 'photographic', custom = '' } = req.body;
+
+  const styleText = style && style !== 'photographic' ? style + ' style' : '';
+
   const prompt = [
     styleFragment,
-    BASE_STYLE,
-    title ? `event titled "${title}"` : '',
-    description ? description.substring(0, 100) : '',
+    styleText,
+    keywords.length > 0 ? keywords.join(', ') : '',
+    custom || '',
+    title ? `for event titled "${title}"` : '',
+    description ? description.substring(0, 80) : '',
+    style === 'photographic' ? BASE_STYLE : 'high quality artwork, no text, no words',
   ].filter(Boolean).join(', ');
 
   try {
