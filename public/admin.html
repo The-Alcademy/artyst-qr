@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -950,7 +951,79 @@ function NewsEditor({isAdmin}){
   function startEdit(n){setEditing(n.id);function toLocal(iso){try{const d=new Date(iso);const p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}catch{return '';}}setForm({label:n.label||'',headline:n.headline||'',href:n.href||'',active:!!n.active,show_on_menu:!!n.show_on_menu,show_on_takeaway:!!n.show_on_takeaway,starts_at:n.starts_at?toLocal(n.starts_at):'',ends_at:n.ends_at?toLocal(n.ends_at):'',sort_order:n.sort_order||100});}
   function isLiveNow(n){if(!n.active)return false;const now=new Date();if(n.starts_at&&new Date(n.starts_at)>now)return false;if(n.ends_at&&new Date(n.ends_at)<now)return false;return true;}
   const live=news.filter(isLiveNow);
-  return(<div className="card" style={{marginBottom:'1.5rem'}}><h2>News Notices</h2><p style={{fontSize:'.82rem',margin:'-.4rem 0 1rem'}}>Rotating banner shown at top of /menu and /takeaway.</p>{status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}<div className='news-preview' style={{marginBottom:'1.5rem',padding:'.8rem',borderRadius:'3px'}}><div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#c8a96e',marginBottom:'.6rem'}}>Live preview</div>{live.length===0?<div style={{fontSize:'.82rem',fontStyle:'italic',padding:'.6rem 0'}}>Nothing active — banner will be hidden.</div>:live.map((n,i)=>(<div key={n.id} className='news-preview-item' style={{padding:'10px 14px',marginBottom:i===live.length-1?0:'.5rem',borderLeft:'3px solid #c8a96e',borderRadius:'2px',display:'flex',alignItems:'baseline',gap:'10px',flexWrap:'wrap'}}><span style={{fontSize:'.68rem',letterSpacing:'.14em',textTransform:'uppercase',color:'#c8a96e',flexShrink:0}}>{n.label}</span><span style={{fontSize:'.86rem',flex:1,minWidth:0}}>{n.headline}</span></div>))}</div>{!loading&&news.map(n=>{const lv=isLiveNow(n);return(<div key={n.id} style={{display:'flex',alignItems:'center',gap:'.6rem',padding:'.7rem 0',borderBottom:'1px solid #222',flexWrap:'wrap'}}><div style={{flex:1,minWidth:0}}><div style={{display:'flex',alignItems:'center',gap:'.4rem'}}><span style={{fontSize:'.68rem',letterSpacing:'.1em',textTransform:'uppercase',color:lv?'#c8a96e':'#999'}}>{n.label}</span>{!lv&&<span style={{fontSize:'.62rem',color:'#666'}}>· off</span>}</div><div style={{fontSize:'.82rem',color:lv?'inherit':'#999',marginTop:'2px'}}>{n.headline}</div></div><div style={{display:'flex',gap:'.3rem',flexShrink:0,alignItems:'center'}}>{isAdmin&&<><button className={`btn btn-small ${n.show_on_menu?'btn-blue':'btn-secondary'}`} onClick={()=>toggleSurface(n,'show_on_menu')}>Menu {n.show_on_menu?'✓':'✕'}</button><button className={`btn btn-small ${n.show_on_takeaway?'btn-blue':'btn-secondary'}`} onClick={()=>toggleSurface(n,'show_on_takeaway')}>T/A {n.show_on_takeaway?'✓':'✕'}</button><button className={`btn btn-small ${n.active?'btn-primary':'btn-secondary'}`} onClick={()=>toggleActive(n)}>{n.active?'Active':'Off'}</button><button className="btn btn-blue btn-small" onClick={()=>startEdit(n)}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>remove(n.id)}>Del</button></></div></div>);})}{isAdmin&&<div style={{marginTop:'1.4rem',paddingTop:'1rem',borderTop:'1px solid #222'}}><div style={{fontSize:'.75rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#555',marginBottom:'.8rem'}}>{editing?'Edit message':'Add message'}</div><div className="form-grid"><div className="form-group"><label>Label · max 30</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. This weekend" maxLength={30}/></div><div className="form-group"><label>Sort order</label><input type="number" value={form.sort_order} onChange={e=>setForm(f=>({...f,sort_order:e.target.value}))}/></div><div className="form-group full"><label>Headline · max 120</label><input value={form.headline} onChange={e=>setForm(f=>({...f,headline:e.target.value}))} placeholder="What's on, one line." maxLength={120}/></div><div className="form-group full"><label>Link URL · optional</label><input value={form.href} onChange={e=>setForm(f=>({...f,href:e.target.value}))} placeholder="https://..."/></div><div className="form-group"><label>Starts at · optional</label><input type="datetime-local" value={form.starts_at} onChange={e=>setForm(f=>({...f,starts_at:e.target.value}))}/></div><div className="form-group"><label>Ends at · optional</label><input type="datetime-local" value={form.ends_at} onChange={e=>setForm(f=>({...f,ends_at:e.target.value}))}/></div><div className="form-group full" style={{flexDirection:'row',gap:'1.2rem',alignItems:'center',flexWrap:'wrap'}}><label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}><input type="checkbox" checked={form.active} onChange={e=>setForm(f=>({...f,active:e.target.checked}))} style={{width:'auto'}}/><span style={{fontSize:'.82rem'}}>Active</span></label><label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}><input type="checkbox" checked={form.show_on_menu} onChange={e=>setForm(f=>({...f,show_on_menu:e.target.checked}))} style={{width:'auto'}}/><span style={{fontSize:'.82rem'}}>Show on /menu</span></label><label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}><input type="checkbox" checked={form.show_on_takeaway} onChange={e=>setForm(f=>({...f,show_on_takeaway:e.target.checked}))} style={{width:'auto'}}/><span style={{fontSize:'.82rem'}}>Show on /takeaway</span></label></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>{editing&&<button className="btn btn-secondary" onClick={resetForm}>Cancel</button>}<button className="btn btn-primary" onClick={save}>{editing?'Save changes':'Add message'}</button></div></div>}</div>);
+  return(
+    <div className="card" style={{marginBottom:'1.5rem'}}>
+      <h2>News Notices</h2>
+      <p style={{fontSize:'.82rem',margin:'-.4rem 0 1rem'}}>Rotating banner shown at top of /menu and /takeaway.</p>
+      {status&&<div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+      <div className='news-preview' style={{marginBottom:'1.5rem',padding:'.8rem',borderRadius:'3px'}}>
+        <div style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#c8a96e',marginBottom:'.6rem'}}>Live preview</div>
+        {live.length===0
+          ? <div style={{fontSize:'.82rem',fontStyle:'italic',padding:'.6rem 0'}}>Nothing active — banner will be hidden.</div>
+          : live.map((n,i)=>(
+            <div key={n.id} className='news-preview-item' style={{padding:'10px 14px',marginBottom:i===live.length-1?0:'.5rem',borderLeft:'3px solid #c8a96e',borderRadius:'2px',display:'flex',alignItems:'baseline',gap:'10px',flexWrap:'wrap'}}>
+              <span style={{fontSize:'.68rem',letterSpacing:'.14em',textTransform:'uppercase',color:'#c8a96e',flexShrink:0}}>{n.label}</span>
+              <span style={{fontSize:'.86rem',flex:1,minWidth:0}}>{n.headline}</span>
+            </div>
+          ))
+        }
+      </div>
+      {!loading&&news.map(n=>{
+        const lv=isLiveNow(n);
+        return(
+          <div key={n.id} style={{display:'flex',alignItems:'center',gap:'.6rem',padding:'.7rem 0',borderBottom:'1px solid #222',flexWrap:'wrap'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:'.4rem'}}>
+                <span style={{fontSize:'.68rem',letterSpacing:'.1em',textTransform:'uppercase',color:lv?'#c8a96e':'#999'}}>{n.label}</span>
+                {!lv&&<span style={{fontSize:'.62rem',color:'#666'}}>· off</span>}
+              </div>
+              <div style={{fontSize:'.82rem',color:lv?'inherit':'#999',marginTop:'2px'}}>{n.headline}</div>
+            </div>
+            <div style={{display:'flex',gap:'.3rem',flexShrink:0,alignItems:'center'}}>
+              {isAdmin&&<>
+                <button className={`btn btn-small ${n.show_on_menu?'btn-blue':'btn-secondary'}`} onClick={()=>toggleSurface(n,'show_on_menu')}>Menu {n.show_on_menu?'✓':'✕'}</button>
+                <button className={`btn btn-small ${n.show_on_takeaway?'btn-blue':'btn-secondary'}`} onClick={()=>toggleSurface(n,'show_on_takeaway')}>T/A {n.show_on_takeaway?'✓':'✕'}</button>
+                <button className={`btn btn-small ${n.active?'btn-primary':'btn-secondary'}`} onClick={()=>toggleActive(n)}>{n.active?'Active':'Off'}</button>
+                <button className="btn btn-blue btn-small" onClick={()=>startEdit(n)}>Edit</button>
+                <button className="btn btn-secondary btn-small" onClick={()=>remove(n.id)}>Del</button>
+              </>}
+            </div>
+          </div>
+        );
+      })}
+      {isAdmin&&(
+        <div style={{marginTop:'1.4rem',paddingTop:'1rem',borderTop:'1px solid #222'}}>
+          <div style={{fontSize:'.75rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#555',marginBottom:'.8rem'}}>{editing?'Edit message':'Add message'}</div>
+          <div className="form-grid">
+            <div className="form-group"><label>Label · max 30</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. This weekend" maxLength={30}/></div>
+            <div className="form-group"><label>Sort order</label><input type="number" value={form.sort_order} onChange={e=>setForm(f=>({...f,sort_order:e.target.value}))}/></div>
+            <div className="form-group full"><label>Headline · max 120</label><input value={form.headline} onChange={e=>setForm(f=>({...f,headline:e.target.value}))} placeholder="What's on, one line." maxLength={120}/></div>
+            <div className="form-group full"><label>Link URL · optional</label><input value={form.href} onChange={e=>setForm(f=>({...f,href:e.target.value}))} placeholder="https://..."/></div>
+            <div className="form-group"><label>Starts at · optional</label><input type="datetime-local" value={form.starts_at} onChange={e=>setForm(f=>({...f,starts_at:e.target.value}))}/></div>
+            <div className="form-group"><label>Ends at · optional</label><input type="datetime-local" value={form.ends_at} onChange={e=>setForm(f=>({...f,ends_at:e.target.value}))}/></div>
+            <div className="form-group full" style={{flexDirection:'row',gap:'1.2rem',alignItems:'center',flexWrap:'wrap'}}>
+              <label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}>
+                <input type="checkbox" checked={form.active} onChange={e=>setForm(f=>({...f,active:e.target.checked}))} style={{width:'auto'}}/>
+                <span style={{fontSize:'.82rem'}}>Active</span>
+              </label>
+              <label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}>
+                <input type="checkbox" checked={form.show_on_menu} onChange={e=>setForm(f=>({...f,show_on_menu:e.target.checked}))} style={{width:'auto'}}/>
+                <span style={{fontSize:'.82rem'}}>Show on /menu</span>
+              </label>
+              <label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',margin:0}}>
+                <input type="checkbox" checked={form.show_on_takeaway} onChange={e=>setForm(f=>({...f,show_on_takeaway:e.target.checked}))} style={{width:'auto'}}/>
+                <span style={{fontSize:'.82rem'}}>Show on /takeaway</span>
+              </label>
+            </div>
+            <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>
+              {editing&&<button className="btn btn-secondary" onClick={resetForm}>Cancel</button>}
+              <button className="btn btn-primary" onClick={save}>{editing?'Save changes':'Add message'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function PromoEditor({isAdmin}){
