@@ -284,7 +284,10 @@ const CHANNELS = {
   'screen-window':{label:'Screen — Window',section:'Screens'},
   'screen-pos':{label:'Screen — POS',section:'Screens'},
   'screen-wall':{label:'Screen — Wall',section:'Screens'},
-  whatsapp:{label:'WhatsApp',section:'Messaging'},
+  'whatsapp-artyst':{label:'WhatsApp — The Artyst',section:'Messaging'},
+  'whatsapp-ic':{label:'WhatsApp — Invysible College',section:'Messaging'},
+  'whatsapp-tours':{label:'WhatsApp — Alcademy Tours',section:'Messaging'},
+  'whatsapp-community':{label:'WhatsApp — Artyst Community',section:'Messaging'},
   email:{label:'Email',section:'Messaging'},
   'social-instagram-feed':{label:'Instagram Feed',section:'Social'},
   'social-instagram-story':{label:'Instagram Story',section:'Social'},
@@ -759,8 +762,13 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
     const code=codes.find(c=>c.id===selectedCode);
     const errors=[];
     if(selectedChannels.includes('email')){try{const res=await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr_code_id:selectedCode,slug:code?.slug,label:code?.label,type:code?.type,redirect_url:`${BASE_URL}/e/${code?.slug}`,destination_url:code?.destination_url,group_ids:selectedGroups,staff_name:staffName,note:note||null,reply_to:replyTo})});const data=await res.json();if(!res.ok) errors.push('Email: '+(data.error||'failed'));}catch(e){errors.push('Email: network error');}}
-    if(selectedChannels.includes('whatsapp')){try{const res=await fetch('/api/send-whatsapp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr_code_id:selectedCode,slug:code?.slug,label:code?.label,type:code?.type,redirect_url:`${BASE_URL}/e/${code?.slug}`,channel:'artyst',staff_name:staffName,note:note||null})});const data=await res.json();if(!res.ok) errors.push('WhatsApp: '+(data.error||'failed'));}catch(e){errors.push('WhatsApp: network error');}}
-    const otherChannels=selectedChannels.filter(c=>c!=='whatsapp');
+    const waChannelMap={'whatsapp-artyst':'artyst','whatsapp-ic':'ic','whatsapp-tours':'tours','whatsapp-community':'artyst_community'};
+    for(const [btnId,channelKey] of Object.entries(waChannelMap)){
+      if(selectedChannels.includes(btnId)){
+        try{const res=await fetch('/api/send-whatsapp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr_code_id:selectedCode,slug:code?.slug,label:code?.label,type:code?.type,redirect_url:`${BASE_URL}/e/${code?.slug}`,channel:channelKey,staff_name:staffName,note:note||null})});const data=await res.json();if(!res.ok) errors.push(CHANNELS[btnId]?.label+': '+(data.error||'failed'));}catch(e){errors.push(CHANNELS[btnId]?.label+': network error');}
+      }
+    }
+    const otherChannels=selectedChannels.filter(c=>!c.startsWith('whatsapp'));
     if(otherChannels.length>0){let staffId;const existing=staffList.find(s=>s.name.toLowerCase()===staffName.toLowerCase());if(existing){staffId=existing.id;}else{const res=await supabase('/rest/v1/staff','POST',{name:staffName},'return=representation');staffId=Array.isArray(res)?res[0]?.id:res?.id;if(staffId) onStaffCreated();}await supabase('/rest/v1/distributions','POST',{qr_code_id:selectedCode,staff_id:staffId,note:note||null,channels:otherChannels,groups:selectedGroups,status:'sent'});await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode}`,'PATCH',{last_distributed_at:new Date().toISOString()});}
     setLoading(false);
     if(errors.length>0){setStatus({type:'error',msg:errors.join(' · ')});}
@@ -785,8 +793,60 @@ function Groups({groups,onRefresh,isAdmin}){
 }
 
 function History({distributions,codes,groups,staff}){
+  const [filter,setFilter]=useState('all');
   if(!distributions.length) return <div className="card"><div className="empty">No distributions yet</div></div>;
-  return(<div className="card" style={{padding:0,overflow:'hidden'}}><table><thead><tr><th>Code</th><th>Channels</th><th>Groups</th><th>Sent By</th><th>Note</th><th>When</th><th>Status</th></tr></thead><tbody>{distributions.map(d=>{const code=codes.find(c=>c.id===d.qr_code_id);const member=staff.find(s=>s.id===d.staff_id);const dGroups=(d.groups||[]).map(id=>groups.find(g=>g.id===id)?.name).filter(Boolean);return(<tr key={d.id} style={{fontSize:'.82rem'}}><td><strong>{code?.label||'—'}</strong><br/><span className="slug-display">/e/{code?.slug}</span></td><td>{(d.channels||[]).map(c=><span key={c} className="group-tag">{CHANNELS[c]?.label||c}</span>)}</td><td>{dGroups.length?dGroups.map(g=><span key={g} className="group-tag">{g}</span>):'—'}</td><td>{member?.name||'—'}</td><td><span className="note-text">{d.note||'—'}</span></td><td style={{fontSize:'.78rem',color:'#666'}}>{new Date(d.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td><span className={`badge badge-${d.status}`}>{d.status}</span></td></tr>);})}</tbody></table></div>);
+
+  const allChannels=[...new Set(distributions.flatMap(d=>d.channels||[]))];
+  const filtered=filter==='all'?distributions:distributions.filter(d=>(d.channels||[]).includes(filter));
+
+  return(
+    <div>
+      <div className="card" style={{marginBottom:'1rem',padding:'1rem 1.5rem'}}>
+        <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',alignItems:'center'}}>
+          <span style={{fontSize:'.72rem',textTransform:'uppercase',letterSpacing:'.08em',marginRight:'.3rem'}}>Filter</span>
+          <div className={`channel-btn${filter==='all'?' selected':''}`} style={{padding:'.3rem .7rem'}} onClick={()=>setFilter('all')}>All</div>
+          {allChannels.map(ch=>(
+            <div key={ch} className={`channel-btn${filter===ch?' selected':''}`} style={{padding:'.3rem .7rem'}} onClick={()=>setFilter(ch)}>
+              {CHANNELS[ch]?.label||ch}
+            </div>
+          ))}
+        </div>
+      </div>
+      {filtered.map(d=>{
+        const code=codes.find(c=>c.id===d.qr_code_id);
+        const member=staff.find(s=>s.id===d.staff_id);
+        const dGroups=(d.groups||[]).map(id=>groups.find(g=>g.id===id)?.name).filter(Boolean);
+        const when=new Date(d.created_at);
+        return(
+          <div key={d.id} className="card" style={{marginBottom:'.6rem',padding:'1rem 1.2rem'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:'.5rem',marginBottom:'.6rem'}}>
+              <div>
+                <strong style={{fontSize:'.92rem'}}>{code?.label||'Unknown code'}</strong>
+                <span className="slug-display" style={{marginLeft:'.5rem'}}>/e/{code?.slug}</span>
+              </div>
+              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+                <span style={{fontSize:'.78rem'}}>{member?.name||'Unknown'}</span>
+                <span style={{fontSize:'.75rem',opacity:.6}}>
+                  {when.toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+                </span>
+                <span className={`badge badge-${d.status}`}>{d.status}</span>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',marginBottom:d.note?'.5rem':'0'}}>
+              {(d.channels||[]).map(ch=>(
+                <span key={ch} style={{fontSize:'.72rem',padding:'.2rem .5rem',borderRadius:'2px',background:'#1a3a5c',color:'#5aafff'}}>
+                  {CHANNELS[ch]?.label||ch}
+                </span>
+              ))}
+              {dGroups.map(g=><span key={g} className="group-tag">{g}</span>)}
+            </div>
+            {d.note&&<div style={{fontSize:'.85rem',marginTop:'.3rem',fontStyle:'italic',opacity:.7}}>"{d.note}"</div>}
+          </div>
+        );
+      })}
+      {filtered.length===0&&<div className="empty">No distributions match this filter</div>}
+    </div>
+  );
 }
 
 function Reports({codes,scanEvents}){
