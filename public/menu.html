@@ -448,6 +448,21 @@
     .hours-times { color: var(--text-2); font-variant-numeric: tabular-nums; }
     .hours-row.today .hours-times { color: var(--gold); font-weight: 500; }
     .hours-closed { color: var(--text-3); font-style: italic; }
+
+    /* ── Collapsed table ── */
+    .table-collapsed {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 0.5px solid var(--border);
+    }
+    .table-collapsed-name {
+      font-size: 15px; color: var(--text-1); font-weight: 500;
+    }
+    .table-collapsed-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .table-change-btn {
+      font-size: 12px; color: var(--gold); background: none; border: none;
+      cursor: pointer; padding: 4px 8px; -webkit-tap-highlight-color: transparent;
+      text-decoration: underline;
+    }
     
     [data-theme="dark"] .news-notice {
       background: #2a1f08;
