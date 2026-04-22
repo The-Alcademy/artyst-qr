@@ -1514,5 +1514,16 @@ if (playRes.status === 'fulfilled' && playRes.value.ok) {
       });
     }
   </script>
+  <div class="offer-overlay" id="offer-overlay" style="display:none;" onclick="handleOfferOverlayClick(event)">
+  <div class="offer-sheet" id="offer-sheet">
+    <div class="offer-eyebrow" id="offer-eyebrow"></div>
+    <div class="offer-headline" id="offer-headline"></div>
+    <div class="offer-body" id="offer-body"></div>
+    <div class="offer-actions">
+      <button class="offer-cta" id="offer-cta" onclick="dismissOffer()"></button>
+      <button class="offer-dismiss" onclick="dismissOffer()">Maybe later</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
