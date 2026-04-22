@@ -612,32 +612,32 @@ function CropMarks({
       ...line,
       top: `${vGap}mm`,
       left: 0,
-      right: 0,
-      height: '0.4pt'
+      width: '210mm',
+      height: '0.5px'
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       ...line,
       top: `${vGap + ph}mm`,
       left: 0,
-      right: 0,
-      height: '0.4pt'
+      width: '210mm',
+      height: '0.5px'
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       ...line,
       left: `${hGap}mm`,
       top: 0,
-      bottom: 0,
-      width: '0.4pt'
+      height: '297mm',
+      width: '0.5px'
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       ...line,
       left: `${hGap + pw}mm`,
       top: 0,
-      bottom: 0,
-      width: '0.4pt'
+      height: '297mm',
+      width: '0.5px'
     }
   }));
 }
@@ -6148,14 +6148,19 @@ function MenuEditor({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '.6rem'
+        marginBottom: '.6rem',
+        padding: '.4rem .7rem',
+        background: cat.active ? 'var(--gold-bg,#f5eedf)' : 'var(--bg-raised,#f2efe9)',
+        borderLeft: '3px solid ' + (cat.active ? 'var(--gold,#c8a96e)' : '#ccc'),
+        borderRadius: '2px'
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '.8rem',
         letterSpacing: '.1em',
         textTransform: 'uppercase',
-        color: cat.active ? '#888' : '#444'
+        fontWeight: 600,
+        color: cat.active ? 'var(--gold,#c8a96e)' : '#999'
       }
     }, cat.name), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -6558,9 +6563,14 @@ function MenuEditor({
   }, "Add category"))))), /*#__PURE__*/React.createElement("div", {
     className: "warning-box",
     style: {
-      marginBottom: '1rem'
+      marginBottom: '1rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '.5rem'
     }
-  }, "Click any name, description or price to edit inline. ", /*#__PURE__*/React.createElement("strong", null, "On"), " = available on the eat-in menu. ", /*#__PURE__*/React.createElement("strong", null, "T/A"), " = available for takeaway. Changes are live immediately.", ' ', /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, "Click any name, description or price to edit inline. ", /*#__PURE__*/React.createElement("strong", null, "On"), " = available on the eat-in menu. ", /*#__PURE__*/React.createElement("strong", null, "T/A"), " = available for takeaway. Changes are live immediately.", ' ', /*#__PURE__*/React.createElement("span", {
     style: {
       cursor: 'pointer',
       textDecoration: 'underline'
@@ -6569,7 +6579,20 @@ function MenuEditor({
       behavior: 'smooth',
       block: 'start'
     })
-  }, "\u2191 Jump to section")), loading && /*#__PURE__*/React.createElement("div", {
+  }, "\u2191 Jump to section")), /*#__PURE__*/React.createElement("a", {
+    href: "https://go.theartyst.co.uk/menu?print=1",
+    target: "_blank",
+    style: {
+      padding: '.3rem .8rem',
+      borderRadius: '3px',
+      background: '#c0392b',
+      color: '#fff',
+      fontSize: '.78rem',
+      textDecoration: 'none',
+      flexShrink: 0,
+      letterSpacing: '.04em'
+    }
+  }, "\uD83D\uDDA8 Print menu")), loading && /*#__PURE__*/React.createElement("div", {
     className: "empty"
   }, "Loading menu..."), !loading && renderSection(cafe, 'Cafe and food'), !loading && renderSection(bar, 'Bar'), /*#__PURE__*/React.createElement("div", {
     id: "menu-play"
