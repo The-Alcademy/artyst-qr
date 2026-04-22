@@ -557,6 +557,9 @@ async function uploadImage(file) {
 function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 40);
 }
+function catSlugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 40);
+}
 function TypeBadge({
   type
 }) {
@@ -4189,9 +4192,6 @@ function PlayEditor({
     });
     loadAll();
   };
-  function pSlugify(s) {
-    return s.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').substring(0, 40);
-  }
   const saveCat = async () => {
     if (!catForm.name || !catForm.slug) {
       flash('Name and slug required.', 'error');
@@ -4503,7 +4503,7 @@ function PlayEditor({
       setCatForm(f => ({
         ...f,
         name,
-        slug: f._slugEdited ? f.slug : pSlugify(name)
+        slug: f._slugEdited ? f.slug : catSlugify(name)
       }));
     },
     placeholder: "e.g. Regular sessions"
@@ -4513,7 +4513,7 @@ function PlayEditor({
     value: catForm.slug,
     onChange: e => setCatForm(f => ({
       ...f,
-      slug: pSlugify(e.target.value),
+      slug: catSlugify(e.target.value),
       _slugEdited: true
     })),
     placeholder: "e.g. regular"
@@ -4667,6 +4667,32 @@ function HoursEditor({
     });
     setTimeout(() => setStatus(null), 2500);
   }
+  const saveCat = async () => {
+    if (!newCat.name || !newCat.slug) {
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const res = await supabase('/rest/v1/menu_categories', 'POST', {
+      name: newCat.name,
+      slug: newCat.slug,
+      side: newCat.side,
+      sort_order: parseInt(newCat.sort_order) || 100,
+      active: true
+    }, 'return=representation');
+    if (res.error || Array.isArray(res) && res[0]?.code) {
+      flash('Failed to add category.', 'error');
+      return;
+    }
+    setNewCat({
+      name: '',
+      slug: '',
+      side: 'cafe',
+      sort_order: 100
+    });
+    setAddingCat(false);
+    flash('Category added.');
+    loadMenu();
+  };
   const toggleActive = async day => {
     await supabase(`/rest/v1/opening_hours?day_of_week=eq.${day.day_of_week}`, 'PATCH', {
       active: !day.active
@@ -4899,6 +4925,32 @@ function NewsEditor({
     });
     setTimeout(() => setStatus(null), 2500);
   }
+  const saveCat = async () => {
+    if (!newCat.name || !newCat.slug) {
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const res = await supabase('/rest/v1/menu_categories', 'POST', {
+      name: newCat.name,
+      slug: newCat.slug,
+      side: newCat.side,
+      sort_order: parseInt(newCat.sort_order) || 100,
+      active: true
+    }, 'return=representation');
+    if (res.error || Array.isArray(res) && res[0]?.code) {
+      flash('Failed to add category.', 'error');
+      return;
+    }
+    setNewCat({
+      name: '',
+      slug: '',
+      side: 'cafe',
+      sort_order: 100
+    });
+    setAddingCat(false);
+    flash('Category added.');
+    loadMenu();
+  };
   function resetForm() {
     setForm({
       label: '',
@@ -5302,6 +5354,32 @@ function PromoEditor({
     });
     setTimeout(() => setStatus(null), 2500);
   }
+  const saveCat = async () => {
+    if (!newCat.name || !newCat.slug) {
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const res = await supabase('/rest/v1/menu_categories', 'POST', {
+      name: newCat.name,
+      slug: newCat.slug,
+      side: newCat.side,
+      sort_order: parseInt(newCat.sort_order) || 100,
+      active: true
+    }, 'return=representation');
+    if (res.error || Array.isArray(res) && res[0]?.code) {
+      flash('Failed to add category.', 'error');
+      return;
+    }
+    setNewCat({
+      name: '',
+      slug: '',
+      side: 'cafe',
+      sort_order: 100
+    });
+    setAddingCat(false);
+    flash('Category added.');
+    loadMenu();
+  };
   const toggleActive = async p => {
     await supabase(`/rest/v1/promo_messages?id=eq.${p.id}`, 'PATCH', {
       active: !p.active
@@ -5491,6 +5569,32 @@ function OptionsEditor({
     });
     setTimeout(() => setStatus(null), 2500);
   }
+  const saveCat = async () => {
+    if (!newCat.name || !newCat.slug) {
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const res = await supabase('/rest/v1/menu_categories', 'POST', {
+      name: newCat.name,
+      slug: newCat.slug,
+      side: newCat.side,
+      sort_order: parseInt(newCat.sort_order) || 100,
+      active: true
+    }, 'return=representation');
+    if (res.error || Array.isArray(res) && res[0]?.code) {
+      flash('Failed to add category.', 'error');
+      return;
+    }
+    setNewCat({
+      name: '',
+      slug: '',
+      side: 'cafe',
+      sort_order: 100
+    });
+    setAddingCat(false);
+    flash('Category added.');
+    loadMenu();
+  };
   function addGroup() {
     setGroups(g => [...g, {
       name: '',
@@ -5732,6 +5836,13 @@ function MenuEditor({
     price_display: ''
   });
   const [status, setStatus] = useState(null);
+  const [addingCat, setAddingCat] = useState(false);
+  const [newCat, setNewCat] = useState({
+    name: '',
+    slug: '',
+    side: 'cafe',
+    sort_order: 100
+  });
   const ALL_SLOTS = [{
     key: 'brunch',
     label: 'Brunch',
@@ -5780,6 +5891,32 @@ function MenuEditor({
     });
     setTimeout(() => setStatus(null), 2500);
   }
+  const saveMenuCat = async () => {
+    if (!newCat.name || !newCat.slug) {
+      flash('Name and slug are required.', 'error');
+      return;
+    }
+    const res = await supabase('/rest/v1/menu_categories', 'POST', {
+      name: newCat.name,
+      slug: newCat.slug,
+      side: newCat.side,
+      sort_order: parseInt(newCat.sort_order) || 100,
+      active: true
+    }, 'return=representation');
+    if (res.error || Array.isArray(res) && res[0]?.code) {
+      flash('Failed to add category.', 'error');
+      return;
+    }
+    setNewCat({
+      name: '',
+      slug: '',
+      side: 'cafe',
+      sort_order: 100
+    });
+    setAddingCat(false);
+    flash('Category added.');
+    loadMenu();
+  };
   const toggleAvailable = async item => {
     await supabase(`/rest/v1/menu_items?id=eq.${item.id}`, 'PATCH', {
       available: !item.available
@@ -6226,7 +6363,89 @@ function MenuEditor({
     isAdmin: isAdmin
   })), /*#__PURE__*/React.createElement("div", {
     id: "menu-items"
-  }), /*#__PURE__*/React.createElement("div", {
+  }), isAdmin && /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: '1rem'
+    }
+  }, !addingCat ? /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-green btn-small",
+    onClick: () => setAddingCat(true)
+  }, "+ New menu category") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.75rem',
+      textTransform: 'uppercase',
+      letterSpacing: '.08em',
+      marginBottom: '.8rem'
+    }
+  }, "New category"), /*#__PURE__*/React.createElement("div", {
+    className: "form-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Name"), /*#__PURE__*/React.createElement("input", {
+    value: newCat.name,
+    onChange: e => {
+      const name = e.target.value;
+      setNewCat(f => ({
+        ...f,
+        name,
+        slug: f._slugEdited ? f.slug : catSlugify(name)
+      }));
+    },
+    placeholder: "e.g. Cocktails"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Slug"), /*#__PURE__*/React.createElement("input", {
+    value: newCat.slug,
+    onChange: e => setNewCat(f => ({
+      ...f,
+      slug: catSlugify(e.target.value),
+      _slugEdited: true
+    })),
+    placeholder: "e.g. cocktails"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Section"), /*#__PURE__*/React.createElement("select", {
+    value: newCat.side,
+    onChange: e => setNewCat(f => ({
+      ...f,
+      side: e.target.value
+    }))
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "cafe"
+  }, "Caf\xE9 & food"), /*#__PURE__*/React.createElement("option", {
+    value: "bar"
+  }, "Bar"))), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Sort order"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: newCat.sort_order,
+    onChange: e => setNewCat(f => ({
+      ...f,
+      sort_order: e.target.value
+    }))
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group full",
+    style: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: '.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-secondary btn-small",
+    onClick: () => {
+      setAddingCat(false);
+      setNewCat({
+        name: '',
+        slug: '',
+        side: 'cafe',
+        sort_order: 100
+      });
+    }
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-small",
+    onClick: saveMenuCat
+  }, "Add category"))))), /*#__PURE__*/React.createElement("div", {
     className: "warning-box",
     style: {
       marginBottom: '1rem'
