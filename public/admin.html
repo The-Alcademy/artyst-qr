@@ -1894,17 +1894,22 @@ function PosterEditor({
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: fmt.small ? '12pt' : '26pt',
+      fontSize: fmt.small ? '12pt' : imageMode === 'none' ? poster.title.length < 15 ? '52pt' : poster.title.length < 25 ? '40pt' : poster.title.length < 40 ? '30pt' : '22pt' : '26pt',
       fontWeight: 'bold',
       textAlign: 'center',
-      lineHeight: 1.2
+      lineHeight: 1.15,
+      flex: imageMode === 'none' ? '1' : 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }
   }, poster.title), poster.subtitle && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: fmt.small ? '9pt' : '12pt',
+      fontSize: fmt.small ? '9pt' : imageMode === 'none' ? '16pt' : '12pt',
       textAlign: 'center',
       opacity: .8,
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      marginTop: imageMode === 'none' ? '4mm' : '0'
     }
   }, poster.subtitle), poster.dateText && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2684,7 +2689,7 @@ function CreateForm({
     }
     // Price
     const rawPrice = ev.ticket_price != null ? ev.ticket_price : ev.price != null ? ev.price : ev.price_per_ticket != null ? ev.price_per_ticket : ev.cost != null ? ev.cost : null;
-    const price = rawPrice != null ? Number(rawPrice) === 0 ? 'Free' : '£' + Number(rawPrice).toFixed(2) : '£0.00';
+    const price = rawPrice != null ? Number(rawPrice) === 0 ? 'Free' : '£' + Number(rawPrice).toFixed(2) : 'Admission Free';
     const meta = {
       subtitle: ev.description || ev.short_description || ev.subtitle || '',
       dateText,
