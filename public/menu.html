@@ -449,6 +449,27 @@
     .hours-row.today .hours-times { color: var(--gold); font-weight: 500; }
     .hours-closed { color: var(--text-3); font-style: italic; }
 
+    @media print {
+  .header, .slot-bar, .promo-bar, .news-notice,
+  #outdoor-notice-container, #news-notice-container,
+  .cat-subnav, .add-btn, .expand-icon,
+  .opts-overlay, .order-overlay, .drawer, .drawer-overlay { display: none !important; }
+  body { padding-bottom: 0; font-size: 11pt; background: #fff; color: #000; }
+  .body { padding: 0 12mm; }
+  .cat-block { padding-top: 14pt; page-break-inside: avoid; }
+  .cat-label { font-size: 8pt; letter-spacing: 0.16em; color: #8a6a2e !important; border-bottom: 0.5pt solid #ccc; padding-bottom: 4pt; margin-bottom: 6pt; }
+  .item-row { border-bottom: 0.3pt solid #ddd; page-break-inside: avoid; }
+  .item-main { padding: 5pt 0; }
+  .item-name { font-size: 11pt; }
+  .item-desc { font-size: 9pt; color: #555; }
+  .item-price { font-size: 10pt; }
+  .tag { display: none; }
+  .item-detail { display: block !important; }
+  .detail-lines { background: none; padding: 2pt 0 4pt 10pt; border: none; }
+  .detail-line { font-size: 8pt; color: #777; line-height: 1.6; }
+  @page { size: A4; margin: 15mm 12mm; }
+}
+
     /* ── Collapsed table ── */
     .table-collapsed {
       display: flex; align-items: center; justify-content: space-between;
