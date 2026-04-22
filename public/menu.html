@@ -1522,6 +1522,9 @@ function handleOfferOverlayClick(e) {
         if (stateEl) stateEl.remove();
 renderBody();
         buildSubNav();
+        if (new URLSearchParams(window.location.search).get('print') === '1') {
+          showAll = true; renderBody(); setTimeout(function(){ window.print(); }, 600);
+        }
       } else {
         document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
       }
