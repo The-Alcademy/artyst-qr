@@ -567,49 +567,20 @@ function CropMarks({
   const ph = parseFloat(posterH);
   const hGap = (210 - pw) / 2;
   const vGap = (297 - ph) / 2;
-  const base = {
-    position: 'absolute',
-    pointerEvents: 'none',
-    WebkitPrintColorAdjust: 'exact',
-    printColorAdjust: 'exact'
-  };
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", {
     style: {
-      ...base,
+      position: 'absolute',
       top: `${vGap}mm`,
-      left: 0,
-      right: 0,
-      height: 0,
-      borderTop: '0.5pt solid #bbb'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...base,
-      top: `${vGap + ph}mm`,
-      left: 0,
-      right: 0,
-      height: 0,
-      borderTop: '0.5pt solid #bbb'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...base,
       left: `${hGap}mm`,
-      top: 0,
-      bottom: 0,
-      width: 0,
-      borderLeft: '0.5pt solid #bbb'
+      width: `${pw}mm`,
+      height: `${ph}mm`,
+      outline: '0.5pt solid #bbb',
+      outlineOffset: '0',
+      pointerEvents: 'none',
+      WebkitPrintColorAdjust: 'exact',
+      printColorAdjust: 'exact'
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...base,
-      left: `${hGap + pw}mm`,
-      top: 0,
-      bottom: 0,
-      width: 0,
-      borderLeft: '0.5pt solid #bbb'
-    }
-  }));
+  });
 }
 
 // ── LOGIN SCREEN ──────────────────────────────────────────
