@@ -6,7 +6,8 @@
   <title>QR Engine — The Artyst</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -1125,6 +1126,351 @@ function DuplexBack({
     }))
   })))));
 }
+function ImageModePicker({
+  mode,
+  onChange
+}) {
+  const MODES = [{
+    id: 'none',
+    label: 'Text only',
+    desc: 'No image',
+    svg: /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 80 100",
+      width: "60",
+      height: "75"
+    }, /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#1a1a1a",
+      stroke: "#333",
+      strokeWidth: "1"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "15",
+      width: "60",
+      height: "4",
+      rx: "2",
+      fill: "#c8a96e"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "27",
+      width: "50",
+      height: "8",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".9"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "40",
+      width: "40",
+      height: "4",
+      rx: "2",
+      fill: "#888"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "50",
+      width: "30",
+      height: "4",
+      rx: "2",
+      fill: "#888"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "20",
+      y: "70",
+      width: "40",
+      height: "14",
+      rx: "2",
+      fill: "#333"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "25",
+      y: "75",
+      width: "30",
+      height: "4",
+      rx: "2",
+      fill: "#888"
+    }))
+  }, {
+    id: 'bg',
+    label: 'Background',
+    desc: 'Full bleed image behind text',
+    svg: /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 80 100",
+      width: "60",
+      height: "75"
+    }, /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#2a4a3a",
+      stroke: "#333",
+      strokeWidth: "1"
+    }), /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#000",
+      opacity: ".45"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "15",
+      width: "60",
+      height: "4",
+      rx: "2",
+      fill: "#c8a96e"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "27",
+      width: "50",
+      height: "8",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".95"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "40",
+      width: "40",
+      height: "4",
+      rx: "2",
+      fill: "#ccc",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "50",
+      width: "30",
+      height: "4",
+      rx: "2",
+      fill: "#ccc",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "20",
+      y: "70",
+      width: "40",
+      height: "14",
+      rx: "2",
+      fill: "#c0392b",
+      opacity: ".8"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "25",
+      y: "75",
+      width: "30",
+      height: "4",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".9"
+    }))
+  }, {
+    id: 'fg',
+    label: 'Foreground',
+    desc: 'Image above text',
+    svg: /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 80 100",
+      width: "60",
+      height: "75"
+    }, /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#1a1a1a",
+      stroke: "#333",
+      strokeWidth: "1"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "8",
+      width: "60",
+      height: "38",
+      rx: "2",
+      fill: "#2a4a3a"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "10",
+      y1: "8",
+      x2: "70",
+      y2: "46",
+      stroke: "#3a6a4a",
+      strokeWidth: "1",
+      opacity: ".5"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: "55",
+      cy: "20",
+      r: "7",
+      fill: "#4a8a5a",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "15",
+      width: "60",
+      height: "3",
+      rx: "1",
+      fill: "#c8a96e",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "52",
+      width: "50",
+      height: "8",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".9"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "65",
+      width: "40",
+      height: "3",
+      rx: "2",
+      fill: "#888"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "73",
+      width: "30",
+      height: "3",
+      rx: "2",
+      fill: "#888"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "20",
+      y: "83",
+      width: "40",
+      height: "12",
+      rx: "2",
+      fill: "#333"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "25",
+      y: "87",
+      width: "30",
+      height: "4",
+      rx: "2",
+      fill: "#888"
+    }))
+  }, {
+    id: 'both',
+    label: 'Both',
+    desc: 'Foreground image + full background',
+    svg: /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 80 100",
+      width: "60",
+      height: "75"
+    }, /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#2a3a4a",
+      stroke: "#333",
+      strokeWidth: "1"
+    }), /*#__PURE__*/React.createElement("rect", {
+      width: "80",
+      height: "100",
+      rx: "3",
+      fill: "#000",
+      opacity: ".4"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "8",
+      width: "60",
+      height: "35",
+      rx: "2",
+      fill: "#1a3a2a",
+      opacity: ".8"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: "55",
+      cy: "20",
+      r: "6",
+      fill: "#4a8a5a",
+      opacity: ".8"
+    }), /*#__PURE__*/React.createElement("line", {
+      x1: "10",
+      y1: "8",
+      x2: "70",
+      y2: "43",
+      stroke: "#3a6a4a",
+      strokeWidth: "1",
+      opacity: ".4"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "10",
+      y: "15",
+      width: "60",
+      height: "3",
+      rx: "1",
+      fill: "#c8a96e",
+      opacity: ".8"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "49",
+      width: "50",
+      height: "7",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".95"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "61",
+      width: "40",
+      height: "3",
+      rx: "2",
+      fill: "#ccc",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "15",
+      y: "69",
+      width: "30",
+      height: "3",
+      rx: "2",
+      fill: "#ccc",
+      opacity: ".7"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "20",
+      y: "80",
+      width: "40",
+      height: "13",
+      rx: "2",
+      fill: "#c0392b",
+      opacity: ".8"
+    }), /*#__PURE__*/React.createElement("rect", {
+      x: "25",
+      y: "85",
+      width: "30",
+      height: "3",
+      rx: "2",
+      fill: "#fff",
+      opacity: ".9"
+    }))
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '.6rem',
+      flexWrap: 'wrap',
+      marginTop: '.4rem'
+    }
+  }, MODES.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.id,
+    onClick: () => onChange(m.id),
+    style: {
+      border: '2px solid ' + (mode === m.id ? '#c0392b' : '#2a2a2a'),
+      borderRadius: '4px',
+      padding: '.6rem',
+      cursor: 'pointer',
+      background: mode === m.id ? '#1a0808' : '#111',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '.4rem',
+      minWidth: '80px',
+      transition: 'border-color .15s'
+    }
+  }, m.svg, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.75rem',
+      fontWeight: mode === m.id ? 700 : 400,
+      color: mode === m.id ? '#c8a96e' : '#888',
+      textAlign: 'center'
+    }
+  }, m.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.65rem',
+      color: '#666',
+      textAlign: 'center',
+      lineHeight: 1.3
+    }
+  }, m.desc))));
+}
 function GenImageOptions({
   code,
   selectedStyle,
@@ -1268,6 +1614,7 @@ function PosterEditor({
   const [generatingImage, setGeneratingImage] = useState('');
   const [genError, setGenError] = useState('');
   const [showGenOptions, setShowGenOptions] = useState(false);
+  const [imageMode, setImageMode] = useState('none');
   const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [selectedStyle, setSelectedStyle] = useState('photographic');
   const [customPrompt, setCustomPrompt] = useState('');
@@ -1703,43 +2050,74 @@ function PosterEditor({
     key: f.id,
     value: f.id
   }, f.label))))), /*#__PURE__*/React.createElement("div", {
-    className: "form-group"
+    className: "form-group full"
+  }, /*#__PURE__*/React.createElement("label", null, "Image layout"), /*#__PURE__*/React.createElement(ImageModePicker, {
+    mode: imageMode,
+    onChange: m => {
+      setImageMode(m);
+      if (m === 'none') setPoster(p => ({
+        ...p,
+        fgImage: null,
+        fgImageUrl: null,
+        bgImage: null,
+        bgImageUrl: null
+      }));
+    }
+  }), imageMode !== 'none' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.72rem',
+      color: '#888',
+      marginTop: '.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      cursor: 'pointer',
+      color: '#5aafff'
+    },
+    onClick: () => setImageMode('none')
+  }, "\u2190 Reset to text only"))), (imageMode === 'fg' || imageMode === 'both') && /*#__PURE__*/React.createElement("div", {
+    className: "form-group full"
   }, /*#__PURE__*/React.createElement("label", null, "Foreground Image"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '.4rem',
       alignItems: 'center',
-      marginBottom: '.3rem'
+      marginBottom: '.4rem'
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-blue btn-small",
     onClick: () => generateImage('fg'),
     disabled: generatingImage === 'fg',
     type: "button"
-  }, generatingImage === 'fg' ? 'Generating...' : '✦ Generate with AI')), /*#__PURE__*/React.createElement("input", {
+  }, generatingImage === 'fg' ? 'Generating...' : '✦ Generate with AI'), /*#__PURE__*/React.createElement("label", {
+    className: "btn btn-secondary btn-small",
+    style: {
+      cursor: 'pointer',
+      margin: 0
+    }
+  }, "Upload ", /*#__PURE__*/React.createElement("input", {
     type: "file",
     accept: "image/*",
+    style: {
+      display: 'none'
+    },
     onChange: e => handleImageUpload(e.target.files[0], 'fg')
-  }), uploading.fg && /*#__PURE__*/React.createElement("span", {
+  }))), uploading.fg && /*#__PURE__*/React.createElement("span", {
     className: "uploading"
   }, "Uploading..."), poster.fgImageUrl && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '.72rem',
-      color: '#5aff7a',
-      marginTop: '.2rem'
+      color: '#5aff7a'
     }
-  }, "\u2713 Uploaded")), /*#__PURE__*/React.createElement("div", {
+  }, "\u2713 Uploaded")), (imageMode === 'bg' || imageMode === 'both') && /*#__PURE__*/React.createElement("div", {
     className: "form-group full"
   }, /*#__PURE__*/React.createElement("label", null, "Background Image"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: '.6rem'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '.4rem',
       alignItems: 'center',
-      marginBottom: '.4rem'
+      marginBottom: '.4rem',
+      flexWrap: 'wrap'
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-blue btn-small",
@@ -1750,7 +2128,20 @@ function PosterEditor({
     onClick: () => generateImage('bg'),
     disabled: !!generatingImage,
     type: "button"
-  }, generatingImage === 'bg' ? 'Generating...' : 'Generate background'), genError && /*#__PURE__*/React.createElement("span", {
+  }, generatingImage === 'bg' ? 'Generating...' : 'Generate'), /*#__PURE__*/React.createElement("label", {
+    className: "btn btn-secondary btn-small",
+    style: {
+      cursor: 'pointer',
+      margin: 0
+    }
+  }, "Upload ", /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "image/*",
+    style: {
+      display: 'none'
+    },
+    onChange: e => handleImageUpload(e.target.files[0], 'bg')
+  })), genError && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '.75rem',
       color: '#ff7a7a'
@@ -1765,19 +2156,14 @@ function PosterEditor({
     setCustomPrompt: setCustomPrompt,
     generatingImage: generatingImage,
     generateImage: generateImage
-  }), /*#__PURE__*/React.createElement("input", {
-    type: "file",
-    accept: "image/*",
-    onChange: e => handleImageUpload(e.target.files[0], 'bg')
   }), uploading.bg && /*#__PURE__*/React.createElement("span", {
     className: "uploading"
   }, "Uploading..."), poster.bgImageUrl && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '.72rem',
-      color: '#5aff7a',
-      marginTop: '.2rem'
+      color: '#5aff7a'
     }
-  }, "\u2713 Uploaded"))), !isScreen && /*#__PURE__*/React.createElement("div", {
+  }, "\u2713 Uploaded")), !isScreen && /*#__PURE__*/React.createElement("div", {
     className: "form-group full"
   }, /*#__PURE__*/React.createElement("label", null, "Duplex Printing"), /*#__PURE__*/React.createElement("div", {
     style: {
