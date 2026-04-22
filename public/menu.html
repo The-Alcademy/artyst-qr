@@ -1405,7 +1405,15 @@ function setupSubNavObserver(cats) {
     if (el) subNavObserver.observe(el);
   });
 }
-    
+function printMenu() {
+  showAll = true;
+  renderBody();
+  setTimeout(function() {
+    window.print();
+    showAll = false;
+    renderBody();
+  }, 300);
+}    
     // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
