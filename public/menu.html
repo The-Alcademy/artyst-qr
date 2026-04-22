@@ -1316,7 +1316,8 @@ renderTabs();
         allCategories = data.categories || [];
         var stateEl = document.getElementById('state');
         if (stateEl) stateEl.remove();
-        renderBody();
+renderBody();
+        buildSubNav();
       } else {
         document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
       }
