@@ -772,21 +772,28 @@ const TABS = [
 
     function selectTable(name) { selectedTable = name; saveTable(); renderOrderBody(); }
 
-    function renderTableSelector() {
-      var label = selectedTable
-        ? 'TABLE &nbsp;<span class="table-selected-name">' + selectedTable + '</span>'
-        : 'TABLE &nbsp;<span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;">select your table</span>';
-      var html = '<div class="table-section"><div class="table-section-label">' + label + '</div>';
-      TABLE_GROUPS.forEach(function(g) {
-        html += '<div class="table-group"><div class="table-group-label">' + g.label + '</div><div class="table-chips">';
-        g.tables.forEach(function(t) {
-          html += '<div class="table-chip' + (t === selectedTable ? ' selected' : '') + '" onclick="selectTable(\'' + t + '\')">' + t + '</div>';
-        });
-        html += '</div></div>';
-      });
-      html += '<p class="table-error" id="table-error">Please select your table before showing to staff.</p></div>';
-      return html;
-    }
+function renderTableSelector() {
+  if (selectedTable && !tableExpanded) {
+    return '<div class="table-collapsed">'
+      + '<div><div class="table-collapsed-name">' + selectedTable + '</div>'
+      + '<div class="table-collapsed-sub">Table selected</div></div>'
+      + '<button class="table-change-btn" onclick="expandTableSelector()">Change &#x270E;</button>'
+      + '</div>';
+  }
+  var label = selectedTable
+    ? 'TABLE &nbsp;<span class="table-selected-name">' + selectedTable + '</span>'
+    : 'TABLE &nbsp;<span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;">select your table</span>';
+  var html = '<div class="table-section"><div class="table-section-label">' + label + '</div>';
+  TABLE_GROUPS.forEach(function(g) {
+    html += '<div class="table-group"><div class="table-group-label">' + g.label + '</div><div class="table-chips">';
+    g.tables.forEach(function(t) {
+      html += '<div class="table-chip' + (t === selectedTable ? ' selected' : '') + '" onclick="selectTable(\'' + t + '\')">' + t + '</div>';
+    });
+    html += '</div></div>';
+  });
+  html += '<p class="table-error" id="table-error">Please select your table before showing to staff.</p></div>';
+  return html;
+}
 
     // ── Order ─────────────────────────────────────────
     function saveOrder() { localStorage.setItem('artyst-order', JSON.stringify(orderItems)); }
