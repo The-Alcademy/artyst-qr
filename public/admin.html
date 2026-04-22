@@ -106,7 +106,7 @@
     .save-panel{background:#1a2a1a;border:1px solid #2a5a2a;border-radius:4px;padding:1.2rem;margin-top:1rem}
     .save-panel h3{color:#5aff7a;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem}
     .uploading{color:#ffaa5a;font-size:.78rem;margin-top:.3rem}
-    .crop-wrap{width:210mm;height:297mm;display:flex;align-items:center;justify-content:center;position:relative;background:#fff;margin:1rem auto;}
+    .crop-wrap{width:210mm;height:297mm;display:flex;align-items:center;justify-content:center;position:relative;background:#fff;margin:1rem auto;overflow:visible;}
     .crop-mark{position:absolute;background:#000;display:none;}
     .crop-mark.h{height:.3px}.crop-mark.v{width:.3px}
     .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111}
@@ -251,7 +251,15 @@
     body.light-mode .theme-toggle{background:#e0d8d0;border-color:#bbb;color:#333}
     body.light-mode .theme-toggle:hover{background:#d0c8c0;color:#111}
 
-  </style>
+  
+    @media print {
+      body * { visibility: hidden; }
+      .poster-wrap { position: fixed !important; top: 0; left: 0; margin: 0 !important; padding: 0 !important; }
+      .poster-wrap, .poster-wrap * { visibility: visible; }
+      .crop-wrap { margin: 0 !important; }
+      @page { size: A4 portrait; margin: 0; }
+    }
+</style>
 </head>
 <body class="light-mode">
 <div id="root"></div>
