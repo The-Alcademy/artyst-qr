@@ -1450,7 +1450,54 @@ function printMenu() {
     showAll = false;
     renderBody();
   }, 300);
-}    
+}   
+    // ── Special offer overlay ──────────────────────────
+const SLOT_OFFERS = {
+  brunch: {
+    eyebrow: 'Morning offer',
+    headline: 'Coffee & cake — on us',
+    body: 'Start your morning right. Any filter coffee with any slice of cake for £6. Available until noon.',
+    cta: 'See the menu',
+  },
+  lunch: {
+    eyebrow: 'Lunch deal',
+    headline: 'Sandwich + drink combo',
+    body: 'Any sandwich with a soft drink or filter coffee for £8. A proper lunch, properly priced.',
+    cta: 'See food & drinks',
+  },
+  tea: {
+    eyebrow: 'Afternoon special',
+    headline: 'Afternoon tea for two',
+    body: 'Two teas or filter coffees with a selection of cakes for £12. Ask at the bar.',
+    cta: 'See the menu',
+  },
+  evening: {
+    eyebrow: 'This evening',
+    headline: 'Cocktail of the day',
+    body: 'Our bartender\'s pick changes nightly. Ask at the bar for tonight\'s special — usually around £9.',
+    cta: 'See the bar',
+  },
+};
+
+function showOfferIfNeeded() {
+  if (sessionStorage.getItem('artyst-offer-seen')) return;
+  var offer = SLOT_OFFERS[currentSlot];
+  if (!offer) return;
+  document.getElementById('offer-eyebrow').textContent = offer.eyebrow;
+  document.getElementById('offer-headline').textContent = offer.headline;
+  document.getElementById('offer-body').textContent = offer.body;
+  document.getElementById('offer-cta').textContent = offer.cta;
+  document.getElementById('offer-overlay').style.display = 'flex';
+  sessionStorage.setItem('artyst-offer-seen', '1');
+}
+
+function dismissOffer() {
+  document.getElementById('offer-overlay').style.display = 'none';
+}
+
+function handleOfferOverlayClick(e) {
+  if (e.target === document.getElementById('offer-overlay')) dismissOffer();
+}
     // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
