@@ -1150,8 +1150,9 @@ var cats = allCategories.filter(function(c) { return c.side === side; });
         var slotBar = document.querySelector('.slot-bar');
         if (slotBar) slotBar.style.display = '';
       }
-      renderTabs();
+renderTabs();
       renderBody();
+      buildSubNav();
       window.scrollTo({top:0, behavior:'smooth'});
     }
 
