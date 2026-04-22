@@ -1315,6 +1315,49 @@ renderTabs();
       items[promoIndex].classList.add('visible');
     }
 
+// ── Category sub-nav ─────────────────────────────
+var subNavObserver = null;
+
+function buildSubNav() {
+  var nav = document.getElementById('cat-subnav');
+  if (!nav) return;
+  if (TABS[activeTab].play) { nav.innerHTML = ''; return; }
+  var side = TABS[activeTab].side;
+  var cats = allCategories.filter(function(c) { return c.side === side && c.items && c.items.some(function(i) { return i.available; }); });
+  if (cats.length < 2) { nav.innerHTML = ''; return; }
+  nav.innerHTML = cats.map(function(cat) {
+    return '<div class="cat-subnav-chip" id="chip-' + cat.slug + '" onclick="scrollToCat(\'' + cat.slug + '\')">' + cat.name + '</div>';
+  }).join('');
+  setupSubNavObserver(cats);
+}
+
+function scrollToCat(slug) {
+  var el = document.getElementById('cat-' + slug);
+  if (!el) return;
+  var offset = el.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top: offset, behavior: 'smooth' });
+}
+
+function setupSubNavObserver(cats) {
+  if (subNavObserver) subNavObserver.disconnect();
+  subNavObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      var slug = entry.target.id.replace('cat-', '');
+      var chip = document.getElementById('chip-' + slug);
+      if (!chip) return;
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.cat-subnav-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+  cats.forEach(function(cat) {
+    var el = document.getElementById('cat-' + cat.slug);
+    if (el) subNavObserver.observe(el);
+  });
+}
+    
     // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
