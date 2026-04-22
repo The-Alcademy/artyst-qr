@@ -1550,13 +1550,7 @@ if (playRes.status === 'fulfilled' && playRes.value.ok) {
       setInterval(rotatePromo, 4000);
       setTimeout(showOfferIfNeeded, 1200);
     }
-
-if (new URLSearchParams(window.location.search).get('print') === '1') {
-  window.addEventListener('load', function() {
-    setTimeout(function() { showAll = true; renderBody(); window.print(); }, 1500);
-  });
-}
-    
+ 
     init();
   </script>
 
