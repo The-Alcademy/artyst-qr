@@ -1551,6 +1551,12 @@ if (playRes.status === 'fulfilled' && playRes.value.ok) {
       setTimeout(showOfferIfNeeded, 1200);
     }
 
+if (new URLSearchParams(window.location.search).get('print') === '1') {
+  window.addEventListener('load', function() {
+    setTimeout(function() { showAll = true; renderBody(); window.print(); }, 1500);
+  });
+}
+    
     init();
   </script>
 
