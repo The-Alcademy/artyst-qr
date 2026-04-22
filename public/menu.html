@@ -511,6 +511,28 @@
       .opts-overlay { align-items: center; justify-content: center; }
       .opts-sheet { border-radius: 12px; max-width: 520px; max-height: 80vh; }
     }
+
+/* ── Category sub-nav ── */
+.cat-subnav {
+  display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; gap: 6px; padding: 8px 20px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg); position: sticky; top: 0; z-index: 9;
+  transition: background 0.2s;
+}
+.cat-subnav:empty { display: none; }
+.cat-subnav::-webkit-scrollbar { display: none; }
+.cat-subnav-chip {
+  flex-shrink: 0; padding: 5px 12px;
+  border: 0.5px solid var(--border); border-radius: 20px;
+  font-size: 12px; letter-spacing: 0.04em; color: var(--text-2);
+  cursor: pointer; background: var(--bg-raised);
+  -webkit-tap-highlight-color: transparent; transition: all 0.15s;
+  white-space: nowrap;
+}
+.cat-subnav-chip:hover { border-color: var(--gold); color: var(--gold); }
+.cat-subnav-chip.active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); font-weight: 500; }
+    
   </style>
 </head>
 <body>
