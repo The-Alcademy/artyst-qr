@@ -1054,8 +1054,8 @@ function getItemOrderCount(itemId) {
       if (TABS[activeTab].play) { renderPlayBody(); return; }
       renderOutdoorNotice();
       var body = document.getElementById('body');
-      var slugs = TABS[activeTab].slugs;
-      var cats = allCategories.filter(function(c) { return slugs.indexOf(c.slug) !== -1; });
+var side = TABS[activeTab].side;
+var cats = allCategories.filter(function(c) { return c.side === side; });
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
       body.innerHTML = cats.map(function(cat) {
