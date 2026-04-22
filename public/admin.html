@@ -133,6 +133,90 @@
       @page { size: A4 portrait; margin: 0; }
     }
 </style>
+
+<style>
+    /* ── Task Guide ── */
+    .task-guide{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:3px;margin-bottom:1.5rem}
+    .task-guide-header{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;cursor:pointer;user-select:none}
+    .task-guide-title{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#888}
+    .task-guide-chevron{font-size:.7rem;color:#555;transition:transform .2s}
+    .task-guide-chevron.open{transform:rotate(180deg)}
+    .task-guide-body{display:flex;flex-wrap:wrap;gap:.5rem;padding:.5rem 1rem 1rem}
+    .task-card{padding:.55rem .9rem;background:#111;border:1px solid #2a2a2a;border-radius:2px;cursor:pointer;transition:border-color .15s;flex:1 1 180px}
+    .task-card:hover{border-color:#c0392b}
+    .task-card-label{font-size:.82rem;font-weight:600;color:#eee;margin-bottom:.2rem}
+    .task-card-desc{font-size:.72rem;color:#666;line-height:1.4;margin-bottom:.4rem}
+    .task-card-steps{display:flex;flex-wrap:wrap;gap:.3rem}
+    .task-step{font-size:.65rem;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:2px;padding:.15rem .4rem;color:#888;letter-spacing:.04em}
+    /* ── Light mode overrides ── */
+    body.light-mode{background:#f0ece7;color:#1a1a18}
+    body.light-mode .app{}
+    body.light-mode header{background:#f0ece7;border-bottom:1px solid #ddd}
+    body.light-mode .card{background:#fff;border-color:#ddd;color:#1a1a18}
+    body.light-mode input,body.light-mode select,body.light-mode textarea{background:#f8f7f5;border-color:#ccc;color:#1a1a18}
+    body.light-mode .tab{color:#666}
+    body.light-mode .tab.active{color:#1a1a18;border-bottom-color:#c0392b}
+    body.light-mode .btn-secondary{background:#f0ece7;border-color:#ccc;color:#333}
+    body.light-mode .btn-secondary:hover{border-color:#888}
+    body.light-mode .warning-box{background:#fdf3e3;border-color:#e8b84a;color:#7a5a0a}
+    body.light-mode .note-text{color:#777}
+    body.light-mode .group-tag{background:#e8e2da;border-color:#d0c8c0;color:#666}
+    body.light-mode .empty{color:#888}
+    body.light-mode .error{background:#fdf0f0;border-color:#e8a0a0;color:#8a2a2a}
+    body.light-mode .success{background:#f0fdf0;border-color:#a0e8a0;color:#2a6a2a}
+    body.light-mode table{border-color:#ddd}
+    body.light-mode th{color:#888;border-bottom-color:#ddd}
+    body.light-mode td{border-bottom-color:#eee}
+    body.light-mode tr:hover td{background:#faf8f4}
+    body.light-mode .slug-display{color:#888;background:#f0ece7}
+    body.light-mode .scan-count{color:#1a1a18}
+    body.light-mode .badge-active{background:#e8f5e8;color:#2a6a2a}
+    body.light-mode .badge-inactive{background:#f5e8e8;color:#8a2a2a}
+    body.light-mode .badge-event{background:#e8eef5;color:#2a4a8a}
+    body.light-mode .badge-opportunity{background:#f5ece8;color:#8a4a2a}
+    body.light-mode .badge-warning{background:#fdf3e3;color:#8a6a0a}
+    body.light-mode .badge-admin{background:#e8eef5;color:#2a4a8a}
+    body.light-mode .badge-viewer{background:#f0f0f0;color:#666}
+    body.light-mode .zone-card{background:#f8f7f5;border-color:#ddd}
+    body.light-mode .assigned-code{background:#f0ece7;border-color:#ddd}
+    body.light-mode .dest-item{border-color:#eee}
+    body.light-mode .dest-label{color:#1a1a18}
+    body.light-mode .dest-url{color:#888}
+    body.light-mode .channel-btn{background:#f0ece7;border-color:#ccc;color:#555}
+    body.light-mode .channel-btn.selected{background:#fdf3e3;border-color:#e8b84a;color:#8a6a0a}
+    body.light-mode .confirm-panel{background:#faf8f4;border-color:#ddd}
+    body.light-mode .save-panel{background:#faf8f4;border-color:#ddd}
+    body.light-mode .template-card{background:#faf8f4;border-color:#ddd}
+    body.light-mode .template-preview{border-color:#ddd}
+    body.light-mode .template-name{color:#1a1a18}
+    body.light-mode .template-meta{color:#888}
+    body.light-mode .report-row{border-color:#eee}
+    body.light-mode .report-label span{color:#333}
+    body.light-mode .report-bar{background:#c0392b}
+    body.light-mode .stat{background:#fff;border-color:#ddd}
+    body.light-mode .number{color:#1a1a18}
+    body.light-mode .label{color:#888}
+    body.light-mode .task-guide{background:#f8f7f5;border-color:#ddd}
+    body.light-mode .task-guide-header{}
+    body.light-mode .task-guide-title{color:#888}
+    body.light-mode .task-card{background:#fff;border-color:#ddd}
+    body.light-mode .task-card:hover{border-color:#c0392b}
+    body.light-mode .task-card-label{color:#1a1a18}
+    body.light-mode .task-card-desc{color:#888}
+    body.light-mode .task-step{background:#f0ece7;border-color:#ddd;color:#888}
+    body.light-mode .user-row{border-color:#eee}
+    body.light-mode .user-name{color:#1a1a18}
+    body.light-mode .user-meta{color:#888}
+    body.light-mode .login-wrap{background:#f0ece7}
+    body.light-mode .login-card{background:#fff;border-color:#ddd}
+    body.light-mode .login-err{color:#c0392b}
+    body.light-mode h2{color:#1a1a18}
+    body.light-mode h3{color:#333}
+    body.light-mode label{color:#555}
+    body.light-mode .pin-badge{background:#f0ece7;border-color:#ccc;color:#666}
+    body.light-mode .header-user span{color:#555}
+    body.light-mode .menu-jump-chip:hover{border-color:#c0392b;color:#c0392b}
+</style>
 </head>
 <body class="light-mode">
 <div id="root"></div>
