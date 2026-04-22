@@ -602,69 +602,44 @@ function CropMarks({
   const ph = parseFloat(posterH);
   const hGap = (210 - pw) / 2;
   const vGap = (297 - ph) / 2;
-  const gap = 3;
-  const marks = [{
-    cls: 'h',
+  const line = {
+    position: 'absolute',
+    background: '#aaa',
+    pointerEvents: 'none'
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
-      top: `${vGap - gap}mm`,
+      ...line,
+      top: `${vGap}mm`,
       left: 0,
-      width: `${hGap - gap}mm`
-    }
-  }, {
-    cls: 'v',
-    style: {
-      left: `${hGap - gap}mm`,
-      top: 0,
-      height: `${vGap - gap}mm`
-    }
-  }, {
-    cls: 'h',
-    style: {
-      top: `${vGap - gap}mm`,
       right: 0,
-      width: `${hGap - gap}mm`
+      height: '0.4pt'
     }
-  }, {
-    cls: 'v',
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
-      right: `${hGap - gap}mm`,
-      top: 0,
-      height: `${vGap - gap}mm`
-    }
-  }, {
-    cls: 'h',
-    style: {
-      bottom: `${vGap - gap}mm`,
+      ...line,
+      top: `${vGap + ph}mm`,
       left: 0,
-      width: `${hGap - gap}mm`
-    }
-  }, {
-    cls: 'v',
-    style: {
-      left: `${hGap - gap}mm`,
-      bottom: 0,
-      height: `${vGap - gap}mm`
-    }
-  }, {
-    cls: 'h',
-    style: {
-      bottom: `${vGap - gap}mm`,
       right: 0,
-      width: `${hGap - gap}mm`
+      height: '0.4pt'
     }
-  }, {
-    cls: 'v',
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
-      right: `${hGap - gap}mm`,
+      ...line,
+      left: `${hGap}mm`,
+      top: 0,
       bottom: 0,
-      height: `${vGap - gap}mm`
+      width: '0.4pt'
     }
-  }];
-  return /*#__PURE__*/React.createElement(React.Fragment, null, marks.map((m, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: `crop-mark ${m.cls}`,
-    style: m.style
-  })));
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...line,
+      left: `${hGap + pw}mm`,
+      top: 0,
+      bottom: 0,
+      width: '0.4pt'
+    }
+  }));
 }
 
 // ── LOGIN SCREEN ──────────────────────────────────────────
@@ -4317,14 +4292,20 @@ function PlayEditor({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: '.6rem'
+      marginBottom: '.6rem',
+      padding: '.4rem .7rem',
+      background: cat.active ? 'var(--gold-bg,#f5eedf)' : 'var(--bg-raised,#f2efe9)',
+      borderLeft: '3px solid ' + (cat.active ? 'var(--gold,#c8a96e)' : '#ccc'),
+      borderRadius: '2px',
+      margin: '0 0 .6rem'
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '.8rem',
       letterSpacing: '.1em',
       textTransform: 'uppercase',
-      color: cat.active ? '#c8a96e' : '#999'
+      fontWeight: 600,
+      color: cat.active ? 'var(--gold,#c8a96e)' : '#999'
     }
   }, cat.name), /*#__PURE__*/React.createElement("div", {
     style: {
