@@ -4635,6 +4635,14 @@ function HoursEditor({
       notes: day.notes || ''
     });
   }
+  function applyPrivateHire() {
+    setEditing(e => ({
+      ...e,
+      opens_at: '',
+      closes_at: '',
+      notes: 'Closed — available for private hire'
+    }));
+  }
   const saveEdit = async () => {
     if (!editing) return;
     const body = {
@@ -4753,15 +4761,20 @@ function HoursEditor({
         padding: '.4rem .6rem',
         borderBottom: '1px solid #1e1e1e'
       }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '.3rem'
+      }
     }, /*#__PURE__*/React.createElement("input", {
       value: editing.notes,
       onChange: e => setEditing({
         ...editing,
         notes: e.target.value
       }),
-      placeholder: "Optional",
+      placeholder: "e.g. Private hire available",
       style: {
-        width: '100%',
+        flex: 1,
         padding: '.25rem .4rem',
         fontSize: '.82rem',
         background: '#111',
@@ -4769,7 +4782,15 @@ function HoursEditor({
         color: '#eee',
         borderRadius: '2px'
       }
-    })), /*#__PURE__*/React.createElement("td", {
+    }), /*#__PURE__*/React.createElement("button", {
+      className: "btn btn-secondary btn-small",
+      onClick: applyPrivateHire,
+      title: "Set to closed + private hire available",
+      style: {
+        flexShrink: 0,
+        fontSize: '.7rem'
+      }
+    }, "Private hire"))), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: '.4rem .6rem',
         borderBottom: '1px solid #1e1e1e',
@@ -4800,7 +4821,11 @@ function HoursEditor({
         color: 'inherit',
         fontSize: '.82rem'
       }
-    }, d.notes || ''), /*#__PURE__*/React.createElement("td", {
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: d.notes && d.notes.includes('private hire') ? '#5aafff' : 'inherit'
+      }
+    }, d.notes || '')), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: '.4rem .6rem',
         borderBottom: '1px solid #1e1e1e',
@@ -5744,6 +5769,231 @@ function OptionsEditor({
     }
   }, "Clear all")));
 }
+function OffersEditor({
+  isAdmin
+}) {
+  const SLOT_LABELS = {
+    brunch: 'Brunch (8am–12pm)',
+    lunch: 'Lunch (12–2pm)',
+    tea: 'Afternoon tea (2–5pm)',
+    evening: 'Evening (5pm–close)'
+  };
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({
+    eyebrow: '',
+    headline: '',
+    body: '',
+    cta: ''
+  });
+  const [status, setStatus] = useState(null);
+  async function loadOffers() {
+    setLoading(true);
+    const res = await supabase('/rest/v1/slot_offers?order=slot');
+    setOffers(Array.isArray(res) ? res : []);
+    setLoading(false);
+  }
+  useEffect(() => {
+    loadOffers();
+  }, []);
+  function flash(msg, type = 'success') {
+    setStatus({
+      type,
+      msg
+    });
+    setTimeout(() => setStatus(null), 2500);
+  }
+  function startEdit(offer) {
+    setEditing(offer.id);
+    setForm({
+      eyebrow: offer.eyebrow || '',
+      headline: offer.headline || '',
+      body: offer.body || '',
+      cta: offer.cta || ''
+    });
+  }
+  async function save() {
+    if (!form.headline) {
+      flash('Headline is required.', 'error');
+      return;
+    }
+    await supabase(`/rest/v1/slot_offers?id=eq.${editing}`, 'PATCH', {
+      eyebrow: form.eyebrow || null,
+      headline: form.headline,
+      body: form.body || null,
+      cta: form.cta || 'See the menu'
+    });
+    setEditing(null);
+    flash('Saved.');
+    loadOffers();
+  }
+  async function toggleActive(offer) {
+    await supabase(`/rest/v1/slot_offers?id=eq.${offer.id}`, 'PATCH', {
+      active: !offer.active
+    });
+    loadOffers();
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    id: "menu-offers",
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("h2", null, "Special Offers"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '.82rem',
+      color: '#888',
+      margin: '-.4rem 0 1rem'
+    }
+  }, "Time-based overlay shown to customers when they first open the menu. One offer per service slot."), status && /*#__PURE__*/React.createElement("div", {
+    className: status.type === 'error' ? 'error' : 'success',
+    style: {
+      marginBottom: '1rem'
+    }
+  }, status.msg), loading && /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, "Loading..."), !loading && offers.map(offer => /*#__PURE__*/React.createElement("div", {
+    key: offer.id,
+    style: {
+      padding: '.8rem 0',
+      borderBottom: '1px solid #222'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '.4rem'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '.75rem',
+      letterSpacing: '.1em',
+      textTransform: 'uppercase',
+      color: offer.active ? 'var(--gold,#c8a96e)' : '#555',
+      fontWeight: 600
+    }
+  }, SLOT_LABELS[offer.slot] || offer.slot), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '.3rem'
+    }
+  }, isAdmin && /*#__PURE__*/React.createElement("button", {
+    className: `btn btn-small ${offer.active ? 'btn-secondary' : 'btn-primary'}`,
+    onClick: () => toggleActive(offer)
+  }, offer.active ? 'Active' : 'Off'), isAdmin && /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-blue btn-small",
+    onClick: () => startEdit(offer)
+  }, "Edit"))), editing === offer.id ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: '#111',
+      border: '1px solid #2a5a7c',
+      borderRadius: '2px',
+      padding: '.8rem',
+      marginTop: '.4rem'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "form-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Eyebrow ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 400,
+      color: '#666'
+    }
+  }, "e.g. \"This evening\"")), /*#__PURE__*/React.createElement("input", {
+    value: form.eyebrow,
+    onChange: e => setForm(f => ({
+      ...f,
+      eyebrow: e.target.value
+    })),
+    placeholder: "e.g. Morning offer"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "CTA button text"), /*#__PURE__*/React.createElement("input", {
+    value: form.cta,
+    onChange: e => setForm(f => ({
+      ...f,
+      cta: e.target.value
+    })),
+    placeholder: "See the menu"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group full"
+  }, /*#__PURE__*/React.createElement("label", null, "Headline"), /*#__PURE__*/React.createElement("input", {
+    value: form.headline,
+    onChange: e => setForm(f => ({
+      ...f,
+      headline: e.target.value
+    })),
+    placeholder: "e.g. Coffee & cake \u2014 on us"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group full"
+  }, /*#__PURE__*/React.createElement("label", null, "Body text"), /*#__PURE__*/React.createElement("textarea", {
+    value: form.body,
+    onChange: e => setForm(f => ({
+      ...f,
+      body: e.target.value
+    })),
+    rows: 3,
+    style: {
+      width: '100%',
+      background: '#0a0a0a',
+      border: '1px solid #333',
+      color: '#eee',
+      borderRadius: '2px',
+      padding: '.5rem .6rem',
+      fontSize: '.85rem',
+      lineHeight: 1.6,
+      resize: 'vertical'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group full",
+    style: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: '.4rem'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-secondary btn-small",
+    onClick: () => setEditing(null)
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-small",
+    onClick: save
+  }, "Save")))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      opacity: offer.active ? 1 : 0.45
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      color: '#888',
+      marginBottom: '2px'
+    }
+  }, offer.eyebrow), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.9rem',
+      fontWeight: 600,
+      color: '#eee',
+      marginBottom: '4px'
+    }
+  }, offer.headline || /*#__PURE__*/React.createElement("em", {
+    style: {
+      color: '#555'
+    }
+  }, "No headline set")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      color: '#666',
+      lineHeight: 1.5
+    }
+  }, offer.body)))), !loading && !offers.length && /*#__PURE__*/React.createElement("div", {
+    className: "empty",
+    style: {
+      padding: '1.5rem'
+    }
+  }, "No offers found \u2014 run the SQL setup to create the slot_offers table."));
+}
 function MenuJumpNav({
   categories,
   isAdmin
@@ -6421,6 +6671,10 @@ function MenuEditor({
   }, status.msg), /*#__PURE__*/React.createElement("div", {
     id: "menu-hours"
   }, /*#__PURE__*/React.createElement(HoursEditor, {
+    isAdmin: isAdmin
+  })), /*#__PURE__*/React.createElement("div", {
+    id: "menu-offers"
+  }, /*#__PURE__*/React.createElement(OffersEditor, {
     isAdmin: isAdmin
   })), /*#__PURE__*/React.createElement("div", {
     id: "menu-items"
