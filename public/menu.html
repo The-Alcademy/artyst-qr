@@ -682,13 +682,11 @@
   </div>
 
   <script>
-    const TABS = [
-      { label:'Caf\u00e9',   slugs:['espresso','tea','filter','cold'],                          outdoor:false },
-      { label:'Food',    slugs:['sandwiches','lunch','cakes'],                              outdoor:false },
-      { label:'Bar',     slugs:['draught','wine','lowno'],                                  outdoor:true  },
-   { label:'Spirits', slugs:['gin','vodka','rum','whisky','brandy','liqueurs','mixers','cocktails'], outdoor:true },
-      { label:'Play',    slugs:[],                                                           outdoor:false, play:true },
-    ];
+const TABS = [
+  { label:'Café & Food', side:'cafe', outdoor:false },
+  { label:'Bar',         side:'bar',  outdoor:true  },
+  { label:'Play',        side:null,   outdoor:false, play:true },
+];
     const SLOTS = {
       brunch:  {label:'Brunch',        hours:'8am\u201312pm',  start:8,  end:12},
       lunch:   {label:'Lunch',         hours:'12\u20132pm',    start:12, end:14},
