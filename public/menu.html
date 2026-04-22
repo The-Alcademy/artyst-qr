@@ -741,6 +741,7 @@ const TABS = [
     ];
 
     let allCategories = [];
+    let tableExpanded = false;
     let activeTab = 0;
     let currentSlot = 'evening';
     let showAll = false;
@@ -751,6 +752,7 @@ const TABS = [
     let selectedTable = null;
     let pickingItemId = null;
     const itemDataMap = new Map();
+    
 
     // ── Helpers ───────────────────────────────────────
     function parsePriceOptions(priceDisplay, catNote) {
@@ -770,9 +772,7 @@ const TABS = [
     function saveTable() { if (selectedTable) localStorage.setItem('artyst-table', selectedTable); else localStorage.removeItem('artyst-table'); }
     function loadTable() { selectedTable = localStorage.getItem('artyst-table') || null; }
 
-    function selectTable(name) { selectedTable = name; saveTable(); renderOrderBody(); }
-
-function renderTableSelector() {
+    function renderTableSelector() {
   if (selectedTable && !tableExpanded) {
     return '<div class="table-collapsed">'
       + '<div><div class="table-collapsed-name">' + selectedTable + '</div>'
@@ -794,6 +794,9 @@ function renderTableSelector() {
   html += '<p class="table-error" id="table-error">Please select your table before showing to staff.</p></div>';
   return html;
 }
+
+    function expandTableSelector() { tableExpanded = true; renderOrderBody(); }
+    function selectTable(name) { selectedTable = name; tableExpanded = false; saveTable(); renderOrderBody(); }
 
     // ── Order ─────────────────────────────────────────
     function saveOrder() { localStorage.setItem('artyst-order', JSON.stringify(orderItems)); }
