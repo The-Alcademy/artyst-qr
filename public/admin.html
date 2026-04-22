@@ -5831,6 +5831,7 @@ function MenuJumpNav({
     });
   }
   return /*#__PURE__*/React.createElement("div", {
+    id: "menu-jump-nav",
     style: {
       display: 'flex',
       flexWrap: 'wrap',
@@ -6459,7 +6460,23 @@ function MenuEditor({
         alignSelf: 'flex-end'
       },
       onClick: () => setAddingTo(null)
-    }, "Cancel"))))));
+    }, "Cancel"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'right',
+        paddingTop: '.5rem',
+        paddingBottom: '.2rem'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '.72rem',
+        cursor: 'pointer',
+        opacity: .5
+      },
+      onClick: () => document.getElementById('menu-jump-nav')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }, "\u2191 back to nav")))));
   }
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(MenuJumpNav, {
     categories: categories,
@@ -6562,7 +6579,16 @@ function MenuEditor({
     style: {
       marginBottom: '1rem'
     }
-  }, "Click any name, description or price to edit inline. ", /*#__PURE__*/React.createElement("strong", null, "On"), " = available on the eat-in menu. ", /*#__PURE__*/React.createElement("strong", null, "T/A"), " = available for takeaway. Changes are live immediately."), loading && /*#__PURE__*/React.createElement("div", {
+  }, "Click any name, description or price to edit inline. ", /*#__PURE__*/React.createElement("strong", null, "On"), " = available on the eat-in menu. ", /*#__PURE__*/React.createElement("strong", null, "T/A"), " = available for takeaway. Changes are live immediately.", ' ', /*#__PURE__*/React.createElement("span", {
+    style: {
+      cursor: 'pointer',
+      textDecoration: 'underline'
+    },
+    onClick: () => document.getElementById('menu-jump-nav')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  }, "\u2191 Jump to section")), loading && /*#__PURE__*/React.createElement("div", {
     className: "empty"
   }, "Loading menu..."), !loading && renderSection(cafe, 'Cafe and food'), !loading && renderSection(bar, 'Bar'), /*#__PURE__*/React.createElement("div", {
     id: "menu-play"
