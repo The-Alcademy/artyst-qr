@@ -6034,20 +6034,24 @@ function OffersEditor({
       fontSize: '.78rem',
       marginTop: '4px',
       padding: '.3rem .5rem',
-      background: '#1a1508',
+      background: 'var(--gold-bg,#f5eedf)',
       borderRadius: '2px',
-      border: '1px solid #3a2a08',
+      border: '1px solid var(--gold-border,#e8d5a8)',
       display: 'flex',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
+      alignItems: 'center'
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#c8a96e'
+      color: 'var(--gold,#c8a96e)',
+      fontWeight: 500
     }
   }, offer.item_name), offer.item_price_display && /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#c8a96e',
-      fontWeight: 600
+      color: 'var(--gold,#c8a96e)',
+      fontWeight: 600,
+      marginLeft: '.5rem',
+      flexShrink: 0
     }
   }, offer.item_price_display))))), !loading && !offers.length && /*#__PURE__*/React.createElement("div", {
     className: "empty",
