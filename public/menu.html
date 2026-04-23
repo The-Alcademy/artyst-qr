@@ -1445,23 +1445,58 @@ renderTabs();
         .catch(function() {});
     }
     
+var promoAutoTimer = null;
+    var promoManualTimeout = null;
+
     function buildPromos(data) {
       var inner = document.getElementById('promo-inner');
-      if (!data.length) { inner.innerHTML = ''; return; }
+      var dotsEl = document.getElementById('promo-dots');
+      if (!data.length) { inner.innerHTML = ''; if (dotsEl) dotsEl.innerHTML = ''; return; }
       inner.innerHTML = data.map(function(p, i) {
-        return '<a class="promo-item' + (i === 0 ? ' visible' : '') + '" href="' + p.href + '" target="_blank">'
+        var target = p.href && p.href !== '#' ? ' target="_blank" rel="noopener"' : '';
+        return '<a class="promo-item' + (i === 0 ? ' visible' : '') + '" href="' + (p.href || '#') + '"' + target + '>'
           + '<span class="promo-label">' + p.label + '</span><span class="promo-sep"></span>'
-          + '<span class="promo-text">' + p.text + '</span><span class="promo-arrow">&#x2192;</span></a>';
+          + '<span class="promo-text">' + p.text + '</span>'
+          + (p.href && p.href !== '#' ? '<span class="promo-arrow">&#x2192;</span>' : '')
+          + '</a>';
       }).join('');
       promos = data; promoIndex = 0;
+      buildPromoDots();
     }
-    function rotatePromo() {
-      if (!promos.length) return;
+
+    function buildPromoDots() {
+      var dotsEl = document.getElementById('promo-dots');
+      if (!dotsEl || promos.length < 2) { if (dotsEl) dotsEl.innerHTML = ''; return; }
+      dotsEl.innerHTML = promos.map(function(_, i) {
+        return '<div class="promo-dot' + (i === 0 ? ' active' : '') + '"></div>';
+      }).join('');
+    }
+
+    function showPromo(idx) {
       var items = document.querySelectorAll('.promo-item');
+      var dots = document.querySelectorAll('.promo-dot');
       if (!items.length) return;
       items[promoIndex].classList.remove('visible');
-      promoIndex = (promoIndex + 1) % promos.length;
+      if (dots[promoIndex]) dots[promoIndex].classList.remove('active');
+      promoIndex = ((idx % promos.length) + promos.length) % promos.length;
       items[promoIndex].classList.add('visible');
+      if (dots[promoIndex]) dots[promoIndex].classList.add('active');
+    }
+
+    function rotatePromo() {
+      if (!promos.length) return;
+      showPromo(promoIndex + 1);
+    }
+
+    function stepPromo(dir) {
+      if (!promos.length) return;
+      showPromo(promoIndex + dir);
+      // Pause auto-rotation for 6 seconds after manual interaction
+      if (promoManualTimeout) clearTimeout(promoManualTimeout);
+      if (promoAutoTimer) clearInterval(promoAutoTimer);
+      promoManualTimeout = setTimeout(function() {
+        promoAutoTimer = setInterval(rotatePromo, 8000);
+      }, 6000);
     }
 
 // ── Category sub-nav ─────────────────────────────
