@@ -2863,8 +2863,89 @@ function CreateForm({
     disabled: loading
   }, loading ? 'Creating...' : 'Create Code'))));
 }
+function DestQR({
+  url,
+  scanUrl
+}) {
+  const ref = useRef(null);
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (!ref.current || !url) return;
+    ref.current.innerHTML = '';
+    new QRCode(ref.current, {
+      text: scanUrl || url,
+      width: expanded ? 160 : 52,
+      height: expanded ? 160 : 52,
+      colorDark: '#111',
+      colorLight: '#fff'
+    });
+  }, [url, scanUrl, expanded]);
+  if (!url) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative',
+      flexShrink: 0,
+      cursor: 'pointer'
+    },
+    onClick: e => {
+      e.stopPropagation();
+      setExpanded(x => !x);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: ref,
+    style: {
+      borderRadius: '2px',
+      overflow: 'hidden',
+      border: '1px solid var(--border)'
+    }
+  }), expanded && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      right: 0,
+      top: '60px',
+      zIndex: 50,
+      background: 'var(--bg)',
+      border: '1px solid var(--border)',
+      borderRadius: '4px',
+      padding: '8px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: 'var(--text-3)',
+      letterSpacing: '.06em',
+      textTransform: 'uppercase',
+      marginBottom: '6px'
+    }
+  }, "Scan URL"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      fontFamily: 'monospace',
+      color: 'var(--text-2)',
+      wordBreak: 'break-all',
+      maxWidth: '200px',
+      marginBottom: '8px'
+    }
+  }, scanUrl || url), /*#__PURE__*/React.createElement("button", {
+    style: {
+      fontSize: '11px',
+      padding: '4px 8px',
+      background: 'none',
+      border: '1px solid var(--border)',
+      borderRadius: '2px',
+      color: 'var(--text-2)',
+      cursor: 'pointer'
+    },
+    onClick: e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(scanUrl || url);
+    }
+  }, "Copy URL")));
+}
 function Destinations({
   destinations,
+  codes,
   onRefresh,
   isAdmin
 }) {
@@ -2958,6 +3039,12 @@ function Destinations({
   }
   const byType = TYPES.reduce((acc, t) => {
     acc[t] = destinations.filter(d => d.type === t);
+    return acc;
+  }, {});
+  const codesByDest = (codes || []).reduce(function (acc, c) {
+    if (c.destination_id) {
+      acc[c.destination_id] = c;
+    }
     return acc;
   }, {});
   return /*#__PURE__*/React.createElement("div", null, isAdmin && /*#__PURE__*/React.createElement("div", {
@@ -3101,8 +3188,15 @@ function Destinations({
       }
     }, "\u25BE")), !isCollapsed && /*#__PURE__*/React.createElement("div", null, sortItems(items, type).map(d => /*#__PURE__*/React.createElement("div", {
       className: "dest-item",
-      key: d.id
-    }, /*#__PURE__*/React.createElement("div", {
+      key: d.id,
+      style: {
+        alignItems: "flex-start",
+        gap: "10px"
+      }
+    }, /*#__PURE__*/React.createElement(DestQR, {
+      url: codesByDest[d.id] ? `https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}` : d.url,
+      scanUrl: codesByDest[d.id] ? `https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}` : null
+    }), /*#__PURE__*/React.createElement("div", {
       className: "dest-info"
     }, /*#__PURE__*/React.createElement("div", {
       className: "dest-label"
@@ -8023,6 +8117,7 @@ function App() {
     isAdmin: isAdmin
   }), tab === 'destinations' && /*#__PURE__*/React.createElement(Destinations, {
     destinations: destinations,
+    codes: codes,
     onRefresh: loadAll,
     isAdmin: isAdmin
   }), tab === 'templates' && isAdmin && /*#__PURE__*/React.createElement(Templates, {
