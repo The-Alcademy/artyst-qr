@@ -1586,62 +1586,143 @@ function printMenu() {
     renderBody();
   }, 300);
 }   
-    // ── Special offer overlay ──────────────────────────
-const SLOT_OFFERS = {
-  brunch: {
-    eyebrow: 'Morning offer', headline: 'Coffee & cake — £6',
-    body: 'Any filter coffee with any slice of cake for £6. Available until noon.',
-    cta: 'See the menu',
-    item_name: 'Hot drink & pastry', item_description: 'Any filter coffee or tea with any pastry', item_price_display: '£6',
-  },
-  lunch: {
-    eyebrow: 'Lunch deal', headline: 'Sandwich + drink combo',
-    body: 'Any sandwich with a soft drink or filter coffee for £8.',
-    cta: 'See food & drinks',
-    item_name: 'Sandwich & drink', item_description: 'Any sandwich with a soft drink or filter coffee', item_price_display: '£8',
-  },
-  tea: {
-    eyebrow: 'Afternoon special', headline: 'Afternoon tea for two — £12',
-    body: 'Two teas or filter coffees with a selection of cakes. Ask at the bar.',
-    cta: 'See the menu',
-    item_name: 'Afternoon tea for two', item_description: 'Two teas or coffees with a selection of cakes', item_price_display: '£12',
-  },
-  evening: {
-    eyebrow: 'This evening', headline: 'Cocktail of the day',
-    body: 'Our bartender\'s pick changes nightly. Ask at the bar for tonight\'s special.',
-    cta: 'See the bar',
-    item_name: 'Cocktail of the day', item_description: 'Ask at the bar for tonight\'s special', item_price_display: '~£9',
-  },
-};
+// ── Special offer overlay ──────────────────────────
+    const SLOT_OFFERS = {
+      brunch: {
+        eyebrow: 'Morning offer', headline: 'Coffee & cake — £6',
+        body: 'Any filter coffee with any slice of cake for £6. Available until noon.',
+        cta: 'See the menu',
+        item_name: 'Hot drink & pastry', item_description: 'Any filter coffee or tea with any pastry', item_price_display: '£6',
+      },
+      lunch: {
+        eyebrow: 'Lunch deal', headline: 'Sandwich + drink combo',
+        body: 'Any sandwich with a soft drink or filter coffee for £8.',
+        cta: 'See food & drinks',
+        item_name: 'Sandwich & drink', item_description: 'Any sandwich with a soft drink or filter coffee', item_price_display: '£8',
+      },
+      tea: {
+        eyebrow: 'Afternoon special', headline: 'Afternoon tea for two — £12',
+        body: 'Two teas or filter coffees with a selection of cakes. Ask at the bar.',
+        cta: 'See the menu',
+        item_name: 'Afternoon tea for two', item_description: 'Two teas or coffees with a selection of cakes', item_price_display: '£12',
+      },
+      evening: {
+        eyebrow: 'This evening', headline: 'Cocktail of the day',
+        body: 'Our bartender\'s pick changes nightly. Ask at the bar for tonight\'s special.',
+        cta: 'See the bar',
+        item_name: 'Cocktail of the day', item_description: 'Ask at the bar for tonight\'s special', item_price_display: '~£9',
+      },
+    };
 
-function showOfferIfNeeded() {
-  if (sessionStorage.getItem('artyst-offer-seen')) return;
-  var offer = SLOT_OFFERS[currentSlot];
-  if (!offer || offer.active === false) return;
-  document.getElementById('offer-eyebrow').textContent = offer.eyebrow;
-  document.getElementById('offer-headline').textContent = offer.headline;
-  document.getElementById('offer-body').textContent = offer.body;
-  document.getElementById('offer-cta').textContent = offer.cta;
-  document.getElementById('offer-overlay').style.display = 'flex';
-  sessionStorage.setItem('artyst-offer-seen', '1');
-}
+    function showOfferIfNeeded() {
+      if (sessionStorage.getItem('artyst-offer-seen')) return;
+      var offer = SLOT_OFFERS[currentSlot];
+      if (!offer || offer.active === false) return;
+      document.getElementById('offer-eyebrow').textContent = offer.eyebrow;
+      document.getElementById('offer-headline').textContent = offer.headline;
+      document.getElementById('offer-body').textContent = offer.body;
+      document.getElementById('offer-cta').textContent = offer.cta;
+      document.getElementById('offer-overlay').style.display = 'flex';
+      sessionStorage.setItem('artyst-offer-seen', '1');
+    }
 
-function dismissOffer() {
-  document.getElementById('offer-overlay').style.display = 'none';
-}
+    function dismissOffer() {
+      document.getElementById('offer-overlay').style.display = 'none';
+    }
 
-function handleOfferOverlayClick(e) {
-  if (e.target === document.getElementById('offer-overlay')) dismissOffer();
-}
+    function handleOfferOverlayClick(e) {
+      if (e.target === document.getElementById('offer-overlay')) dismissOffer();
+    }
 
     function addOfferToOrder(slot, name, price) {
-  addToOrder('offer-' + slot, name, '', [], price);
-  var note = document.getElementById('offer-note-' + slot);
-  if (note) {
-    note.style.display = 'block';
-    setTimeout(function() { note.style.display = 'none'; }, 3000);
-  }
-}
+      addToOrder('offer-' + slot, name, '', [], price);
+      var note = document.getElementById('offer-note-' + slot);
+      if (note) {
+        note.style.display = 'block';
+        setTimeout(function() { note.style.display = 'none'; }, 3000);
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────
+    async function init() {
+      loadOrder(); loadTable(); updateOrderBadge();
+      currentSlot = detectSlot(); updateSlotUI();
+      renderTabs();
+
+      var results = await Promise.allSettled([
+        fetch('/api/menu'),
+        fetch('/api/promos'),
+        fetch('/api/news?surface=' + getNewsSurface()),
+        fetch('/api/hours'),
+        fetch('/api/play'),
+        fetch('/api/offers'),
+      ]);
+      var menuRes = results[0];
+      var promosRes = results[1];
+      var newsRes = results[2];
+      var hoursRes = results[3];
+      var playRes = results[4];
+      var offersRes = results[5];
+
+      if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
+        var data = await menuRes.value.json();
+        allCategories = data.categories || [];
+        var stateEl = document.getElementById('state');
+        if (stateEl) stateEl.remove();
+        renderBody();
+        buildSubNav();
+        if (new URLSearchParams(window.location.search).get('print') === '1') {
+          showAll = true; renderBody(); setTimeout(function(){ window.print(); }, 600);
+        }
+      } else {
+        document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
+      }
+
+      if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
+        var pdata = await promosRes.value.json();
+        buildPromos(pdata.promos || []);
+      }
+
+      if (newsRes.status === 'fulfilled' && newsRes.value.ok) {
+        var ndata = await newsRes.value.json();
+        buildNews(ndata.news || []);
+      }
+
+      if (hoursRes.status === 'fulfilled' && hoursRes.value.ok) {
+        var hdata = await hoursRes.value.json();
+        renderHoursMicro(hdata.state);
+        renderHoursList(hdata.days || []);
+      }
+
+      if (playRes.status === 'fulfilled' && playRes.value.ok) {
+        var pdata = await playRes.value.json();
+        allPlayCategories = pdata.categories || [];
+      }
+
+      if (offersRes && offersRes.status === 'fulfilled' && offersRes.value.ok) {
+        var odata = await offersRes.value.json();
+        if (odata.offers) {
+          odata.offers.forEach(function(o) {
+            if (SLOT_OFFERS[o.slot] !== undefined) {
+              var ex = SLOT_OFFERS[o.slot] || {};
+              SLOT_OFFERS[o.slot] = {
+                eyebrow: o.eyebrow || ex.eyebrow || '',
+                headline: o.headline || ex.headline || '',
+                body: o.body || ex.body || '',
+                cta: o.cta || ex.cta || 'See the menu',
+                active: o.active,
+                item_name: o.item_name || ex.item_name || null,
+                item_description: o.item_description || ex.item_description || null,
+                item_price_display: o.item_price_display || ex.item_price_display || null,
+              };
+            }
+          });
+        }
+      }
+
+      promoAutoTimer = setInterval(rotatePromo, 8000);
+      setTimeout(showOfferIfNeeded, 1200);
+    }
     
     // ── Init ──────────────────────────────────────────
     async function init() {
@@ -1693,43 +1774,19 @@ if (hoursRes.status === 'fulfilled' && hoursRes.value.ok) {
         renderHoursList(hdata.days || []);
       }
 
-if (playRes.status === 'fulfilled' && playRes.value.ok) {
-        var pdata = await playRes.value.json();
-        allPlayCategories = pdata.categories || [];
-      }
-if (offersRes && offersRes.status === 'fulfilled' && offersRes.value.ok) {
-        var odata = await offersRes.value.json();
-        if (odata.offers) {
-          odata.offers.forEach(function(o) {
 if (SLOT_OFFERS[o.slot] !== undefined) {
-              var ex = SLOT_OFFERS[o.slot] || {};
-              SLOT_OFFERS[o.slot] = {
-                eyebrow: o.eyebrow || ex.eyebrow || '',
-                headline: o.headline || ex.headline || '',
-                body: o.body || ex.body || '',
-                cta: o.cta || ex.cta || 'See the menu',
-                active: o.active,
-                item_name: o.item_name || ex.item_name || null,
-                item_description: o.item_description || ex.item_description || null,
-                item_price_display: o.item_price_display || ex.item_price_display || null,
-              };
-SLOT_OFFERS[o.slot] = {
-  eyebrow: o.eyebrow || existing.eyebrow || '',
-  headline: o.headline || existing.headline || '',
-  body: o.body || existing.body || '',
-  cta: o.cta || existing.cta || 'See the menu',
-  active: o.active,
-  item_name: o.item_name || existing.item_name || null,
-  item_description: o.item_description || existing.item_description || null,
-  item_price_display: o.item_price_display || existing.item_price_display || null,
-};
-            }
-          });
-        }
-      }      
-      promoAutoTimer = setInterval(rotatePromo, 8000);
-      setTimeout(showOfferIfNeeded, 1200);
-    }
+  var ex = SLOT_OFFERS[o.slot] || {};
+  SLOT_OFFERS[o.slot] = {
+    eyebrow: o.eyebrow || ex.eyebrow || '',
+    headline: o.headline || ex.headline || '',
+    body: o.body || ex.body || '',
+    cta: o.cta || ex.cta || 'See the menu',
+    active: o.active,
+    item_name: o.item_name || ex.item_name || null,
+    item_description: o.item_description || ex.item_description || null,
+    item_price_display: o.item_price_display || ex.item_price_display || null,
+  };
+}
  
     init();
   </script>
