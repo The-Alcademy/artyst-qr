@@ -987,7 +987,8 @@ function getItemOrderCount(itemId) {
               + '</div></div>';
           }).join('');
 
-      body.innerHTML = renderTableSelector() + itemsHtml;
+      var isTogo = TABS[activeTab] && TABS[activeTab].togo;
+      body.innerHTML = (isTogo ? renderTogoSelector() : renderTableSelector()) + itemsHtml;
       var t = orderItems.reduce(function(s, o) { return s + (o.price * o.qty); }, 0);
       totalEl.textContent = t.toFixed(2);
       noteEl.textContent = orderItems.some(function(o) { return o.price === 0; }) ? 'Some items are priced at the bar and not included above.' : '';
