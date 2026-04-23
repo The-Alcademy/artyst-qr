@@ -1226,7 +1226,8 @@ var cats = allCategories.filter(function(c) { return c.side === side; });
           + '</div>'
           + '<div class="offer-item-right">'
           + (offerPrice ? '<div class="offer-item-price">' + offerPrice + '</div>' : '')
-          + '<button class="offer-item-add" id="offer-add-btn-' + currentSlot + '" onclick="addOfferToOrder(\'' + currentSlot + '\', \'' + safeName + '\', ' + offerNum + ')">+</button>'
+    + '<div class="offer-item-note" id="offer-note-' + currentSlot + '">Added &#x2713;&nbsp; Make your choices at the bar when you order.</div>'
+        + '</div><div class="offer-item-right">'
           + '</div></div>';
       }
       body.innerHTML = offerHtml + cats.map(function(cat) {
