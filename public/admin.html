@@ -93,10 +93,10 @@
     .report-bar{height:8px;border-radius:2px;background:#c0392b;transition:width .5s}
     .report-row{margin-bottom:.8rem}
     .report-label{font-size:.8rem;color:#888;margin-bottom:.3rem;display:flex;justify-content:space-between}
-    .dest-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem;background:#111;border:1px solid #222;border-radius:2px;margin-bottom:.4rem}
+    .dest-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem;background:var(--bg-raised,#f2efe9);border:1px solid var(--border,#ddd);border-radius:2px;margin-bottom:.4rem}
     .dest-info{display:flex;flex-direction:column;gap:.2rem;flex:1;min-width:0;margin-right:1rem}
-    .dest-label{font-size:.88rem;font-weight:600;color:#eee}
-    .dest-url{font-family:monospace;font-size:.75rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dest-label{font-size:.88rem;font-weight:600;color:var(--text-1,#1a1a18)}
+    .dest-url{font-family:monospace;font-size:.75rem;color:var(--text-2,#555);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pin-badge{font-size:.65rem;background:#3a2a1a;color:#ffaa5a;border:1px solid #5a3a1a;padding:.1rem .4rem;border-radius:2px;margin-left:.4rem}
     .template-card{background:#111;border:1px solid #2a2a2a;border-radius:4px;padding:1rem;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between}
     .template-info{display:flex;flex-direction:column;gap:.3rem}
@@ -185,9 +185,9 @@
     body.light-mode .badge-viewer{background:#f0f0f0;color:#666}
     body.light-mode .zone-card{background:#f8f7f5;border-color:#ddd}
     body.light-mode .assigned-code{background:#f0ece7;border-color:#ddd}
-    body.light-mode .dest-item{border-color:#ccc;background:#1e1e1e}
-    body.light-mode .dest-label{color:#eee}
-    body.light-mode .dest-url{color:#999}
+    body.light-mode .dest-item{border-color:#ddd;background:#f7f5f1}
+    body.light-mode .dest-label{color:#1a1a18}
+    body.light-mode .dest-url{color:#666}
     body.light-mode .channel-btn{background:#f0ece7;border-color:#ccc;color:#555}
     body.light-mode .channel-btn.selected{background:#fdf3e3;border-color:#e8b84a;color:#8a6a0a}
     body.light-mode .confirm-panel{background:#faf8f4;border-color:#ddd}
@@ -2928,12 +2928,20 @@ function Destinations({
       type: d.type,
       pinned: d.pinned
     });
+    setTimeout(function () {
+      var el = document.getElementById('dest-editor-top');
+      if (el) el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 50);
   }
   const byType = TYPES.reduce((acc, t) => {
     acc[t] = destinations.filter(d => d.type === t);
     return acc;
   }, {});
   return /*#__PURE__*/React.createElement("div", null, isAdmin && /*#__PURE__*/React.createElement("div", {
+    id: "dest-editor-top",
     className: "card"
   }, /*#__PURE__*/React.createElement("h2", null, editing ? 'Edit Destination' : 'New Destination'), status && /*#__PURE__*/React.createElement("div", {
     className: status.type === 'error' ? 'error' : 'success'
