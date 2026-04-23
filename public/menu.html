@@ -1352,6 +1352,8 @@ var offerHtml = '';
 renderTabs();
       renderBody();
       buildSubNav();
+      var showBtn = document.getElementById('order-show-btn');
+      if (showBtn) showBtn.textContent = (TABS[i].togo ? 'Order at counter \u2192' : 'Show to staff \u2192');
       window.scrollTo({top:0, behavior:'smooth'});
     }
 
