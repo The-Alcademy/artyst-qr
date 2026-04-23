@@ -1345,10 +1345,8 @@ var offerHtml = '';
 
     function switchTab(i) {
       activeTab = i;
-      if (!TABS[i].play) {
-        var slotBar = document.querySelector('.slot-bar');
-        if (slotBar) slotBar.style.display = '';
-      }
+var slotBar = document.querySelector('.slot-bar');
+      if (slotBar) slotBar.style.display = (TABS[i].play || TABS[i].togo) ? 'none' : '';
 renderTabs();
       renderBody();
       buildSubNav();
