@@ -1601,7 +1601,17 @@ if (offersRes && offersRes.status === 'fulfilled' && offersRes.value.ok) {
         if (odata.offers) {
           odata.offers.forEach(function(o) {
             if (SLOT_OFFERS[o.slot]) {
-SLOT_OFFERS[o.slot] = { eyebrow:o.eyebrow||'', headline:o.headline||'', body:o.body||'', cta:o.cta||'See the menu', active:o.active, item_name:o.item_name||null, item_description:o.item_description||null, item_price_display:o.item_price_display||null };
+var existing = SLOT_OFFERS[o.slot] || {};
+SLOT_OFFERS[o.slot] = {
+  eyebrow: o.eyebrow || existing.eyebrow || '',
+  headline: o.headline || existing.headline || '',
+  body: o.body || existing.body || '',
+  cta: o.cta || existing.cta || 'See the menu',
+  active: o.active,
+  item_name: o.item_name || existing.item_name || null,
+  item_description: o.item_description || existing.item_description || null,
+  item_price_display: o.item_price_display || existing.item_price_display || null,
+};
             }
           });
         }
