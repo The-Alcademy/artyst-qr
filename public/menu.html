@@ -1418,8 +1418,10 @@ renderTabs();
     var newsIndex = 0;
     var newsInterval = null;
 
-    function getNewsSurface() {
-      return window.location.pathname.indexOf('takeaway') !== -1 ? 'takeaway' : 'menu';
+function getNewsSurface() {
+      if (window.location.pathname.indexOf('takeaway') !== -1) return 'takeaway';
+      if (TABS[activeTab] && TABS[activeTab].togo) return 'takeaway';
+      return 'menu';
     }
 
     function buildNews(items) {
