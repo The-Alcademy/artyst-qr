@@ -2863,6 +2863,173 @@ function CreateForm({
     disabled: loading
   }, loading ? 'Creating...' : 'Create Code'))));
 }
+function ShareDestModal({
+  dest,
+  scanUrl,
+  onClose
+}) {
+  const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState('');
+  async function send() {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr('Please enter a valid email.');
+      return;
+    }
+    setSending(true);
+    setErr('');
+    try {
+      const res = await fetch('/api/send-destination', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to: email,
+          label: dest.label,
+          url: dest.url,
+          scan_url: scanUrl,
+          slug: dest.slug
+        })
+      });
+      if (res.ok) {
+        setSent(true);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setErr(d.error || 'Send failed.');
+      }
+    } catch (e) {
+      setErr('Network error.');
+    }
+    setSending(false);
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.5)',
+      zIndex: 999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem'
+    },
+    onClick: e => {
+      if (e.target === e.currentTarget) onClose();
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: 'var(--bg)',
+      border: '1px solid var(--border)',
+      borderRadius: '6px',
+      padding: '1.5rem',
+      width: '100%',
+      maxWidth: '420px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '1rem'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '1rem'
+    }
+  }, "Share by email"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    style: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '1.2rem',
+      color: 'var(--text-2)',
+      lineHeight: 1
+    }
+  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '1rem',
+      padding: '.7rem',
+      background: 'var(--bg-raised)',
+      borderRadius: '3px',
+      border: '1px solid var(--border)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.88rem',
+      fontWeight: 600,
+      color: 'var(--text-1)',
+      marginBottom: '.2rem'
+    }
+  }, dest.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.75rem',
+      fontFamily: 'monospace',
+      color: 'var(--text-2)',
+      wordBreak: 'break-all'
+    }
+  }, scanUrl || dest.url)), !sent ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "form-group",
+    style: {
+      marginBottom: '1rem'
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Recipient email"), /*#__PURE__*/React.createElement("input", {
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: "e.g. speaker@example.com",
+    onKeyDown: e => {
+      if (e.key === 'Enter') send();
+    },
+    autoFocus: true
+  })), err && /*#__PURE__*/React.createElement("div", {
+    className: "error",
+    style: {
+      marginBottom: '.8rem'
+    }
+  }, err), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '.5rem',
+      justifyContent: 'flex-end'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-secondary btn-small",
+    onClick: onClose
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-small",
+    onClick: send,
+    disabled: sending
+  }, sending ? 'Sending...' : 'Send QR code'))) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      padding: '1rem 0'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '2rem',
+      marginBottom: '.5rem'
+    }
+  }, "\u2713"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      color: 'var(--text-1)',
+      marginBottom: '.25rem'
+    }
+  }, "Sent to ", email), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.82rem',
+      color: 'var(--text-2)',
+      marginBottom: '1rem'
+    }
+  }, "QR code and destination details delivered."), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-secondary btn-small",
+    onClick: onClose
+  }, "Close"))));
+}
 function DestQR({
   url,
   scanUrl
@@ -2958,6 +3125,7 @@ function Destinations({
   const [editing, setEditing] = useState(null);
   const [status, setStatus] = useState(null);
   const [collapsed, setCollapsed] = useState({});
+  const [sharing, setSharing] = useState(null);
   const [sortBy, setSortBy] = useState('az');
   function toggleCollapse(type) {
     setCollapsed(c => ({
@@ -3219,12 +3387,22 @@ function Destinations({
         });
       }
     }, "Copy URL"), /*#__PURE__*/React.createElement("button", {
+      className: "btn btn-blue btn-small",
+      onClick: () => setSharing({
+        dest: d,
+        scanUrl: codesByDest[d.id] ? `https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}` : null
+      })
+    }, "Share"), /*#__PURE__*/React.createElement("button", {
       className: "btn btn-secondary btn-small",
       onClick: () => remove(d.id)
     }, "Delete"))))));
   }), !destinations.length && /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, "No destinations yet"));
+  }, "No destinations yet"), sharing && /*#__PURE__*/React.createElement(ShareDestModal, {
+    dest: sharing.dest,
+    scanUrl: sharing.scanUrl,
+    onClose: () => setSharing(null)
+  }));
 }
 function Distribute({
   codes,
