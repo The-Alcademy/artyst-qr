@@ -1149,7 +1149,7 @@ function getItemOrderCount(itemId) {
       var container = document.getElementById('outdoor-notice-container');
       if (!container) return;
       if (sessionStorage.getItem('outdoor-notice-dismissed')) { container.innerHTML = ''; return; }
-      if (TABS[activeTab] && TABS[activeTab].outdoor) {
+      if (TABS[activeTab] && TABS[activeTab].outdoor && !TABS[activeTab].togo) {
         container.innerHTML = '<div class="outdoor-notice"><span class="outdoor-notice-text">Please note: We can serve non-alcoholic drinks at any time of day indoors, and in our outside seating area before 8pm. Alcoholic drinks can only be served indoors after midday.</span><button class="outdoor-notice-close" onclick="dismissOutdoorNotice()">&#x2715;</button></div>';
       } else {
         container.innerHTML = '';
