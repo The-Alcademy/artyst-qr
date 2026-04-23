@@ -878,6 +878,8 @@ const TABS = [
     // ── Table ─────────────────────────────────────────
     function saveTable() { if (selectedTable) localStorage.setItem('artyst-table', selectedTable); else localStorage.removeItem('artyst-table'); }
     function loadTable() { selectedTable = localStorage.getItem('artyst-table') || null; }
+    function saveTogoName(name) { selectedName = name; if (name) localStorage.setItem('artyst-togo-name', name); else localStorage.removeItem('artyst-togo-name'); }
+    
 
     function renderTableSelector() {
   if (selectedTable && !tableExpanded) {
