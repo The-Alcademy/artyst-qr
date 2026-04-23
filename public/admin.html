@@ -2876,6 +2876,13 @@ function Destinations({
   });
   const [editing, setEditing] = useState(null);
   const [status, setStatus] = useState(null);
+  const [collapsed, setCollapsed] = useState({});
+  function toggleCollapse(type) {
+    setCollapsed(c => ({
+      ...c,
+      [type]: !c[type]
+    }));
+  }
   const save = async () => {
     if (!form.label || !form.url) {
       setStatus({
@@ -3016,16 +3023,41 @@ function Destinations({
   }, editing ? 'Save Changes' : 'Add Destination')))), TYPES.map(type => {
     const items = byType[type] || [];
     if (!items.length) return null;
+    const isCollapsed = collapsed[type];
     return /*#__PURE__*/React.createElement("div", {
       key: type,
       className: "card"
-    }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement(TypeBadge, {
+    }, /*#__PURE__*/React.createElement("h2", {
+      style: {
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        userSelect: 'none'
+      },
+      onClick: () => toggleCollapse(type)
+    }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(TypeBadge, {
       type: type
     }), /*#__PURE__*/React.createElement("span", {
       style: {
         marginLeft: '.5rem'
       }
-    }, type, " destinations")), items.map(d => /*#__PURE__*/React.createElement("div", {
+    }, type.charAt(0).toUpperCase() + type.slice(1), " Destinations"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: '.6rem',
+        fontSize: '.78rem',
+        color: '#888',
+        fontWeight: 400
+      }
+    }, "(", items.length, ")")), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '1rem',
+        color: '#888',
+        transition: 'transform 0.2s',
+        display: 'inline-block',
+        transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'
+      }
+    }, "\u25BE")), !isCollapsed && /*#__PURE__*/React.createElement("div", null, items.map(d => /*#__PURE__*/React.createElement("div", {
       className: "dest-item",
       key: d.id
     }, /*#__PURE__*/React.createElement("div", {
@@ -3053,7 +3085,7 @@ function Destinations({
     }, "Copy URL"), /*#__PURE__*/React.createElement("button", {
       className: "btn btn-secondary btn-small",
       onClick: () => remove(d.id)
-    }, "Delete")))));
+    }, "Delete"))))));
   }), !destinations.length && /*#__PURE__*/React.createElement("div", {
     className: "empty"
   }, "No destinations yet"));
