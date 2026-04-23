@@ -1487,7 +1487,7 @@ const SLOT_OFFERS = {
 function showOfferIfNeeded() {
   if (sessionStorage.getItem('artyst-offer-seen')) return;
   var offer = SLOT_OFFERS[currentSlot];
-  if (!offer) return;
+  if (!offer || offer.active === false) return;
   document.getElementById('offer-eyebrow').textContent = offer.eyebrow;
   document.getElementById('offer-headline').textContent = offer.headline;
   document.getElementById('offer-body').textContent = offer.body;
