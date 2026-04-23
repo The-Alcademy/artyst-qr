@@ -1557,7 +1557,16 @@ if (playRes.status === 'fulfilled' && playRes.value.ok) {
         var pdata = await playRes.value.json();
         allPlayCategories = pdata.categories || [];
       }
-      
+if (offersRes && offersRes.status === 'fulfilled' && offersRes.value.ok) {
+        var odata = await offersRes.value.json();
+        if (odata.offers) {
+          odata.offers.forEach(function(o) {
+            if (SLOT_OFFERS[o.slot]) {
+              SLOT_OFFERS[o.slot] = { eyebrow:o.eyebrow||'', headline:o.headline||'', body:o.body||'', cta:o.cta||'See the menu', active:o.active };
+            }
+          });
+        }
+      }      
       setInterval(rotatePromo, 4000);
       setTimeout(showOfferIfNeeded, 1200);
     }
