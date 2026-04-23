@@ -967,8 +967,10 @@ function getItemOrderCount(itemId) {
       var staffNameEl = document.getElementById('staff-table-name');
       var totalQty = orderItems.reduce(function(s, o) { return s + o.qty; }, 0);
       countEl.textContent = totalQty ? (totalQty + ' item' + (totalQty !== 1 ? 's' : '')) : '';
-      if (staffNameEl) staffNameEl.textContent = selectedTable || '\u2014';
-
+    var isTogo = TABS[activeTab] && TABS[activeTab].togo;
+      if (staffNameEl) staffNameEl.textContent = isTogo ? (selectedName || '\u2014') : (selectedTable || '\u2014');
+      var bannerLabel = document.querySelector('.staff-table-banner-label');
+      if (bannerLabel) bannerLabel.textContent = isTogo ? 'ORDER NAME' : 'TABLE';
       var itemsHtml = orderItems.length === 0
         ? '<div class="order-empty">No items yet \u2014 tap + on any menu item.</div>'
         : orderItems.map(function(o) {
