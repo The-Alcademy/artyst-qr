@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Determine destination URL
   const destinationUrl = (management_type === 'external' && external_ticket_url)
     ? external_ticket_url
-    : `${EVENTS_BASE}/events/${event_id}`;
+   : `${EVENTS_BASE}/?event=${event_id}`;
 
   // Find or create destination record
   const destCheck = await db(`/rest/v1/destinations?url=eq.${encodeURIComponent(destinationUrl)}&select=id`);
