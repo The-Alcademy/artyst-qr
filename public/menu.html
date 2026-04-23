@@ -998,6 +998,16 @@ function getItemOrderCount(itemId) {
     function closeOrder() { document.getElementById('order-overlay').classList.remove('open', 'staff-mode'); }
 
     function showToStaff() {
+      var isTogo = TABS[activeTab] && TABS[activeTab].togo;
+      if (isTogo) {
+        if (!selectedName || !selectedName.trim()) {
+          var err = document.getElementById('togo-name-error');
+          if (err) { err.style.display = 'block'; setTimeout(function() { err.style.display = 'none'; }, 3000); }
+          return;
+        }
+        document.getElementById('order-overlay').classList.add('staff-mode');
+        return;
+      }
       if (!selectedTable) {
         var err = document.getElementById('table-error');
         if (err) { err.classList.add('show'); setTimeout(function() { err.classList.remove('show'); }, 3000); }
