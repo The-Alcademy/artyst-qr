@@ -7,7 +7,7 @@
     { "source": "/join", "destination": "/api/join" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/takeaway", "destination": "/takeaway.html" },
-    { "src": "/api/offers", "dest": "/api/offers.ts" },
+    { "source": "/api/offers", "destination": "/api/offers" },
     { "source": "/menu", "destination": "/menu.html" }
   ]
 }
