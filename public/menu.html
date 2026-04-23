@@ -605,6 +605,27 @@
 }
 .cat-subnav-chip:hover { border-color: var(--gold); color: var(--gold); }
 .cat-subnav-chip.active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); font-weight: 500; }
+
+/* ── Slot offer item ── */
+.offer-item {
+  margin: 14px 0 0; padding: 14px 16px;
+  background: var(--gold-bg); border: 0.5px solid var(--gold-border);
+  border-left: 3px solid var(--gold); border-radius: 4px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+}
+.offer-item-left { flex: 1; min-width: 0; }
+.offer-item-eyebrow { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 4px; }
+.offer-item-name { font-size: 17px; font-weight: 500; color: var(--text-1); line-height: 1.3; margin-bottom: 3px; }
+.offer-item-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.offer-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.offer-item-price { font-size: 15px; font-weight: 500; color: var(--gold); white-space: nowrap; }
+.offer-item-add {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: none; border: 1.5px solid var(--gold); color: var(--gold);
+  font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.offer-item-add:hover { background: var(--gold); color: var(--bg); }
     
   </style>
 </head>
