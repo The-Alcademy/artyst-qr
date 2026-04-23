@@ -1291,12 +1291,18 @@ renderTabs();
       if (!el || !days || !days.length) return;
       el.innerHTML = days.map(function(d) {
         var closed = !d.opens_at || !d.closes_at || !d.active;
+ var isPrivateHire = d.notes && d.notes.toLowerCase().includes('private hire');
         var timesHtml = closed
-          ? '<span class="hours-closed">Closed</span>'
+          ? (isPrivateHire
+              ? '<span class="hours-closed">Closed</span>'
+              : '<span class="hours-closed">Closed</span>')
           : d.opens_at + ' \u2013 ' + d.closes_at;
+        var notesHtml = d.notes
+          ? '<div style="font-size:11px;color:var(--gold);margin-top:2px;font-style:italic;">' + d.notes + '</div>'
+          : '';
         return '<div class="hours-row' + (d.is_today ? ' today' : '') + '">'
           + '<span class="hours-day">' + d.day_label + '</span>'
-          + '<span class="hours-times">' + timesHtml + '</span>'
+          + '<span class="hours-times"><span>' + timesHtml + '</span>' + notesHtml + '</span>'
           + '</div>';
       }).join('');
     }
