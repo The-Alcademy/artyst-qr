@@ -903,7 +903,16 @@ const TABS = [
   html += '<p class="table-error" id="table-error">Please select your table before showing to staff.</p></div>';
   return html;
 }
-
+    function renderTogoSelector() {
+      return '<div class="table-section">'
+        + '<div class="table-section-label">YOUR NAME'
+        + (selectedName ? ' &nbsp;<span class="table-selected-name">' + selectedName + '</span>' : '') + '</div>'
+        + '<input id="togo-name-input" type="text" placeholder="e.g. Sarah" value="' + (selectedName || '') + '"'
+        + ' oninput="saveTogoName(this.value);updateOrderBadge();"'
+        + ' style="width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--border);border-radius:6px;background:var(--bg-raised);color:var(--text-1);margin-top:6px;" />'
+        + '<p class="table-error" id="togo-name-error" style="display:none;color:#c0392b;font-size:12px;margin-top:6px;">Please enter your name before ordering.</p>'
+        + '</div>';
+    }
     function expandTableSelector() { tableExpanded = true; renderOrderBody(); }
     function selectTable(name) { selectedTable = name; tableExpanded = false; saveTable(); renderOrderBody(); }
 
