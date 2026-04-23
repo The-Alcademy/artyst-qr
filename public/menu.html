@@ -1655,8 +1655,18 @@ if (offersRes && offersRes.status === 'fulfilled' && offersRes.value.ok) {
         var odata = await offersRes.value.json();
         if (odata.offers) {
           odata.offers.forEach(function(o) {
-            if (SLOT_OFFERS[o.slot]) {
-var existing = SLOT_OFFERS[o.slot] || {};
+if (SLOT_OFFERS[o.slot] !== undefined) {
+              var ex = SLOT_OFFERS[o.slot] || {};
+              SLOT_OFFERS[o.slot] = {
+                eyebrow: o.eyebrow || ex.eyebrow || '',
+                headline: o.headline || ex.headline || '',
+                body: o.body || ex.body || '',
+                cta: o.cta || ex.cta || 'See the menu',
+                active: o.active,
+                item_name: o.item_name || ex.item_name || null,
+                item_description: o.item_description || ex.item_description || null,
+                item_price_display: o.item_price_display || ex.item_price_display || null,
+              };
 SLOT_OFFERS[o.slot] = {
   eyebrow: o.eyebrow || existing.eyebrow || '',
   headline: o.headline || existing.headline || '',
