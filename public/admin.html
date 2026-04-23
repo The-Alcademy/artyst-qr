@@ -5785,7 +5785,10 @@ function OffersEditor({
     eyebrow: '',
     headline: '',
     body: '',
-    cta: ''
+    cta: '',
+    item_name: '',
+    item_description: '',
+    item_price_display: ''
   });
   const [status, setStatus] = useState(null);
   async function loadOffers() {
@@ -5810,7 +5813,10 @@ function OffersEditor({
       eyebrow: offer.eyebrow || '',
       headline: offer.headline || '',
       body: offer.body || '',
-      cta: offer.cta || ''
+      cta: offer.cta || '',
+      item_name: offer.item_name || '',
+      item_description: offer.item_description || '',
+      item_price_display: offer.item_price_display || ''
     });
   }
   async function save() {
@@ -5822,7 +5828,10 @@ function OffersEditor({
       eyebrow: form.eyebrow || null,
       headline: form.headline,
       body: form.body || null,
-      cta: form.cta || 'See the menu'
+      cta: form.cta || 'See the menu',
+      item_name: form.item_name || null,
+      item_description: form.item_description || null,
+      item_price_display: form.item_price_display || null
     });
     setEditing(null);
     flash('Saved.');
@@ -5948,6 +5957,38 @@ function OffersEditor({
       resize: 'vertical'
     }
   })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Offer item name ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 400,
+      color: '#666'
+    }
+  }, "shown as first item in menu")), /*#__PURE__*/React.createElement("input", {
+    value: form.item_name,
+    onChange: e => setForm(f => ({
+      ...f,
+      item_name: e.target.value
+    })),
+    placeholder: "e.g. Hot drink & pastry"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/React.createElement("label", null, "Item price"), /*#__PURE__*/React.createElement("input", {
+    value: form.item_price_display,
+    onChange: e => setForm(f => ({
+      ...f,
+      item_price_display: e.target.value
+    })),
+    placeholder: "e.g. \xA35"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "form-group full"
+  }, /*#__PURE__*/React.createElement("label", null, "Item description"), /*#__PURE__*/React.createElement("input", {
+    value: form.item_description,
+    onChange: e => setForm(f => ({
+      ...f,
+      item_description: e.target.value
+    })),
+    placeholder: "e.g. Any filter coffee or tea with any pastry"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "form-group full",
     style: {
       flexDirection: 'row',
@@ -5985,9 +6026,30 @@ function OffersEditor({
     style: {
       fontSize: '.78rem',
       color: '#666',
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      marginBottom: '4px'
     }
-  }, offer.body)))), !loading && !offers.length && /*#__PURE__*/React.createElement("div", {
+  }, offer.body), offer.item_name && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '.78rem',
+      marginTop: '4px',
+      padding: '.3rem .5rem',
+      background: '#1a1508',
+      borderRadius: '2px',
+      border: '1px solid #3a2a08',
+      display: 'flex',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#c8a96e'
+    }
+  }, offer.item_name), offer.item_price_display && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#c8a96e',
+      fontWeight: 600
+    }
+  }, offer.item_price_display))))), !loading && !offers.length && /*#__PURE__*/React.createElement("div", {
     className: "empty",
     style: {
       padding: '1.5rem'
