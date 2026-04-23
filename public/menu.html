@@ -1597,6 +1597,16 @@ function dismissOffer() {
 function handleOfferOverlayClick(e) {
   if (e.target === document.getElementById('offer-overlay')) dismissOffer();
 }
+
+    function addOfferToOrder(slot, name, price) {
+  addToOrder('offer-' + slot, name, '', [], price);
+  var note = document.getElementById('offer-note-' + slot);
+  if (note) {
+    note.style.display = 'block';
+    setTimeout(function() { note.style.display = 'none'; }, 3000);
+  }
+}
+    
     // ── Init ──────────────────────────────────────────
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
