@@ -6061,6 +6061,45 @@ function OffersEditor({
     }
   }, "No offers found \u2014 run the SQL setup to create the slot_offers table."));
 }
+function ToGoSection({
+  categories
+}) {
+  const togoCats = (categories || []).filter(c => c.side === 'takeout');
+  return /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: '1.5rem'
+    }
+  }, /*#__PURE__*/React.createElement("h2", null, "To-Go Categories"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '.82rem',
+      color: '#888',
+      margin: '-.4rem 0 1rem'
+    }
+  }, "Categories shown on the To-Go tab of the menu. Set a category\u2019s side to \u201CTo-Go\u201D in the category settings to include it here."), togoCats.length === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "empty"
+  }, "No To-Go categories yet. Edit a category and set its side to \u201CTo-Go\u201D."), togoCats.map(cat => /*#__PURE__*/React.createElement("div", {
+    key: cat.id,
+    style: {
+      padding: '.5rem 0',
+      borderBottom: '1px solid #222',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: 'var(--gold,#c8a96e)',
+      fontWeight: 600,
+      fontSize: '.88rem'
+    }
+  }, cat.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '.75rem',
+      color: '#555'
+    }
+  }, cat.items?.length || 0, " items"))));
+}
 function MenuJumpNav({
   categories,
   isAdmin
@@ -6130,6 +6169,19 @@ function MenuJumpNav({
     },
     className: "menu-jump-chip"
   }, c.name)), /*#__PURE__*/React.createElement("div", {
+    onClick: () => jump('menu-togo'),
+    style: {
+      padding: '.3rem .8rem',
+      borderRadius: '20px',
+      cursor: 'pointer',
+      fontSize: '.75rem',
+      border: '1px solid var(--border,#ddd)',
+      background: 'var(--bg-raised,#f2efe9)',
+      color: 'var(--text-2,#555)',
+      flexShrink: 0
+    },
+    className: "menu-jump-chip"
+  }, "To-Go"), /*#__PURE__*/React.createElement("div", {
     onClick: () => jump('menu-play'),
     style: {
       padding: '.3rem .8rem',
@@ -6797,7 +6849,9 @@ function MenuEditor({
     value: "cafe"
   }, "Caf\xE9 & food"), /*#__PURE__*/React.createElement("option", {
     value: "bar"
-  }, "Bar"))), /*#__PURE__*/React.createElement("div", {
+  }, "Bar"), /*#__PURE__*/React.createElement("option", {
+    value: "takeout"
+  }, "To-Go"))), /*#__PURE__*/React.createElement("div", {
     className: "form-group"
   }, /*#__PURE__*/React.createElement("label", null, "Sort order"), /*#__PURE__*/React.createElement("input", {
     type: "number",
@@ -6862,6 +6916,10 @@ function MenuEditor({
   }, "\uD83D\uDDA8 Print menu")), loading && /*#__PURE__*/React.createElement("div", {
     className: "empty"
   }, "Loading menu..."), !loading && renderSection(cafe, 'Cafe and food'), !loading && renderSection(bar, 'Bar'), /*#__PURE__*/React.createElement("div", {
+    id: "menu-togo"
+  }, /*#__PURE__*/React.createElement(ToGoSection, {
+    categories: categories
+  })), /*#__PURE__*/React.createElement("div", {
     id: "menu-play"
   }, /*#__PURE__*/React.createElement(PlayEditor, {
     isAdmin: isAdmin
