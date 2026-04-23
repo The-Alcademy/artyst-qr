@@ -1185,7 +1185,25 @@ var side = TABS[activeTab].side;
 var cats = allCategories.filter(function(c) { return c.side === side; });
       if (!cats.length) { body.innerHTML = '<p class="state">Nothing here yet.</p>'; return; }
 
-      body.innerHTML = cats.map(function(cat) {
+      var offerHtml = '';
+      var currentOffer = SLOT_OFFERS[currentSlot];
+      if (currentOffer && currentOffer.active !== false && currentOffer.item_name) {
+        var offerPrice = currentOffer.item_price_display || '';
+        var offerDesc = currentOffer.item_description || '';
+        var safeName = currentOffer.item_name.replace(/'/g, "\\'");
+        var offerNum = parseFloat((offerPrice).replace(/[^0-9.]/g,'')) || 0;
+        offerHtml = '<div class="offer-item">'
+          + '<div class="offer-item-left">'
+          + '<div class="offer-item-eyebrow">' + (currentOffer.eyebrow || "Today's offer") + '</div>'
+          + '<div class="offer-item-name">' + currentOffer.item_name + '</div>'
+          + (offerDesc ? '<div class="offer-item-desc">' + offerDesc + '</div>' : '')
+          + '</div>'
+          + '<div class="offer-item-right">'
+          + (offerPrice ? '<div class="offer-item-price">' + offerPrice + '</div>' : '')
+          + '<button class="offer-item-add" onclick="addToOrder(\'offer-' + currentSlot + '\', \'' + safeName + '\', \'\', [], ' + offerNum + ')">+</button>'
+          + '</div></div>';
+      }
+      body.innerHTML = offerHtml + cats.map(function(cat) {
         var note = CAT_NOTES[cat.slug] || '';
         var itemsHtml = cat.items.map(function(item) {
           var inSlot = !item.time_slots || item.time_slots.indexOf(currentSlot) !== -1;
