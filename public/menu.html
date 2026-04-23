@@ -1724,69 +1724,7 @@ function printMenu() {
       setTimeout(showOfferIfNeeded, 1200);
     }
     
-    // ── Init ──────────────────────────────────────────
-    async function init() {
-      loadOrder(); loadTable(); updateOrderBadge();
-      currentSlot = detectSlot(); updateSlotUI();
-      renderTabs();
-
-      var results = await Promise.allSettled([
-        fetch('/api/menu'),
-        fetch('/api/promos'),
-        fetch('/api/news?surface=' + getNewsSurface()),
-        fetch('/api/hours'),
-        fetch('/api/play'),
-        fetch('/api/offers'),
-      ]);
-      var menuRes = results[0];
-      var promosRes = results[1];
-      var newsRes = results[2];
-      var hoursRes = results[3];
-      var playRes = results[4];
-      var offersRes = results[5];
-      if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
-        var data = await menuRes.value.json();
-        allCategories = data.categories || [];
-        var stateEl = document.getElementById('state');
-        if (stateEl) stateEl.remove();
-renderBody();
-        buildSubNav();
-        if (new URLSearchParams(window.location.search).get('print') === '1') {
-          showAll = true; renderBody(); setTimeout(function(){ window.print(); }, 600);
-        }
-      } else {
-        document.getElementById('state').textContent = "Couldn't load the menu. Please ask at the bar.";
-      }
-
-      if (promosRes.status === 'fulfilled' && promosRes.value.ok) {
-        var pdata = await promosRes.value.json();
-        buildPromos(pdata.promos || []);
-      }
-
-      if (newsRes.status === 'fulfilled' && newsRes.value.ok) {
-        var ndata = await newsRes.value.json();
-        buildNews(ndata.news || []);
-      }
-
-if (hoursRes.status === 'fulfilled' && hoursRes.value.ok) {
-        var hdata = await hoursRes.value.json();
-        renderHoursMicro(hdata.state);
-        renderHoursList(hdata.days || []);
-      }
-
-if (SLOT_OFFERS[o.slot] !== undefined) {
-  var ex = SLOT_OFFERS[o.slot] || {};
-  SLOT_OFFERS[o.slot] = {
-    eyebrow: o.eyebrow || ex.eyebrow || '',
-    headline: o.headline || ex.headline || '',
-    body: o.body || ex.body || '',
-    cta: o.cta || ex.cta || 'See the menu',
-    active: o.active,
-    item_name: o.item_name || ex.item_name || null,
-    item_description: o.item_description || ex.item_description || null,
-    item_price_display: o.item_price_display || ex.item_price_display || null,
-  };
-}
+  
  
 init();
   </script>
