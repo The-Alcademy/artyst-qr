@@ -2877,11 +2877,24 @@ function Destinations({
   const [editing, setEditing] = useState(null);
   const [status, setStatus] = useState(null);
   const [collapsed, setCollapsed] = useState({});
+  const [sortBy, setSortBy] = useState('az');
   function toggleCollapse(type) {
     setCollapsed(c => ({
       ...c,
       [type]: !c[type]
     }));
+  }
+  function sortItems(items, type) {
+    if (type !== 'event') return items;
+    var arr = items.slice();
+    if (sortBy === 'az') arr.sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });else if (sortBy === 'za') arr.sort(function (a, b) {
+      return b.label.localeCompare(a.label);
+    });else if (sortBy === 'pinned') arr.sort(function (a, b) {
+      return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+    });
+    return arr;
   }
   const save = async () => {
     if (!form.label || !form.url) {
@@ -3036,7 +3049,14 @@ function Destinations({
         userSelect: 'none'
       },
       onClick: () => toggleCollapse(type)
-    }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(TypeBadge, {
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '.5rem',
+        flexWrap: 'wrap'
+      }
+    }, /*#__PURE__*/React.createElement(TypeBadge, {
       type: type
     }), /*#__PURE__*/React.createElement("span", {
       style: {
@@ -3044,12 +3064,34 @@ function Destinations({
       }
     }, type.charAt(0).toUpperCase() + type.slice(1), " Destinations"), /*#__PURE__*/React.createElement("span", {
       style: {
-        marginLeft: '.6rem',
         fontSize: '.78rem',
         color: '#888',
         fontWeight: 400
       }
-    }, "(", items.length, ")")), /*#__PURE__*/React.createElement("span", {
+    }, "(", items.length, ")")), type === 'event' && !isCollapsed && /*#__PURE__*/React.createElement("select", {
+      value: sortBy,
+      onChange: e => {
+        e.stopPropagation();
+        setSortBy(e.target.value);
+      },
+      onClick: e => e.stopPropagation(),
+      style: {
+        fontSize: '.72rem',
+        padding: '.15rem .4rem',
+        background: 'var(--bg)',
+        border: '1px solid var(--border)',
+        borderRadius: '2px',
+        color: 'var(--text-2)',
+        cursor: 'pointer',
+        marginRight: '1rem'
+      }
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "az"
+    }, "A \u2192 Z"), /*#__PURE__*/React.createElement("option", {
+      value: "za"
+    }, "Z \u2192 A"), /*#__PURE__*/React.createElement("option", {
+      value: "pinned"
+    }, "Pinned first")), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '1rem',
         color: '#888',
@@ -3057,7 +3099,7 @@ function Destinations({
         display: 'inline-block',
         transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'
       }
-    }, "\u25BE")), !isCollapsed && /*#__PURE__*/React.createElement("div", null, items.map(d => /*#__PURE__*/React.createElement("div", {
+    }, "\u25BE")), !isCollapsed && /*#__PURE__*/React.createElement("div", null, sortItems(items, type).map(d => /*#__PURE__*/React.createElement("div", {
       className: "dest-item",
       key: d.id
     }, /*#__PURE__*/React.createElement("div", {
