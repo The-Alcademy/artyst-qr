@@ -1515,6 +1515,7 @@ function handleOfferOverlayClick(e) {
         fetch('/api/news?surface=' + getNewsSurface()),
         fetch('/api/hours'),
         fetch('/api/play'),
+        fetch('/api/offers'),
       ]);
       var menuRes = results[0];
       var promosRes = results[1];
