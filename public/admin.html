@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-d -->
+<!-- cache-bust: 2026-04-24-e -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,6 +154,12 @@
     .task-card-desc{font-size:.72rem;color:#666;line-height:1.4;margin-bottom:.4rem}
     .task-card-steps{display:flex;flex-wrap:wrap;gap:.3rem}
     .task-step{font-size:.65rem;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:2px;padding:.15rem .4rem;color:#888;letter-spacing:.04em}
+    /* ── Back to top ── */
+    .back-to-top{position:fixed;bottom:1.5rem;right:1.5rem;width:2.2rem;height:2.2rem;border-radius:50%;background:#c0392b;color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);z-index:999;transition:opacity .2s,transform .2s}
+    .back-to-top.hidden{opacity:0;pointer-events:none;transform:translateY(8px)}
+    /* ── Event meta preview ── */
+    .event-meta-preview{padding:.8rem 1rem;border-radius:3px;border:1px solid #2a5a7c;background:#0d1f2d;color:#eee}
+    body.light-mode .event-meta-preview{background:#e8f4fc;border-color:#7ab8d8;color:#1a1a18}
     /* ── Light mode overrides ── */
     body.light-mode{background:#f0ece7;color:#1a1a18}
     body.light-mode .app{}
@@ -1115,7 +1121,7 @@ const price=rawPrice!=null?(Number(rawPrice)===0?'Free':'£'+Number(rawPrice).to
   return(<div className="card"><h2>New QR Code</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>set('label',e.target.value)} placeholder="e.g. Wine Tasting April"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>{set('type',e.target.value);setSelectedEventId('');setEventMeta(null);}}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>{form.type==='event'&&<div className="form-group full"><label>Pick event from CA-017</label>{loadingEvents?<div style={{fontSize:'.82rem',opacity:.6}}>Loading events...</div>:<select value={selectedEventId} onChange={e=>selectEvent(e.target.value)}><option value="">— select an event to auto-populate —</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}{e.starts_at?' · '+new Date(e.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</option>)}</select>}{events.length===0&&!loadingEvents&&<div style={{fontSize:'.78rem',opacity:.6,marginTop:'.3rem'}}>No upcoming events found — check CA-017 has published events</div>}</div>}
       {eventMeta&&selectedEventId&&(
         <div className="form-group full">
-          <div style={{padding:'.8rem 1rem',borderRadius:'3px',border:'1px solid #2a5a7c',background:'#111'}}>
+          <div className="event-meta-preview">
             <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.08em',color:'#5aafff',marginBottom:'.5rem'}}>Event details — will auto-populate poster</div>
             {eventMeta.dateText&&<div style={{fontSize:'.85rem',marginBottom:'.2rem'}}>{eventMeta.dateText}</div>}
             {eventMeta.subtitle&&<div style={{fontSize:'.82rem',opacity:.7,marginBottom:'.2rem'}}>{eventMeta.subtitle}</div>}
