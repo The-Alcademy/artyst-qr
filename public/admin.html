@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-h -->
+<!-- cache-bust: 2026-04-24-i -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -853,23 +853,23 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:fmt.small?'1mm':'2mm'}}>
           {poster.dateText&&(
             <div>
-              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>Date & Time</div>
-              <div style={{fontSize:fmt.small?'5.5pt':'8pt',fontWeight:600,color:'#1a1a18',lineHeight:1.3}}>{poster.dateText}</div>
+              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>When</div>
+              <div style={{fontSize:fmt.small?'6pt':'9pt',fontWeight:700,color:'#1a1a18',lineHeight:1.3}}>{poster.dateText}</div>
             </div>
           )}
           {poster.price&&(
             <div>
-              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>Price</div>
-              <div style={{fontSize:fmt.small?'6pt':'11pt',fontWeight:'bold',color:'#1a1a18'}}>{poster.price}</div>
+              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>Tickets</div>
+              <div style={{fontSize:fmt.small?'7pt':'12pt',fontWeight:'bold',color:'#c0392b'}}>{poster.price}</div>
             </div>
           )}
         </div>
       </div>
       {code&&(
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'2mm',padding:fmt.small?'2mm':'4mm',borderTop:'1px solid #eee'}}>
-          <div style={{fontSize:fmt.small?'5pt':'7pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#999'}}>Scan to book or find out more</div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-start',gap:'1.5mm',padding:fmt.small?'3mm 2mm 2mm':'5mm 4mm 3mm',borderTop:'1px solid #eee'}}>
+          <div style={{fontSize:fmt.small?'5pt':'7pt',letterSpacing:'.12em',textTransform:'uppercase',color:'#c0392b',marginBottom:'.5mm'}}>{poster.price&&poster.price!=='Free'?'Book a place':'Find out more'}</div>
           <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?55:110}/>
-          <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.12em',textTransform:'uppercase',opacity:.4,textAlign:'center'}}>{poster.cta}</div>
+          <div style={{fontSize:fmt.small?'4pt':'5.5pt',fontFamily:'monospace',color:'#aaa',marginTop:'.5mm',letterSpacing:'.02em'}}>{BASE_URL}/e/{code.slug}</div>
         </div>
       )}
       <div style={{flex:'0 0 auto',height:fmt.small?'3mm':'5mm',background:'#c0392b'}}/>
