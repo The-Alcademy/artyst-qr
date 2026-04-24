@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-g -->
+<!-- cache-bust: 2026-04-24-h -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -839,39 +839,40 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const PosterContent=imageMode==='eventcard'?(
     <div ref={posterRef} style={eventCardStyle}>
       {poster.fgImage?(
-        <div style={{width:'100%',height:fmt.small?'80px':'130px',backgroundImage:`url(${poster.fgImage})`,backgroundSize:'cover',backgroundPosition:'center',flexShrink:0}}/>
+        <div style={{flex:'0 0 38%',backgroundImage:`url(${poster.fgImage})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
       ):(
-        <div style={{width:'100%',height:fmt.small?'40px':'70px',background:'#e8e8e8',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{flex:'0 0 20%',background:'#e8e8e8',display:'flex',alignItems:'center',justifyContent:'center'}}>
           <span style={{fontSize:'7pt',color:'#bbb',letterSpacing:'.1em',textTransform:'uppercase'}}>No image</span>
         </div>
       )}
-      <div style={{flex:1,padding:fmt.small?'3mm':'6mm',display:'flex',flexDirection:'column',gap:fmt.small?'1.5mm':'2mm'}}>
-        <div style={{fontSize:fmt.small?'6pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',color:'#c0392b',opacity:.8}}>The Artyst · Cambridge</div>
-        <div style={{fontSize:fmt.small?'11pt':'20pt',fontWeight:'bold',lineHeight:1.2,color:'#1a1a18'}}>{poster.title||'Event Title'}</div>
-        {poster.subtitle&&<div style={{fontSize:fmt.small?'6pt':'8pt',color:'#666',lineHeight:1.4,overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>{poster.subtitle}</div>}
-        <div style={{height:'1px',background:'#eee',margin:fmt.small?'.5mm 0':'1.5mm 0'}}/>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:fmt.small?'1.5mm':'2mm'}}>
+      <div style={{flex:'0 0 auto',padding:fmt.small?'2mm 3mm':'4mm 6mm',display:'flex',flexDirection:'column',gap:fmt.small?'1mm':'1.5mm'}}>
+        <div style={{fontSize:fmt.small?'5.5pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',color:'#c0392b'}}>The Artyst · Cambridge</div>
+        <div style={{fontSize:fmt.small?'10pt':'18pt',fontWeight:'bold',lineHeight:1.2,color:'#1a1a18'}}>{poster.title||'Event Title'}</div>
+        {poster.subtitle&&<div style={{fontSize:fmt.small?'6pt':'8pt',color:'#666',lineHeight:1.4}}>{poster.subtitle}</div>}
+        <div style={{height:'1px',background:'#eee',margin:fmt.small?'.5mm 0':'1mm 0'}}/>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:fmt.small?'1mm':'2mm'}}>
           {poster.dateText&&(
             <div>
-              <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.5mm'}}>Date & Time</div>
-              <div style={{fontSize:fmt.small?'6pt':'9pt',fontWeight:600,color:'#1a1a18',lineHeight:1.3}}>{poster.dateText}</div>
+              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>Date & Time</div>
+              <div style={{fontSize:fmt.small?'5.5pt':'8pt',fontWeight:600,color:'#1a1a18',lineHeight:1.3}}>{poster.dateText}</div>
             </div>
           )}
           {poster.price&&(
             <div>
-              <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.5mm'}}>Price</div>
-              <div style={{fontSize:fmt.small?'7pt':'12pt',fontWeight:'bold',color:'#1a1a18'}}>{poster.price}</div>
+              <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.4mm'}}>Price</div>
+              <div style={{fontSize:fmt.small?'6pt':'11pt',fontWeight:'bold',color:'#1a1a18'}}>{poster.price}</div>
             </div>
           )}
         </div>
-        {code&&(
-          <div style={{marginTop:'auto',display:'flex',flexDirection:'column',alignItems:'center',gap:'1.5mm',paddingTop:'2mm',borderTop:'1px solid #eee'}}>
-            <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?48:90}/>
-            <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.12em',textTransform:'uppercase',opacity:.5,textAlign:'center'}}>{poster.cta}</div>
-          </div>
-        )}
       </div>
-      <div style={{height:fmt.small?'4mm':'6mm',background:'#c0392b',flexShrink:0}}/>
+      {code&&(
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'2mm',padding:fmt.small?'2mm':'4mm',borderTop:'1px solid #eee'}}>
+          <div style={{fontSize:fmt.small?'5pt':'7pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#999'}}>Scan to book or find out more</div>
+          <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?55:110}/>
+          <div style={{fontSize:fmt.small?'4pt':'5.5pt',letterSpacing:'.12em',textTransform:'uppercase',opacity:.4,textAlign:'center'}}>{poster.cta}</div>
+        </div>
+      )}
+      <div style={{flex:'0 0 auto',height:fmt.small?'3mm':'5mm',background:'#c0392b'}}/>
     </div>
   ):(
     <div ref={posterRef} style={posterStyle}>
