@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-e -->
+<!-- cache-bust: 2026-04-24-f -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +16,24 @@
     .app{max-width:1200px;margin:0 auto;padding:2rem}
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;border-bottom:1px solid #333;padding-bottom:1rem}
     header h1{font-size:1.2rem;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-    .tabs{display:flex;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap}
+    /* ── Two-level nav ── */
+    .tab-nav{margin-bottom:1.5rem}
+    .section-row{display:flex;gap:0;border-bottom:2px solid #2a2a2a;align-items:flex-end}
+    .section-btn{padding:.55rem 1.2rem;border:none;background:none;color:#666;cursor:pointer;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+    .section-btn:hover{color:#ccc}
+    .section-btn.active{color:#fff;border-bottom-color:#c0392b}
+    .stats-toggle{margin-left:auto;padding:.4rem .8rem;border:none;background:none;color:#555;cursor:pointer;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;align-self:center}
+    .stats-toggle:hover{color:#999}
+    .subtab-row{display:flex;gap:.4rem;padding:.7rem 0 .8rem;flex-wrap:wrap}
+    .subtab-btn{padding:.35rem .9rem;border:1px solid #2a2a2a;background:none;color:#777;cursor:pointer;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;border-radius:2px;transition:all .15s;white-space:nowrap}
+    .subtab-btn:hover:not(.active){border-color:#555;color:#ccc}
+    .subtab-btn.active{background:#c0392b;border-color:#c0392b;color:#fff}
+    .tab-desc{font-size:.8rem;color:#888;line-height:1.5;padding:.6rem .9rem;background:#161616;border:1px solid #2a2a2a;border-radius:2px;margin-bottom:1rem;cursor:pointer;display:flex;align-items:baseline;gap:.5rem;animation:fadeIn .3s ease}
+    .tab-desc-section{color:#c0392b;font-weight:600;white-space:nowrap;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+    .tab-desc-dismiss{margin-left:auto;color:#555;font-size:.7rem;flex-shrink:0}
+    .tab-desc:hover .tab-desc-dismiss{color:#999}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    /* keep .tab for any legacy references */
     .tab{padding:.5rem 1.2rem;border:1px solid #333;background:none;color:#888;cursor:pointer;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;border-radius:2px;transition:all .15s}
     .tab.active{background:#c0392b;border-color:#c0392b;color:#fff}
     .tab:hover:not(.active){border-color:#555;color:#ccc}
@@ -169,6 +186,14 @@
     body.light-mode input,body.light-mode select,body.light-mode textarea{background:#f8f7f5!important;border-color:#ccc!important;color:#1a1a18!important}
     body.light-mode select option{background:#f8f7f5!important;color:#1a1a18!important}
     body.light-mode .tab{color:#666}
+    body.light-mode .section-row{border-bottom-color:#ddd}
+    body.light-mode .section-btn{color:#999}
+    body.light-mode .section-btn:hover{color:#333}
+    body.light-mode .section-btn.active{color:#1a1a18;border-bottom-color:#c0392b}
+    body.light-mode .subtab-btn{border-color:#ddd;color:#888}
+    body.light-mode .subtab-btn:hover:not(.active){border-color:#aaa;color:#333}
+    body.light-mode .tab-desc{background:#f8f6f2;border-color:#e0dbd4;color:#666}
+    body.light-mode .stats-toggle{color:#bbb}
     body.light-mode .tab.active{color:#1a1a18;border-bottom-color:#c0392b}
     body.light-mode .btn-secondary{background:#f0ece7;border-color:#ccc;color:#333}
     body.light-mode .btn-secondary:hover{border-color:#888}
@@ -2611,6 +2636,100 @@ function BackToTop(){
 }
 
 // ── TASK GUIDE ───────────────────────────────────────────
+const SECTIONS=[
+  {id:'publish',label:'Publish',desc:'Get something in front of people.',tabs:[
+    {id:'create',label:'New Code',desc:'Create a new QR code linked to an event, job, or any URL. Generates a trackable short link at go.theartyst.co.uk/e/…',adminOnly:true},
+    {id:'print',label:'Print Queue',desc:'Codes waiting to be turned into posters. Design, format, and print from here.',adminOnly:false},
+    {id:'distribute',label:'Distribute',desc:'Send a QR code out — by email, WhatsApp, or to your subscriber lists.',adminOnly:true},
+    {id:'screens',label:'Screens',desc:'Control what QR codes appear on the three in-venue screens: window, bar, and wall.',adminOnly:false},
+  ]},
+  {id:'manage',label:'Manage',desc:'Keep your codes and destinations organised.',tabs:[
+    {id:'library',label:'Library',desc:'All your QR codes in one place. See scan counts, edit, deactivate, or make a poster for any code.',adminOnly:false},
+    {id:'destinations',label:'Destinations',desc:'The URLs your QR codes point to. Update a destination here and every code pointing to it updates automatically.',adminOnly:false},
+    {id:'groups',label:'Groups',desc:'Mailing and WhatsApp lists used when distributing codes. Add contacts and organise by audience.',adminOnly:true},
+    {id:'templates',label:'Templates',desc:'Saved poster designs you can reuse across codes. Saves time when promoting recurring events.',adminOnly:true},
+  ]},
+  {id:'review',label:'Review',desc:'See what\'s happening.',tabs:[
+    {id:'history',label:'History',desc:'A log of every distribution — who sent what, when, and to which channels.',adminOnly:false},
+    {id:'reports',label:'Reports',desc:'Scan stats across all your codes. See which codes are performing, when scans happen, and where they come from.',adminOnly:false},
+    {id:'applications',label:'Applications',desc:'Job and opportunity applications submitted via your QR codes. Read, shortlist, and manage from here.',adminOnly:false},
+  ]},
+  {id:'configure',label:'Configure',desc:'Set up how the system works.',tabs:[
+    {id:'menu',label:'Menu Editor',desc:'Edit the café and bar menu — items, prices, and availability — as shown to customers via QR.',adminOnly:false},
+    {id:'reviews',label:'Review Responder',desc:'Set up automated responses to customer reviews and feedback forms.',adminOnly:false},
+    {id:'users',label:'Users',desc:'Manage who has access to the QR Engine and what they can do.',adminOnly:true},
+  ]},
+];
+
+function TabNav({tab,setTab,codes,templates,designs,newApplications,printQueue,isAdmin,showStats,setShowStats}){
+  const [descTab,setDescTab]=useState(tab);
+  const [seenTabs,setSeenTabs]=useState(new Set());
+  const timerRef=useRef(null);
+
+  // Derive active section from current tab
+  const activeSection=SECTIONS.find(s=>s.tabs.some(t=>t.id===tab))||SECTIONS[0];
+
+  function selectTab(id){
+    setTab(id);
+    setDescTab(id);
+    if(!seenTabs.has(id)){
+      if(timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current=setTimeout(()=>{
+        setSeenTabs(s=>new Set([...s,id]));
+      },4000);
+    }
+  }
+
+  function selectSection(s){
+    // Switch to first visible tab in section
+    const first=s.tabs.find(t=>!t.adminOnly||isAdmin);
+    if(first) selectTab(first.id);
+  }
+
+  const currentTabDef=activeSection.tabs.find(t=>t.id===tab);
+  const showDesc=currentTabDef&&descTab===tab&&!seenTabs.has(tab);
+
+  // Dynamic labels
+  function tabLabel(t){
+    if(t.id==='print') return `Print Queue${printQueue?.length?` (${printQueue.length})`:' '}`.trim();
+    if(t.id==='library') return `Library (${codes?.length||0})`;
+    if(t.id==='templates') return `Templates (${(templates?.length||0)+(designs?.length||0)})`;
+    if(t.id==='applications') return newApplications?`Applications (${newApplications} new)`:'Applications';
+    return t.label;
+  }
+
+  return(
+    <div className="tab-nav no-print">
+      <div className="section-row">
+        {SECTIONS.map(s=>(
+          <button key={s.id}
+            className={'section-btn'+(activeSection.id===s.id?' active':'')}
+            onClick={()=>selectSection(s)}>
+            {s.label}
+          </button>
+        ))}
+        <button className="stats-toggle" onClick={()=>setShowStats(v=>!v)} title="Toggle stats">{showStats?'▾ Stats':'▸ Stats'}</button>
+      </div>
+      <div className="subtab-row">
+        {activeSection.tabs.filter(t=>!t.adminOnly||isAdmin).map(t=>(
+          <button key={t.id}
+            className={'subtab-btn'+(tab===t.id?' active':'')}
+            onClick={()=>selectTab(t.id)}>
+            {tabLabel(t)}
+          </button>
+        ))}
+      </div>
+      {showDesc&&currentTabDef&&(
+        <div className="tab-desc" onClick={()=>setSeenTabs(s=>new Set([...s,tab]))}>
+          <span className="tab-desc-section">{activeSection.label} — </span>
+          {currentTabDef.desc}
+          <span className="tab-desc-dismiss">✕</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASKS = [
   {id:'promote-event', label:'Promote an event', desc:'Create a QR code, make a poster and send it out', tab:'create', steps:['New Code','Poster','Distribute','Screens']},
   {id:'hire', label:'Hire someone', desc:'Post a job listing and review applicants', tab:'create', steps:['New Code','Distribute','Applications']},
@@ -2738,23 +2857,6 @@ function App(){
   const warnings=codes.filter(hasDestinationWarning).length;
   const newApplications=applications.filter(a=>a.status==='new').length;
 
-  const TABS=[
-    ['library',`Library (${codes.length})`],
-    ...(isAdmin?[['create','New Code']]:[]),
-    ['print',`Print Queue${printQueue.length?` (${printQueue.length})`:''}`],
-    ...(isAdmin?[['distribute','Distribute']]:[]),
-    ['screens','Screens'],
-    ...(isAdmin?[['groups','Groups']]:[]),
-    ['destinations','Destinations'],
-    ...(isAdmin?[['templates',`Templates (${templates.length+designs.length})`]]:[]),
-    ['history','History'],
-    ['reports','Reports'],
-    ['applications',newApplications?`Applications (${newApplications} new)`:'Applications'],
-    ['menu','Menu Editor'],
-    ['reviews','Review Responder'],
-    ...(isAdmin?[['users','Users']]:[]),
-  ];
-
   if(!authChecked) return null;
   if(!user) return <LoginScreen onLogin={u=>setUser(u)}/>;
 
@@ -2779,26 +2881,7 @@ function App(){
         <div className="stat"><div className="number">{totalScans}</div><div className="label">Total Scans</div></div>
         <div className="stat" style={warnings?{borderColor:'#5a3a1a'}:{}}><div className="number" style={warnings?{color:'#ffaa5a'}:{}}>{warnings}</div><div className="label">Destination Warnings</div></div>
       </div>}
-      <div className="tabs no-print">
-        <span className="tab-group-label">Publish</span>
-        {[['create','New Code'],['print',`Print Queue${printQueue.length?` (${printQueue.length})`:''}`],['distribute','Distribute'],['screens','Screens']].filter(([id])=>TABS.find(t=>t[0]===id)).map(([id,label])=>(
-          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
-        ))}
-        <span className="tab-group-label">Manage</span>
-        {[['library',`Library (${codes.length})`],['destinations','Destinations'],['groups','Groups'],['templates',`Templates (${templates.length+designs.length})`]].filter(([id])=>TABS.find(t=>t[0]===id)).map(([id,label])=>(
-          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
-        ))}
-        <span className="tab-group-label">Review</span>
-        {[['history','History'],['reports','Reports'],['applications',newApplications?`Applications (${newApplications} new)`:'Applications']].map(([id,label])=>(
-          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
-        ))}
-        <span className="tab-group-label">Configure</span>
-        {[['menu','Menu Editor'],['reviews','Review Responder'],...(isAdmin?[['users','Users']]:[])]
-          .map(([id,label])=>(
-          <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
-        ))}
-        <button className="tab" style={{marginLeft:'auto',fontSize:'.7rem',opacity:.5}} onClick={()=>setShowStats(s=>!s)}>{showStats?'Hide Stats':'Stats'}</button>
-      </div>
+      <TabNav tab={tab} setTab={setTab} codes={codes} templates={templates} designs={designs} newApplications={newApplications} printQueue={printQueue} isAdmin={isAdmin} showStats={showStats} setShowStats={setShowStats}/>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
         {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId} activeTask={activeTask}/>}
