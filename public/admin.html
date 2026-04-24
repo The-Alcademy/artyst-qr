@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-c -->
+<!-- cache-bust: 2026-04-24-d -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,9 +158,10 @@
     body.light-mode{background:#f0ece7;color:#1a1a18}
     body.light-mode .app{}
     body.light-mode header{background:#f0ece7;border-bottom:1px solid #ddd}
+    body.light-mode header h1{color:#1a1a18}
     body.light-mode .card{background:#fff;border-color:#ddd;color:#1a1a18}
-    body.light-mode input,body.light-mode select,body.light-mode textarea{background:#f8f7f5;border-color:#ccc;color:#1a1a18}
-    body.light-mode select option{background:#f8f7f5;color:#1a1a18}
+    body.light-mode input,body.light-mode select,body.light-mode textarea{background:#f8f7f5!important;border-color:#ccc!important;color:#1a1a18!important}
+    body.light-mode select option{background:#f8f7f5!important;color:#1a1a18!important}
     body.light-mode .tab{color:#666}
     body.light-mode .tab.active{color:#1a1a18;border-bottom-color:#c0392b}
     body.light-mode .btn-secondary{background:#f0ece7;border-color:#ccc;color:#333}
@@ -2619,9 +2620,8 @@ const TASKS = [
   {id:'add-destination', label:'Add a destination URL', desc:'Register a URL so you can point QR codes at it', tab:'destinations', steps:['Destinations','New Code']},
 ];
 
-function TaskGuide({onSelectTask}){
-  const [open,setOpen]=useState(()=>sessionStorage.getItem('ca022_guide_closed')!=='1');
-  function toggle(){const next=!open;setOpen(next);if(!next) sessionStorage.setItem('ca022_guide_closed','1');else sessionStorage.removeItem('ca022_guide_closed');}
+function TaskGuide({onSelectTask,open,setOpen}){
+  function toggle(){setOpen(o=>!o);}
   return(
     <div className="task-guide no-print">
       <div className="task-guide-header" onClick={toggle}>
@@ -2675,6 +2675,8 @@ function App(){
   const [distributeCode,setDistributeCode]=useState(null);
   const [menuAnchor,setMenuAnchor]=useState(null);
   const [activeTask,setActiveTask]=useState(null);
+  const [guideOpen,setGuideOpen]=useState(false);
+  const [showStats,setShowStats]=useState(false);
   const [sortField,setSortField]=useState('created_at');
   const [sortDir,setSortDir]=useState('desc');
   const [newCodeId,setNewCodeId]=useState(null);
@@ -2709,6 +2711,7 @@ function App(){
   },[tab]);
 
   function handleSelectTask(task){
+    setGuideOpen(false);
     setTab(task.tab);
     if(task.anchor) setMenuAnchor(task.anchor);
     setActiveTask(task);
@@ -2762,14 +2765,14 @@ function App(){
           <button className="btn btn-secondary btn-small" onClick={logout}>Sign Out</button>
         </div>
       </header>
-      <TaskGuide onSelectTask={handleSelectTask}/>
+      <TaskGuide onSelectTask={handleSelectTask} open={guideOpen} setOpen={setGuideOpen}/>
       {activeTask&&<TaskBanner activeTask={activeTask} tab={tab} visitedTabs={visitedTabs} onDismiss={()=>{setActiveTask(null);setVisitedTabs([]);}}/>}
-      <div className="stats-grid no-print">
+      {showStats&&<div className="stats-grid no-print">
         <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
         <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
         <div className="stat"><div className="number">{totalScans}</div><div className="label">Total Scans</div></div>
         <div className="stat" style={warnings?{borderColor:'#5a3a1a'}:{}}><div className="number" style={warnings?{color:'#ffaa5a'}:{}}>{warnings}</div><div className="label">Destination Warnings</div></div>
-      </div>
+      </div>}
       <div className="tabs no-print">
         <span className="tab-group-label">Publish</span>
         {[['create','New Code'],['print',`Print Queue${printQueue.length?` (${printQueue.length})`:''}`],['distribute','Distribute'],['screens','Screens']].filter(([id])=>TABS.find(t=>t[0]===id)).map(([id,label])=>(
@@ -2788,6 +2791,7 @@ function App(){
           .map(([id,label])=>(
           <button key={id} className={`tab ${tab===id?'active':''}`} onClick={()=>setTab(id)}>{label}</button>
         ))}
+        <button className="tab" style={{marginLeft:'auto',fontSize:'.7rem',opacity:.5}} onClick={()=>setShowStats(s=>!s)}>{showStats?'Hide Stats':'Stats'}</button>
       </div>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
