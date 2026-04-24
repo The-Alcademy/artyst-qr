@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-b -->
+<!-- cache-bust: 2026-04-24-c -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -929,14 +929,20 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
 
   // Map task step names to library actions
   const STEP_ACTION={'Poster':'poster','Distribute':'distribute'};
-  const nextTaskStep=activeTask&&newCodeId
+
+  // When a task is active, pin the most recently created code (not just the 8-second newCodeId window)
+  const taskCodeId = activeTask
+    ? (newCodeId || (codes.length>0 ? [...codes].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]?.id : null))
+    : newCodeId;
+
+  const nextTaskStep=activeTask&&taskCodeId
     ? (activeTask.steps.map(s=>STEP_ACTION[s]).find(Boolean)||null)
     : null;
 
   const sorted=[...codes].sort((a,b)=>{
     // Always pin the active task code to the top
-    if(a.id===newCodeId) return -1;
-    if(b.id===newCodeId) return 1;
+    if(a.id===taskCodeId) return -1;
+    if(b.id===taskCodeId) return 1;
     let av=a[sortField],bv=b[sortField];
     if(sortField==='scan_count'){av=av||0;bv=bv||0;return sortDir==='asc'?av-bv:bv-av;}
     if(sortField==='label'){av=(av||'').toLowerCase();bv=(bv||'').toLowerCase();}
@@ -976,7 +982,7 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
           {sorted.map(c=>{
             const warn=hasDestinationWarning(c);
             const dest=destinations.find(d=>d.id===c.destination_id);
-            const isNew=c.id===newCodeId;
+            const isNew=c.id===taskCodeId;
             return(
               <React.Fragment key={c.id}>
                 {isNew&&nextTaskStep&&(
