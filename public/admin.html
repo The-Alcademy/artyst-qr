@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-i -->
+<!-- cache-bust: 2026-04-24-l -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -725,7 +725,7 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   const [generatingImage,setGeneratingImage]=useState('');
   const [genError,setGenError]=useState('');
   const [showGenOptions,setShowGenOptions]=useState(false);
-  const [imageMode,setImageMode]=useState('none');
+  const [imageMode,setImageMode]=useState('eventcard');
   const [selectedKeywords,setSelectedKeywords]=useState([]);
   const [selectedStyle,setSelectedStyle]=useState('photographic');
   const [customPrompt,setCustomPrompt]=useState('');
@@ -2857,7 +2857,7 @@ function App(){
     document.body.classList.toggle('light-mode',lightMode);
     sessionStorage.setItem('ca022_theme',lightMode?'light':'dark');
   },[lightMode]);
-  const [tab,setTab]=useState('library');
+  const [tab,setTab]=useState('create');
   const [codes,setCodes]=useState([]);
   const [destinations,setDestinations]=useState([]);
   const [groups,setGroups]=useState([]);
@@ -2947,7 +2947,7 @@ function App(){
         </div>
       </header>
       <TaskGuide onSelectTask={handleSelectTask} open={guideOpen} setOpen={setGuideOpen}/>
-      {activeTask&&<TaskBanner activeTask={activeTask} tab={tab} visitedTabs={visitedTabs} onDismiss={()=>{setActiveTask(null);setVisitedTabs([]);}}/>}
+      {activeTask&&<TaskBanner activeTask={activeTask} tab={tab} visitedTabs={visitedTabs} onDismiss={()=>{setActiveTask(null);setVisitedTabs([]);setNewCodeId(null);}}/>}
       {showStats&&<div className="stats-grid no-print">
         <div className="stat"><div className="number">{codes.length}</div><div className="label">Total Codes</div></div>
         <div className="stat"><div className="number">{activeCodes}</div><div className="label">Active</div></div>
@@ -2958,7 +2958,7 @@ function App(){
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
         {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId} activeTask={activeTask}/>}
-        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);setTimeout(()=>setNewCodeId(null),8000);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
+        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
         {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
         {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
