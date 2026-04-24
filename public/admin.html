@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-24-f -->
+<!-- cache-bust: 2026-04-24-g -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -177,6 +177,17 @@
     /* ── Event meta preview ── */
     .event-meta-preview{padding:.8rem 1rem;border-radius:3px;border:1px solid #2a5a7c;background:#0d1f2d;color:#eee}
     body.light-mode .event-meta-preview{background:#e8f4fc;border-color:#7ab8d8;color:#1a1a18}
+    /* ── Image mode picker ── */
+    .img-mode-card{border:2px solid #2a2a2a;border-radius:4px;padding:.6rem;cursor:pointer;background:#111;display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;transition:border-color .15s,background .15s}
+    .img-mode-card.selected{border-color:#c0392b;background:#1a0808}
+    .img-mode-label{font-size:.75rem;font-weight:400;color:#888;text-align:center;transition:color .15s}
+    .img-mode-card.selected .img-mode-label{font-weight:700;color:#c8a96e}
+    .img-mode-desc{font-size:.65rem;color:#666;text-align:center;line-height:1.3}
+    body.light-mode .img-mode-card{background:#f5f3ef;border-color:#ddd}
+    body.light-mode .img-mode-card.selected{background:#fff0ee;border-color:#c0392b}
+    body.light-mode .img-mode-label{color:#999}
+    body.light-mode .img-mode-card.selected .img-mode-label{color:#c0392b}
+    body.light-mode .img-mode-desc{color:#bbb}
     /* ── Light mode overrides ── */
     body.light-mode{background:#f0ece7;color:#1a1a18}
     body.light-mode .app{}
@@ -553,6 +564,32 @@ function DuplexBack({poster,backPoster,backPosterRef,setBackPoster,setSaveStatus
 
 function ImageModePicker({mode,onChange}){
   const MODES=[
+    {id:'eventcard',label:'Event Card',desc:'Imported from events engine',svg:(
+      <svg viewBox="0 0 80 100" width="60" height="75">
+        <rect width="80" height="100" rx="3" fill="#fff" stroke="#e0e0e0" strokeWidth="1"/>
+        <rect width="80" height="30" rx="3" fill="#b8d4b8"/>
+        <rect y="27" width="80" height="3" fill="#b8d4b8"/>
+        <circle cx="60" cy="13" r="7" fill="#8ab88a" opacity=".7"/>
+        <rect x="5" y="33" width="20" height="5" rx="2.5" fill="#ffeaea" stroke="#ffcccc" strokeWidth=".5"/>
+        <rect x="28" y="33" width="15" height="5" rx="2.5" fill="#ffeaea" stroke="#ffcccc" strokeWidth=".5"/>
+        <rect x="5" y="42" width="48" height="5" rx="1" fill="#1a1a18" opacity=".85"/>
+        <rect x="5" y="50" width="26" height="2.5" rx="1" fill="#aaa"/>
+        <line x1="5" y1="56" x2="75" y2="56" stroke="#eee" strokeWidth=".7"/>
+        <rect x="5" y="59" width="12" height="2" rx="1" fill="#ccc"/>
+        <rect x="5" y="63" width="30" height="2.5" rx="1" fill="#555" opacity=".7"/>
+        <rect x="42" y="59" width="10" height="2" rx="1" fill="#ccc"/>
+        <rect x="42" y="63" width="22" height="2.5" rx="1" fill="#555" opacity=".7"/>
+        <rect x="5" y="69" width="9" height="2" rx="1" fill="#ccc"/>
+        <rect x="5" y="73" width="16" height="3" rx="1" fill="#1a1a18" opacity=".8"/>
+        <rect x="56" y="68" width="18" height="18" rx="1" fill="none" stroke="#ccc" strokeWidth=".8"/>
+        <rect x="59" y="71" width="5" height="5" rx=".5" fill="#ccc"/>
+        <rect x="66" y="71" width="5" height="5" rx=".5" fill="#ccc"/>
+        <rect x="59" y="78" width="5" height="5" rx=".5" fill="#ccc"/>
+        <rect x="66" y="78" width="5" height="5" rx=".5" fill="#ccc"/>
+        <rect x="0" y="91" width="80" height="9" rx="2" fill="#c0392b"/>
+        <rect x="0" y="91" width="80" height="4" fill="#c0392b"/>
+      </svg>
+    )},
     {id:'none',label:'Text only',desc:'No image',svg:(
       <svg viewBox="0 0 80 100" width="60" height="75">
         <rect width="80" height="100" rx="3" fill="#1a1a1a" stroke="#333" strokeWidth="1"/>
@@ -609,16 +646,12 @@ function ImageModePicker({mode,onChange}){
   return(
     <div style={{display:'flex',gap:'.6rem',flexWrap:'wrap',marginTop:'.4rem'}}>
       {MODES.map(m=>(
-        <div key={m.id} onClick={()=>onChange(m.id)} style={{
-          border:'2px solid '+(mode===m.id?'#c0392b':'#2a2a2a'),
-          borderRadius:'4px',padding:'.6rem',cursor:'pointer',
-          background:mode===m.id?'#1a0808':'#111',
-          display:'flex',flexDirection:'column',alignItems:'center',gap:'.4rem',
-          minWidth:'80px',transition:'border-color .15s'
-        }}>
+        <div key={m.id} onClick={()=>onChange(m.id)}
+          className={'img-mode-card'+(mode===m.id?' selected':'')}>
+          {m.id==='eventcard'&&<div style={{fontSize:'.6rem',background:'#c0392b',color:'#fff',padding:'.1rem .35rem',borderRadius:'2px',letterSpacing:'.05em',textTransform:'uppercase',alignSelf:'stretch',textAlign:'center',marginBottom:'-.1rem'}}>Auto</div>}
           {m.svg}
-          <div style={{fontSize:'.75rem',fontWeight:mode===m.id?700:400,color:mode===m.id?'#c8a96e':'#888',textAlign:'center'}}>{m.label}</div>
-          <div style={{fontSize:'.65rem',color:'#666',textAlign:'center',lineHeight:1.3}}>{m.desc}</div>
+          <div className="img-mode-label">{m.label}</div>
+          <div className="img-mode-desc">{m.desc}</div>
         </div>
       ))}
     </div>
@@ -725,6 +758,7 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
         fgImage: p.fgImage||ev.image_url||null,
         fgImageUrl: p.fgImageUrl||ev.image_url||null,
       }));
+      setImageMode(m=>m==='none'?'eventcard':m);
     });
   },[code?.linked_ca017_event_id]);
 
@@ -801,7 +835,45 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
   }
 
   const posterStyle={width:fmt.w,height:fmt.h,background:poster.bgImage?'transparent':'#fff',color:poster.textColor,padding:fmt.small?'4mm':'10mm',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:needsCropMarks?'none':'1px solid #ddd',margin:needsCropMarks?'0':'1rem auto'};
-  const PosterContent=(
+  const eventCardStyle={width:fmt.w,height:fmt.h,background:'#fff',color:'#1a1a18',fontFamily:'Georgia,serif',position:'relative',overflow:'hidden',border:needsCropMarks?'none':'1px solid #ddd',margin:needsCropMarks?'0':'1rem auto',display:'flex',flexDirection:'column'};
+  const PosterContent=imageMode==='eventcard'?(
+    <div ref={posterRef} style={eventCardStyle}>
+      {poster.fgImage?(
+        <div style={{width:'100%',height:fmt.small?'80px':'130px',backgroundImage:`url(${poster.fgImage})`,backgroundSize:'cover',backgroundPosition:'center',flexShrink:0}}/>
+      ):(
+        <div style={{width:'100%',height:fmt.small?'40px':'70px',background:'#e8e8e8',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <span style={{fontSize:'7pt',color:'#bbb',letterSpacing:'.1em',textTransform:'uppercase'}}>No image</span>
+        </div>
+      )}
+      <div style={{flex:1,padding:fmt.small?'3mm':'6mm',display:'flex',flexDirection:'column',gap:fmt.small?'1.5mm':'2mm'}}>
+        <div style={{fontSize:fmt.small?'6pt':'7pt',letterSpacing:'.15em',textTransform:'uppercase',color:'#c0392b',opacity:.8}}>The Artyst · Cambridge</div>
+        <div style={{fontSize:fmt.small?'11pt':'20pt',fontWeight:'bold',lineHeight:1.2,color:'#1a1a18'}}>{poster.title||'Event Title'}</div>
+        {poster.subtitle&&<div style={{fontSize:fmt.small?'6pt':'8pt',color:'#666',lineHeight:1.4,overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>{poster.subtitle}</div>}
+        <div style={{height:'1px',background:'#eee',margin:fmt.small?'.5mm 0':'1.5mm 0'}}/>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:fmt.small?'1.5mm':'2mm'}}>
+          {poster.dateText&&(
+            <div>
+              <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.5mm'}}>Date & Time</div>
+              <div style={{fontSize:fmt.small?'6pt':'9pt',fontWeight:600,color:'#1a1a18',lineHeight:1.3}}>{poster.dateText}</div>
+            </div>
+          )}
+          {poster.price&&(
+            <div>
+              <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.1em',textTransform:'uppercase',color:'#aaa',marginBottom:'.5mm'}}>Price</div>
+              <div style={{fontSize:fmt.small?'7pt':'12pt',fontWeight:'bold',color:'#1a1a18'}}>{poster.price}</div>
+            </div>
+          )}
+        </div>
+        {code&&(
+          <div style={{marginTop:'auto',display:'flex',flexDirection:'column',alignItems:'center',gap:'1.5mm',paddingTop:'2mm',borderTop:'1px solid #eee'}}>
+            <QRWidget url={`${BASE_URL}/e/${code.slug}`} size={fmt.small?48:90}/>
+            <div style={{fontSize:fmt.small?'4.5pt':'6pt',letterSpacing:'.12em',textTransform:'uppercase',opacity:.5,textAlign:'center'}}>{poster.cta}</div>
+          </div>
+        )}
+      </div>
+      <div style={{height:fmt.small?'4mm':'6mm',background:'#c0392b',flexShrink:0}}/>
+    </div>
+  ):(
     <div ref={posterRef} style={posterStyle}>
       {poster.bgImage&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${poster.bgImage})`,backgroundSize:'cover',backgroundPosition:'center',zIndex:0}}/>}
       {poster.bgImage&&<div style={{position:'absolute',inset:0,background:poster.overlayColor,opacity:poster.overlayOpacity,zIndex:1}}/>}
