@@ -1,0 +1,1912 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Menu System — The Artyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#faf8f4;--warm:#f2ede6;--detail:#ede9e2;
+  --gold:#8a6a2e;--gold-light:#c8a96e;--gold-bg:#f5eedf;--gold-border:#e8d5a8;
+  --red:#c0392b;--dark:#1a1a18;--mid:#3a3a38;--muted:#777770;--border:#ddd9d0;
+  --green:#2a6a2a;--green-light:#5aff7a;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--warm);font-family:'DM Sans',sans-serif;}
+.deck{width:100%;height:100%;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;transform:translateY(24px);}
+.slide.active{opacity:1;pointer-events:all;transform:translateY(0);}
+.slide.exit{opacity:0;transform:translateY(-24px);}
+
+/* backgrounds */
+.bg-warm{background:var(--warm);}
+.bg-cream{background:var(--cream);}
+.bg-dark{background:var(--dark);}
+.bg-detail{background:var(--detail);}
+.bg-red{background:var(--red);}
+
+/* layout */
+.slide-inner{flex:1;display:flex;flex-direction:column;justify-content:center;padding:5vh 7vw;max-width:1300px;margin:0 auto;width:100%;}
+.slide-inner.wide{max-width:1500px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:start;}
+.two-col.center{align-items:center;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;}
+
+/* type */
+.eyebrow{font-family:'DM Mono',monospace;font-size:clamp(.6rem,.9vw,.78rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;}
+.eyebrow.light{color:var(--gold-light);}
+h1.display{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,4.8rem);line-height:1.05;font-weight:900;color:var(--dark);letter-spacing:-.02em;margin-bottom:1.2rem;}
+h1.display.light{color:var(--cream);}
+h1.display .accent{color:var(--red);}
+h2.section{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,3rem);line-height:1.1;font-weight:700;color:var(--dark);margin-bottom:.8rem;}
+h2.section.light{color:var(--cream);}
+.body-text{font-size:clamp(.88rem,1.3vw,1.05rem);color:var(--mid);line-height:1.8;max-width:58ch;}
+.body-text.light{color:rgba(250,248,244,.72);}
+.body-text.wide{max-width:70ch;}
+.rule{width:2.5rem;height:2px;background:var(--red);margin-bottom:1.3rem;}
+.rule.light{background:var(--gold-light);}
+
+/* cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:1.2rem;position:relative;}
+.card.gold{border-color:var(--gold-border);background:var(--gold-bg);}
+.card.dark{background:rgba(255,255,255,.04);border-color:rgba(200,169,110,.15);}
+.card.dark::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),transparent);}
+
+/* steps */
+.step{display:flex;align-items:flex-start;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--border);}
+.step:last-child{border-bottom:none;}
+.step-num{width:2rem;height:2rem;border-radius:50%;background:var(--red);color:#fff;font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;}
+.step-body h4{font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;}
+.step-body p{font-size:.8rem;color:var(--muted);line-height:1.6;}
+.step-body p.light{color:rgba(250,248,244,.55);}
+.step-body h4.light{color:var(--cream);}
+
+/* tags */
+.tag{display:inline-block;padding:.2rem .6rem;border:1px solid var(--gold-border);border-radius:2px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-family:'DM Mono',monospace;background:var(--gold-bg);}
+.tag.red{border-color:rgba(192,57,43,.25);color:var(--red);background:rgba(192,57,43,.06);}
+.tag.dark{border-color:rgba(200,169,110,.25);color:var(--gold-light);background:rgba(200,169,110,.06);}
+.tag.green{border-color:rgba(42,106,42,.25);color:var(--green);background:rgba(42,106,42,.06);}
+
+/* before/after */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.ba-col{border-radius:6px;padding:1.1rem;}
+.ba-col.before{background:#fff;border:1px solid var(--border);}
+.ba-col.after{background:var(--gold-bg);border:1px solid var(--gold-border);}
+.ba-label{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.7rem;}
+.ba-label.before{color:#bbb;}
+.ba-label.after{color:var(--gold);}
+.ba-row{display:flex;align-items:flex-start;gap:.6rem;font-size:.8rem;padding:.25rem 0;color:var(--mid);}
+.ba-row.after{color:var(--dark);}
+.ba-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:.4rem;}
+
+/* time savings */
+.saving{display:flex;align-items:center;gap:1rem;padding:.9rem 1rem;border-radius:4px;background:#fff;border:1px solid var(--border);margin-bottom:.6rem;}
+.saving-time{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--red);flex-shrink:0;min-width:80px;}
+.saving-desc h4{font-size:.85rem;font-weight:600;color:var(--dark);margin-bottom:.15rem;}
+.saving-desc p{font-size:.75rem;color:var(--muted);line-height:1.4;}
+.saving-new{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--green);letter-spacing:.06em;}
+
+/* format previews */
+.fp{background:#fff;border-radius:4px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.fp-hdr{background:var(--warm);padding:.6rem .8rem .4rem;border-bottom:1px solid var(--border);}
+.fp-venue{font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+.fp-title{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--dark);}
+.fp-body{padding:.6rem .8rem;}
+.fp-cat{font-size:.42rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:.4rem 0 .12rem;font-weight:600;}
+.fp-row{display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);}
+.fp-row .pr{font-weight:600;}
+.fp-cta{padding:.45rem .8rem;border-top:1px solid var(--border);background:var(--warm);display:flex;align-items:center;gap:.45rem;}
+.qb{border-radius:2px;display:grid;gap:2px;padding:2.5px;flex-shrink:0;}
+.qc{background:#fff;border-radius:1px;}
+
+/* channel pills */
+.channels{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;}
+.ch{display:flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:20px;background:#fff;border:1px solid var(--border);font-size:.78rem;color:var(--dark);}
+.ch span{font-size:1rem;}
+
+/* nav */
+.progress{position:fixed;bottom:0;left:0;right:0;height:2px;background:rgba(138,106,46,.15);z-index:100;}
+.progress-bar{height:100%;background:var(--red);transition:width .4s ease;}
+.nav{position:fixed;bottom:1.8rem;right:2rem;display:flex;gap:.6rem;z-index:100;}
+.nav-btn{width:2.8rem;height:2.8rem;border-radius:50%;border:1.5px solid rgba(138,106,46,.5);background:rgba(250,248,244,.9);backdrop-filter:blur(8px);color:var(--gold);cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.nav-btn:hover{background:#fff;border-color:var(--gold);box-shadow:0 2px 20px rgba(138,106,46,.2);}
+.slide-counter{position:fixed;bottom:2.3rem;left:2rem;z-index:100;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.1em;color:rgba(138,106,46,.6);background:rgba(250,248,244,.85);backdrop-filter:blur(8px);padding:.3rem .7rem;border-radius:20px;border:1px solid rgba(138,106,46,.2);}
+.watermark{position:fixed;bottom:1.8rem;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(138,106,46,.2);z-index:100;white-space:nowrap;}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .a1{animation:fadeUp .45s .08s both}
+.slide.active .a2{animation:fadeUp .45s .16s both}
+.slide.active .a3{animation:fadeUp .45s .24s both}
+.slide.active .a4{animation:fadeUp .45s .32s both}
+.slide.active .a5{animation:fadeUp .45s .40s both}
+.slide.active .a6{animation:fadeUp .45s .48s both}
+@media(max-width:900px){.two-col,.three-col,.ba-grid{grid-template-columns:1fr;}h1.display{font-size:2rem;}h2.section{font-size:1.5rem;}}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1 COVER -->
+<div class="slide bg-cream active">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);"></div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border);"></div>
+  <div class="slide-inner" style="justify-content:space-between;padding-top:8vh;padding-bottom:7vh;">
+    <div class="a1" style="display:flex;align-items:center;gap:.7rem;">
+      <div style="width:22px;height:22px;background:var(--red);border-radius:2px;"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);">The Artyst — Internal guide</span>
+    </div>
+    <div>
+      <div class="eyebrow a2">Menu system · CA-022 &amp; CA-023</div>
+      <h1 class="display a3">The menu.<br/>Managed <span class="accent">once.</span><br/>Published everywhere.</h1>
+      <p class="body-text a4" style="margin-top:1rem;">How to create, update and distribute<br/>the menu — and why it saves hours<br/>every single week.</p>
+    </div>
+    <div class="a5" style="display:flex;gap:.7rem;flex-wrap:wrap;">
+      <span class="tag">Edit inline</span>
+      <span class="tag">Live updates</span>
+      <span class="tag">Print-ready</span>
+      <span class="tag">All screens</span>
+      <span class="tag">Social formats</span>
+    </div>
+  </div>
+</div>
+
+<!-- 2 THE BIG IDEA -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow a1">The big idea</div>
+        <div class="rule a2"></div>
+        <h2 class="section a3">One edit.<br/>Updated everywhere.</h2>
+        <p class="body-text a4" style="margin-top:.8rem;">The menu lives in one place — a live database. Every surface that shows the menu reads from that database. Change a price, add a dish, mark something unavailable — and it updates instantly on the digital menu, the screens, the print templates, and the next poster you make.</p>
+        <p class="body-text a4" style="margin-top:.8rem;">There is no "menu file". There is no emailing a PDF to the printers. There is no remembering to update the chalkboard and the website and the Instagram.</p>
+      </div>
+      <div class="a5" style="display:flex;flex-direction:column;gap:.8rem;">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:1.2rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#bbb;margin-bottom:.8rem;">Old way</div>
+          <div style="display:flex;flex-direction:column;gap:.4rem;">
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);"><div style="width:5px;height:5px;border-radius:50%;background:#ddd;flex-shrink:0;"></div>Edit the menu on your laptop</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);"><div style="width:5px;height:5px;border-radius:50%;background:#ddd;flex-shrink:0;"></div>Send new PDF to the printer</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);"><div style="width:5px;height:5px;border-radius:50%;background:#ddd;flex-shrink:0;"></div>Update the website separately</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);"><div style="width:5px;height:5px;border-radius:50%;background:#ddd;flex-shrink:0;"></div>Update the screens separately</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);"><div style="width:5px;height:5px;border-radius:50%;background:#ddd;flex-shrink:0;"></div>Redesign the Instagram graphic</div>
+          </div>
+          <div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:.68rem;color:var(--red);">~2 hours · easily goes wrong</div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:1.2rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;">New way</div>
+          <div style="display:flex;flex-direction:column;gap:.4rem;">
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>Click the price. Type the new one. Done.</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);padding-left:1.1rem;font-style:italic;">Digital menu: updated instantly</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);padding-left:1.1rem;font-style:italic;">Screens: updated instantly</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);padding-left:1.1rem;font-style:italic;">Print templates: ready to use</div>
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted);padding-left:1.1rem;font-style:italic;">Social images: generate in one click</div>
+          </div>
+          <div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--gold-border);font-family:'DM Mono',monospace;font-size:.68rem;color:var(--green);">~30 seconds · impossible to miss a surface</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 THE MENU EDITOR -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow a1">How to edit the menu</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.5rem;">Go to Menu Editor.<br/>Click anything to edit it.</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Open the admin panel</h4>
+            <p>go.theartyst.co.uk/admin → sign in → Configure → Menu Editor</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Find the item</h4>
+            <p>Use the category nav at the top to jump to the right section. Categories are numbered so you can see the full menu structure at a glance.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Click to edit inline</h4>
+            <p>Click any name, description or price — it becomes editable on the spot. No separate form, no save button hunting. Press Enter or click away to save.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Toggle availability</h4>
+            <p>The <strong>On</strong> toggle marks an item as available on the eat-in menu. The <strong>T/A</strong> toggle marks it as available for takeaway. Changes are live immediately.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Add or hide a category</h4>
+            <p>Use <strong>+ Add Item</strong> within a category, or <strong>+ New Menu Category</strong> for a whole new section. Use <strong>Hide Category</strong> to remove it from the menu without deleting it.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07);">
+          <div style="background:var(--dark);padding:.7rem 1rem;display:flex;align-items:center;gap:.6rem;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#28c840;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.6);margin-left:.5rem;">go.theartyst.co.uk/admin</span>
+          </div>
+          <div style="padding:1.2rem;">
+            <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-family:'DM Mono',monospace;">Menu Editor</div>
+            <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:3px;padding:.7rem .9rem;font-size:.72rem;color:var(--dark);line-height:1.7;margin-bottom:.8rem;">
+              Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway. Changes are live immediately.
+            </div>
+            <div style="background:var(--detail);border-radius:4px;padding:.6rem .8rem;margin-bottom:.6rem;">
+              <div style="font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.5rem;">ESPRESSO DRINKS</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;border-bottom:.5px solid var(--border);">
+                <span style="font-size:.72rem;color:var(--dark);">Espresso</span>
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <span style="font-size:.72rem;color:var(--dark);font-weight:600;background:#fff;padding:.15rem .4rem;border:1px solid var(--border);border-radius:2px;">£3.50</span>
+                  <div style="width:28px;height:14px;border-radius:7px;background:var(--green);"></div>
+                  <div style="width:28px;height:14px;border-radius:7px;background:var(--green);"></div>
+                  <span style="font-size:.6rem;color:var(--gold);background:var(--gold-bg);padding:.1rem .3rem;border-radius:2px;border:1px solid var(--gold-border);">EDIT</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;border-bottom:.5px solid var(--border);">
+                <span style="font-size:.72rem;color:var(--dark);">Flat white</span>
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <span style="font-size:.72rem;color:var(--dark);font-weight:600;background:rgba(192,57,43,.06);padding:.15rem .4rem;border:1px solid rgba(192,57,43,.2);border-radius:2px;color:var(--red);">£3.75 ▍</span>
+                  <div style="width:28px;height:14px;border-radius:7px;background:var(--green);"></div>
+                  <div style="width:28px;height:14px;border-radius:7px;background:var(--green);"></div>
+                  <span style="font-size:.6rem;color:var(--gold);background:var(--gold-bg);padding:.1rem .3rem;border-radius:2px;border:1px solid var(--gold-border);">EDIT</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;">
+                <span style="font-size:.72rem;color:var(--dark);opacity:.4;">Iced latte</span>
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <span style="font-size:.72rem;color:var(--dark);font-weight:600;opacity:.4;">£4.00</span>
+                  <div style="width:28px;height:14px;border-radius:7px;background:#ddd;"></div>
+                  <div style="width:28px;height:14px;border-radius:7px;background:var(--green);"></div>
+                  <span style="font-size:.6rem;color:var(--muted);padding:.1rem .3rem;">EDIT</span>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:.65rem;color:var(--muted);font-style:italic;">↑ Iced latte is marked unavailable (greyed out). Flat white price is being edited inline.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3b CATEGORY ATTRIBUTIONS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow dark a1">Supplier &amp; partner credits</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3">Give credit where<br/>it's due — on print,<br/>screen, and digital.</h2>
+        <p class="body-text dark-text a4" style="margin-top:.8rem;">Each menu category can carry an optional attribution line — a short credit that appears directly beneath the category heading. Use it to name the supplier, partner, or producer behind that section of the menu.</p>
+        <div class="a5" style="display:flex;flex-direction:column;gap:.5rem;margin-top:1.2rem;">
+          <div style="padding:.65rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem;">Tapas</div>
+            <div style="font-size:.8rem;font-style:italic;color:var(--gold);opacity:.85;">Tapas menu developed in association with La Dispensa</div>
+          </div>
+          <div style="padding:.65rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem;">Ice cream</div>
+            <div style="font-size:.8rem;font-style:italic;color:var(--gold);opacity:.85;">Ice-creams from Saffron Ices</div>
+          </div>
+          <div style="padding:.65rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem;">Wine</div>
+            <div style="font-size:.8rem;font-style:italic;color:var(--gold);opacity:.85;">Wines from Cambridge Wine Merchants</div>
+          </div>
+          <div style="padding:.65rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem;">Coffee</div>
+            <div style="font-size:.8rem;font-style:italic;color:var(--gold);opacity:.85;">Coffee roasted by Quarter Horse, Birmingham</div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07);">
+          <div style="background:var(--dark);padding:.7rem 1rem;display:flex;align-items:center;gap:.6rem;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#28c840;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.6);margin-left:.5rem;">Menu Editor — category header</span>
+          </div>
+          <div style="padding:1.2rem;">
+            <!-- Category header showing attribution -->
+            <div style="background:var(--gold-bg);border-left:3px solid var(--gold,#c8a96e);border-radius:2px;padding:.4rem .7rem;margin-bottom:.8rem;">
+              <div style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--gold);">Wine</div>
+              <div style="display:flex;align-items:center;gap:.4rem;margin-top:.2rem;">
+                <span style="font-size:.75rem;color:var(--gold);font-style:italic;">Wines from Cambridge Wine Merchants</span>
+                <span style="font-size:.65rem;color:#aaa;cursor:pointer;">✏ edit attribution</span>
+              </div>
+            </div>
+            <!-- Category with no attribution yet -->
+            <div style="background:var(--gold-bg);border-left:3px solid var(--gold,#c8a96e);border-radius:2px;padding:.4rem .7rem;margin-bottom:.8rem;">
+              <div style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--gold);">Espresso Drinks</div>
+              <div style="display:flex;align-items:center;gap:.4rem;margin-top:.15rem;">
+                <span style="font-size:.65rem;color:#aaa;cursor:pointer;">+ add attribution</span>
+              </div>
+            </div>
+            <!-- Attribution in edit mode -->
+            <div style="background:var(--gold-bg);border-left:3px solid var(--gold,#c8a96e);border-radius:2px;padding:.4rem .7rem;">
+              <div style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--gold);">Ice cream</div>
+              <div style="display:flex;align-items:center;gap:.3rem;margin-top:.3rem;">
+                <input value="Ice-creams from Saffron Ices" style="flex:1;padding:.25rem .4rem;font-size:.78rem;background:#fff;border:1px solid var(--gold);border-radius:2px;color:var(--dark,#1a1a18);" readonly/>
+                <span style="font-size:.6rem;background:var(--red,#c0392b);color:#fff;padding:.15rem .35rem;border-radius:2px;cursor:pointer;">Save</span>
+                <span style="font-size:.6rem;color:#aaa;cursor:pointer;">✕</span>
+              </div>
+            </div>
+            <div style="font-size:.65rem;color:var(--muted);font-style:italic;margin-top:.8rem;">↑ Three states: set · unset · being edited. Click ✏ or + to edit. Press Enter or Save to save.</div>
+          </div>
+        </div>
+        <div style="margin-top:.8rem;padding:.7rem .9rem;background:var(--detail);border:1px solid var(--border);border-radius:4px;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.25rem;">Where it appears</div>
+          <div style="display:flex;flex-direction:column;gap:.25rem;">
+            <div style="font-size:.78rem;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--green,#2a6a2a);flex-shrink:0;">✓</div>All print formats — beneath the category heading</div>
+            <div style="font-size:.78rem;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--green,#2a6a2a);flex-shrink:0;">✓</div>Digital menu — as italic gold text under the category label</div>
+            <div style="font-size:.78rem;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--green,#2a6a2a);flex-shrink:0;">✓</div>Summary card — in the mini menu front panel</div>
+            <div style="font-size:.78rem;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--green,#2a6a2a);flex-shrink:0;">✓</div>Optional — categories without one are unaffected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 WHAT IT UPDATES -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="eyebrow a1">What one edit updates</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:.5rem;">Every change flows<br/>to every surface.</h2>
+    <p class="body-text a4" style="margin-bottom:1.5rem;">When you edit a menu item, here is everything that picks it up automatically:</p>
+    <div class="three-col a5">
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">📱</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">Digital menu</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">go.theartyst.co.uk/menu — what customers scan at the table. Updates instantly. No reload needed.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">Instant</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">🖥</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">In-venue screens</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">Window, POS and wall screens all pull from the same data. Within 5 minutes, screens refresh to show the change.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">Within 5 min</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">🖨</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">Print templates</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">When you open Print Menu, it fetches the live data. The next time you print, it shows the current menu — not an old file.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">On next print</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">📸</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">Social images</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">Download PNG from the Print Menu tool. Instagram, Facebook, Story — all sized and ready. Always shows the current menu.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">On export</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">📋</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">Summary cards</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">The duplex A5 summary card (mini menu front, events + jobs back) always pulls the current menu highlights when you print it.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">On print</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.6rem;">🔗</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;">QR codes</h3>
+        <p style="font-size:.8rem;color:var(--muted);line-height:1.6;">All QR codes pointing at the menu point at the live version. Printed QR codes on table cards never go out of date.</p>
+        <div style="margin-top:.7rem;"><span class="tag green">Always current</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 PRINT MENU -->
+<div class="slide bg-cream">
+  <div class="slide-inner wide">
+    <div class="eyebrow a1">Printing the menu</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Choose your format.<br/>Print in 60 seconds.</h2>
+    <p class="body-text a4" style="margin-bottom:1.5rem;">Menu Editor → Print Menu button. Pick what you need and hit Print.</p>
+    <div class="a5" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;align-items:start;">
+      <!-- Full -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Full menu · A4</div>
+        <div class="fp">
+          <div class="fp-hdr"><div class="fp-venue">The Artyst · Cambridge</div><div class="fp-title">Menu</div></div>
+          <div class="fp-body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 .6rem;">
+            <div>
+              <div class="fp-cat">Espresso</div>
+              <div class="fp-row"><span>Espresso</span><span class="pr">£3.50</span></div>
+              <div class="fp-row"><span>Flat white</span><span class="pr">£3.75</span></div>
+              <div class="fp-cat">Tea</div>
+              <div class="fp-row"><span>Cup</span><span class="pr">£2.50</span></div>
+            </div>
+            <div>
+              <div class="fp-cat">Wine</div>
+              <div class="fp-row"><span>House red</span><span class="pr">£6</span></div>
+              <div class="fp-row"><span>House white</span><span class="pr">£6</span></div>
+              <div class="fp-cat">Gin</div>
+              <div class="fp-row"><span>Whitley Neill</span><span class="pr">£7.50</span></div>
+            </div>
+          </div>
+          <div class="fp-cta">
+            <div class="qb" style="width:22px;height:22px;background:var(--dark);grid-template-columns:1fr 1fr 1fr;">
+              <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div style="background:var(--dark);border-radius:1px;"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+            </div>
+            <div style="font-size:.44rem;color:var(--muted);">Scan for full menu</div>
+          </div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:.4rem;line-height:1.4;">All items. 2 columns. Dietary tags included.</div>
+      </div>
+      <!-- Clean -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Clean card · A5</div>
+        <div class="fp">
+          <div class="fp-hdr"><div class="fp-venue">The Artyst</div><div class="fp-title" style="font-size:.85rem;">Bar menu</div></div>
+          <div class="fp-body">
+            <div class="fp-cat">Wines</div>
+            <div class="fp-row" style="font-size:.65rem;padding:.2rem 0;"><span>House red</span><span class="pr">£6</span></div>
+            <div class="fp-row" style="font-size:.65rem;padding:.2rem 0;"><span>Rosé</span><span class="pr">£6</span></div>
+            <div class="fp-cat">Spirits</div>
+            <div class="fp-row" style="font-size:.65rem;padding:.2rem 0;"><span>Gin &amp; T</span><span class="pr">£7.50</span></div>
+            <div class="fp-row" style="font-size:.65rem;padding:.2rem 0;"><span>Rum</span><span class="pr">£7.50</span></div>
+          </div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:.4rem;line-height:1.4;">Larger text, no descriptions. Great for bar cards.</div>
+      </div>
+      <!-- Specials -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Specials · A5</div>
+        <div class="fp">
+          <div class="fp-hdr"><div class="fp-venue">Today's specials</div><div class="fp-title" style="font-size:.85rem;">Lunch</div></div>
+          <div class="fp-body">
+            <div class="fp-cat">Food</div>
+            <div class="fp-row" style="font-size:.7rem;padding:.28rem 0;font-weight:500;"><span>Soup of the day</span><span class="pr">£5.50</span></div>
+            <div class="fp-row" style="font-size:.7rem;padding:.28rem 0;font-weight:500;"><span>Toastie</span><span class="pr">£8.50</span></div>
+            <div class="fp-cat">Drinks</div>
+            <div class="fp-row" style="font-size:.7rem;padding:.28rem 0;font-weight:500;"><span>Cocktail of the day</span><span class="pr">~£9</span></div>
+          </div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:.4rem;line-height:1.4;">Bold type. 3 items per section max. Ideal for chalkboard-style printing.</div>
+      </div>
+      <!-- Summary front -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Summary front · A5</div>
+        <div class="fp">
+          <div class="fp-hdr"><div class="fp-venue">The Artyst · Cambridge</div><div class="fp-title" style="font-size:.75rem;">Menu</div></div>
+          <div class="fp-body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 .5rem;">
+            <div>
+              <div class="fp-cat">Coffee</div>
+              <div class="fp-row"><span>Espresso</span><span class="pr">£3.50</span></div>
+              <div class="fp-row"><span>Latte</span><span class="pr">£3.75</span></div>
+            </div>
+            <div>
+              <div class="fp-cat">Bar</div>
+              <div class="fp-row"><span>Wine</span><span class="pr">£6</span></div>
+              <div class="fp-row"><span>G&amp;T</span><span class="pr">£7.50</span></div>
+            </div>
+          </div>
+          <div class="fp-cta">
+            <div class="qb" style="width:22px;height:22px;background:var(--dark);grid-template-columns:1fr 1fr 1fr;">
+              <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div style="background:var(--dark);border-radius:1px;"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+            </div>
+            <div style="font-size:.44rem;color:var(--muted);">Full menu on your phone</div>
+          </div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:.4rem;line-height:1.4;">Compact highlights. Put on every table.</div>
+      </div>
+      <!-- Summary back -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Summary back · A5</div>
+        <div class="fp" style="background:var(--warm);">
+          <div class="fp-hdr" style="background:var(--warm);"><div class="fp-venue">The Artyst · Cambridge</div><div class="fp-title" style="font-size:.75rem;">What's On</div></div>
+          <div class="fp-body">
+            <div class="fp-cat">Events</div>
+            <div style="display:flex;gap:.3rem;align-items:flex-start;padding:.15rem 0;border-bottom:.3px solid #e8e4dc;">
+              <div class="qb" style="width:14px;height:14px;background:var(--dark);grid-template-columns:1fr 1fr;flex-shrink:0;margin-top:1px;"><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div></div>
+              <div><div style="font-size:.5rem;font-weight:600;color:var(--dark);">Tarot Reading</div><div style="font-size:.42rem;color:var(--red);">Wed 29 Apr</div></div>
+            </div>
+            <div style="display:flex;gap:.3rem;align-items:flex-start;padding:.15rem 0;border-bottom:.3px solid #e8e4dc;">
+              <div class="qb" style="width:14px;height:14px;background:var(--dark);grid-template-columns:1fr 1fr;flex-shrink:0;margin-top:1px;"><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div></div>
+              <div><div style="font-size:.5rem;font-weight:600;color:var(--dark);">Social Salsa</div><div style="font-size:.42rem;color:var(--red);">Sat 2 May</div></div>
+            </div>
+            <div class="fp-cat" style="margin-top:.3rem;">Join Us</div>
+            <div style="font-size:.48rem;color:var(--dark);">Bar Manager · apply via QR</div>
+          </div>
+          <div class="fp-cta" style="background:#fff;">
+            <div class="qb" style="width:22px;height:22px;background:var(--dark);grid-template-columns:1fr 1fr 1fr;">
+              <div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div style="background:var(--dark);border-radius:1px;"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div><div class="qc"></div>
+            </div>
+            <div style="font-size:.44rem;color:var(--muted);">Book tickets &amp; find out more</div>
+          </div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);margin-top:.4rem;line-height:1.4;">Print duplex. Events auto-fetched live.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 TIME & SLOT FILTERS -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow a1">Smart filtering</div>
+        <div class="rule a2"></div>
+        <h2 class="section a3">Print the right menu<br/>for the right time.</h2>
+        <p class="body-text a4" style="margin-top:.8rem;">The Print Menu tool knows about your time slots — Brunch, Lunch, Afternoon Tea, Evening. Select one and it filters out items that aren't available at that time, based on the slots you've assigned to each item in the Menu Editor.</p>
+        <p class="body-text a4" style="margin-top:.7rem;">Print a brunch menu at 10am. Print an evening bar card at 5pm. The data is already there — the system just filters it for you.</p>
+        <div class="a5" style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.5rem;">
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;background:#fff;border:1px solid var(--border);border-radius:4px;">
+            <span style="font-size:1.1rem;">☀️</span>
+            <div><div style="font-size:.82rem;font-weight:500;color:var(--dark);">Brunch — 8am to 12pm</div><div style="font-size:.72rem;color:var(--muted);">Breakfast items, pastries, coffee, non-alcoholic drinks</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <span style="font-size:1.1rem;">🕛</span>
+            <div><div style="font-size:.82rem;font-weight:500;color:var(--dark);">Lunch — 12pm to 2pm</div><div style="font-size:.72rem;color:var(--muted);">Food, soft drinks, wines and beer from midday</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;background:#fff;border:1px solid var(--border);border-radius:4px;">
+            <span style="font-size:1.1rem;">🫖</span>
+            <div><div style="font-size:.82rem;font-weight:500;color:var(--dark);">Afternoon tea — 2pm to 5pm</div><div style="font-size:.72rem;color:var(--muted);">Afternoon tea set, cakes, tea, coffee</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;background:#fff;border:1px solid var(--border);border-radius:4px;">
+            <span style="font-size:1.1rem;">🌙</span>
+            <div><div style="font-size:.82rem;font-weight:500;color:var(--dark);">Evening — 5pm to close</div><div style="font-size:.72rem;color:var(--muted);">Full bar, cocktails, evening food options</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.3rem;box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Also in Print Menu</div>
+          <div style="display:flex;flex-direction:column;gap:.8rem;">
+            <div style="padding:.7rem;background:var(--detail);border-radius:4px;">
+              <div style="font-size:.75rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">📑 Cover page</div>
+              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Add a cover page with venue name, tagline, and a QR code to the digital menu. Optional and fully editable.</div>
+            </div>
+            <div style="padding:.7rem;background:var(--detail);border-radius:4px;">
+              <div style="font-size:.75rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">↕ Reorder categories</div>
+              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Use ▲ ▼ arrows to change the order categories appear in the printed menu — without affecting the digital menu order.</div>
+            </div>
+            <div style="padding:.7rem;background:var(--detail);border-radius:4px;">
+              <div style="font-size:.75rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">📅 Date stamp</div>
+              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Toggle "Show today's date" and the current date appears on the header. Useful for specials boards and event menus.</div>
+            </div>
+            <div style="padding:.7rem;background:var(--detail);border-radius:4px;">
+              <div style="font-size:.75rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">📄 Page footers</div>
+              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Toggle footers and every printed page gets venue name left, menu title centre, and page number right — automatically.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 SOCIAL & SCREENS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow a1">Beyond print</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Same content.<br/>Every format.</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:.8rem;">Download as image</h3>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:.8rem;">In Print Menu, hit <strong style="color:var(--dark);">⬇ Download PNG</strong>. You get a high-resolution image of exactly what you see in the preview — ready to post on Instagram, Facebook, or send on WhatsApp. No extra design work.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.2rem;">
+          <span class="tag">Instagram feed</span>
+          <span class="tag">Instagram story</span>
+          <span class="tag">Facebook post</span>
+          <span class="tag">TikTok</span>
+          <span class="tag">WhatsApp</span>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">💡 Tip for social</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;">For Instagram, use <strong style="color:var(--dark);">Square (Instagram)</strong> or <strong style="color:var(--dark);">Story (9:16)</strong> in the Format dropdown before downloading — the image will be the right dimensions for the platform.</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:.8rem;">The venue screens</h3>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:.8rem;">The three screens — window, bar, wall — are managed in the QR Engine under <strong style="color:var(--dark);">Publish → Screens</strong>. Assign a menu QR code to a screen zone and customers at the bar can scan the screen to open the full digital menu on their phone.</p>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;background:#fff;border:1px solid var(--border);border-radius:4px;font-size:.8rem;">
+            <span>🪟</span><span style="color:var(--dark);font-weight:500;">Window</span><span style="color:var(--muted);">— faces the street</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;background:#fff;border:1px solid var(--border);border-radius:4px;font-size:.8rem;">
+            <span>🍺</span><span style="color:var(--dark);font-weight:500;">POS</span><span style="color:var(--muted);">— at the bar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;background:#fff;border:1px solid var(--border);border-radius:4px;font-size:.8rem;">
+            <span>🖼</span><span style="color:var(--dark);font-weight:500;">Wall</span><span style="color:var(--muted);">— in the seating area</span>
+          </div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">💡 Screens rotate</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;">You can assign multiple QR codes to a screen zone and they rotate automatically — useful for cycling between the menu, an upcoming event, and a job ad during service.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 TIME & WORK SAVINGS — REBUILT -->
+<div class="slide bg-cream">
+  <div class="slide-inner wide">
+    <div class="eyebrow a1">Why it matters</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.5rem;">Real tasks. Real time.<br/>Before and after.</h2>
+    <div class="a4" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;">
+
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div style="background:#f8f6f4;border:1px solid var(--border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#bbb;margin-bottom:.6rem;">Before</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;text-decoration:line-through;text-decoration-color:#ddd;">Open Canva. Find the menu file. Edit the price. Export PDF. Email to printer. Separately update the website. Separately update the screens. Redo the Instagram graphic.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff0ee;border-radius:3px;text-align:center;">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0a090;line-height:1;">2 hrs</div>
+            <div style="font-size:.6rem;color:#bbb;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">minimum</div>
+          </div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;">After</div>
+          <div style="font-size:.82rem;color:var(--dark);line-height:1.6;font-weight:500;">Click the price. Type the new number. Done. Every surface updates.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff;border-radius:3px;text-align:center;border:1px solid var(--gold-border);">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--green);line-height:1;">2 min</div>
+            <div style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">including screens</div>
+          </div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--dark);text-align:center;">Changing a price</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div style="background:#f8f6f4;border:1px solid var(--border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#bbb;margin-bottom:.6rem;">Before</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;text-decoration:line-through;text-decoration-color:#ddd;">Brief a designer. Wait 2 days. Review. Amend. Pay £80–150. Print on the day. Hope nothing has changed since the brief.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff0ee;border-radius:3px;text-align:center;">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0a090;line-height:1;">2 days</div>
+            <div style="font-size:.6rem;color:#bbb;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">+ £80–150 design fee</div>
+          </div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;">After</div>
+          <div style="font-size:.82rem;color:var(--dark);line-height:1.6;font-weight:500;">Specials style → Evening filter → add tonight's title → Print. It always shows the current data.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff;border-radius:3px;text-align:center;border:1px solid var(--gold-border);">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--green);line-height:1;">5 min</div>
+            <div style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">£0 · any time</div>
+          </div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--dark);text-align:center;">Specials board for an event</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div style="background:#f8f6f4;border:1px solid var(--border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#bbb;margin-bottom:.6rem;">Before</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;text-decoration:line-through;text-decoration-color:#ddd;">Export the current menu as an image somehow. Resize it for Instagram. Resize it again for Stories. Post separately to each platform.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff0ee;border-radius:3px;text-align:center;">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0a090;line-height:1;">45 min</div>
+            <div style="font-size:.6rem;color:#bbb;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">per platform</div>
+          </div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;">After</div>
+          <div style="font-size:.82rem;color:var(--dark);line-height:1.6;font-weight:500;">Format → Square or Story → Download PNG. Correctly sized. Always current. One click.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff;border-radius:3px;text-align:center;border:1px solid var(--gold-border);">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--green);line-height:1;">30 sec</div>
+            <div style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">per format</div>
+          </div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--dark);text-align:center;">Social media image</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div style="background:#f8f6f4;border:1px solid var(--border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#bbb;margin-bottom:.6rem;">Before</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;text-decoration:line-through;text-decoration-color:#ddd;">Design a custom menu for the private hire. Add their branding. Print. Realise a price was wrong. Reprint. Arrive on the day with the wrong number of copies.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff0ee;border-radius:3px;text-align:center;">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e0a090;line-height:1;">2 hrs</div>
+            <div style="font-size:.6rem;color:#bbb;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">+ reprinting</div>
+          </div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:1rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;">After</div>
+          <div style="font-size:.82rem;color:var(--dark);line-height:1.6;font-weight:500;">Title "Afternoon Tea — 3 May" · Afternoon Tea filter · Cover page on · A5 · Print. Done. Last-minute change? Edit and reprint in 2 minutes.</div>
+          <div style="margin-top:.7rem;padding:.4rem .6rem;background:#fff;border-radius:3px;text-align:center;border:1px solid var(--gold-border);">
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--green);line-height:1;">5 min</div>
+            <div style="font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;">changes included</div>
+          </div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--dark);text-align:center;">Private hire menu</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 8b WHAT IT WOULD COST -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow a1">The cost comparison</div>
+        <div class="rule a2"></div>
+        <h2 class="section a3">What this would<br/>cost to do without<br/>the system.</h2>
+        <p class="body-text a4" style="margin-top:.8rem;">These are real costs that hospitality businesses pay every year. Each tool only solves one part of the problem. Together they still don't give you what this system gives you in one place.</p>
+        <div class="a5" style="margin-top:1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--red);line-height:1;">£16k+</div>
+            <div style="font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:.2rem;">Annual replacement cost</div>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--dark);line-height:1;">£240</div>
+            <div style="font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:.2rem;">Our annual hosting cost</div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:.5rem .8rem;border-bottom:1px solid var(--border);text-align:left;">Tool you'd need instead</th>
+              <th style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:.5rem .8rem;border-bottom:1px solid var(--border);text-align:right;">Per year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">Canva Pro or Adobe for design</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£840</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">Digital signage software (ScreenCloud)</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£1,800</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">QR code management (Bitly Teams)</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£720</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">Menu management system</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£960</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">Freelance design (posters, social, print)</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£6,000+</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.55rem .8rem;">Email + WhatsApp marketing platform</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.55rem .8rem;text-align:right;">£1,800</td>
+            </tr>
+            <tr>
+              <td style="font-size:.85rem;font-weight:600;color:var(--dark);padding:.6rem .8rem;border-top:2px solid var(--border);">Total</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--red);font-weight:600;padding:.6rem .8rem;border-top:2px solid var(--border);text-align:right;">~£12,120+</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:.8rem;font-size:.72rem;color:var(--muted);font-style:italic;">Plus £50k–120k to have an agency build the custom parts.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU EXAMPLE 1: FULL A4 -->
+<div class="slide bg-cream">
+  <div class="slide-inner wide">
+    <div class="eyebrow a1">Menu format 1 of 5</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Full Menu — A4</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <p class="body-text" style="margin-bottom:1.2rem;">The complete menu in two columns. All items, descriptions, and dietary tags. Ideal for table menus, takeaway menus, and the main printed menu for the venue.</p>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>All categories</strong> — or select just the ones you need</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Descriptions included</strong> — helps customers choose</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Dietary tags</strong> — vegan, gluten-free etc. shown automatically</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>QR code optional</strong> — footer or per-section</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Page footers</strong> — venue, title, page number on every page</div></div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Best used for</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Table menus · Board display · PDF to email to clients · Takeaway menu · Full menu archive</div>
+        </div>
+      </div>
+      <div style="max-width:340px;">
+        <div style="background:#fff;border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1);">
+          <div style="background:var(--warm);padding:.8rem 1.1rem .6rem;border-bottom:1px solid var(--border);">
+            <div style="font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem;">The Artyst · 54–56 Chesterton Road · Cambridge</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--dark);">Menu</div>
+          </div>
+          <div style="padding:.8rem 1.1rem;display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;">
+            <div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Espresso drinks</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Espresso</span><span style="font-weight:600;">£3.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Americano</span><span style="font-weight:600;">£3.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Cappuccino</span><span style="font-weight:600;">£3.75</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Latte</span><span style="font-weight:600;">£3.75</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Flat white</span><span style="font-weight:600;">£3.75</span></div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Tea</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Cup</span><span style="font-weight:600;">£2.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Pot for two</span><span style="font-weight:600;">£5</span></div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Cold drinks</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Kombucha</span><span style="font-weight:600;">£3.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Milk</span><span style="font-weight:600;">£2</span></div>
+            </div>
+            <div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Wine</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>House red</span><span style="font-weight:600;">£6</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>House white</span><span style="font-weight:600;">£6</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Rosé</span><span style="font-weight:600;">£6</span></div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Gin</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Whitley Neill</span><span style="font-weight:600;">£4/7.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>UKIYO</span><span style="font-weight:600;">£4/7.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Gordon's</span><span style="font-weight:600;">£4/7.50</span></div>
+              <div style="font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .15rem;padding-bottom:.1rem;border-bottom:.5px solid var(--gold-border);">Cocktails</div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;border-bottom:.3px solid #f0ece7;font-size:.65rem;color:var(--dark);"><span>Bloody Mary</span><span style="font-weight:600;">£9.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.18rem 0;font-size:.65rem;color:var(--dark);"><span>Cocktail of day</span><span style="font-weight:600;">~£9</span></div>
+            </div>
+          </div>
+          <div style="padding:.5rem 1.1rem;border-top:1px solid var(--border);background:var(--warm);display:flex;align-items:center;gap:.5rem;">
+            <div style="width:24px;height:24px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div style="font-size:.5rem;color:var(--muted);">Scan for the full digital menu · go.theartyst.co.uk/menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU EXAMPLE 2: SPECIALS -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="eyebrow a1">Menu format 2 of 5</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Specials — A5</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <p class="body-text" style="margin-bottom:1.2rem;">Bold, large type. Three items per section maximum. Designed to be read at a distance — ideal for a specials board, event menus, and anything with a short, curated selection.</p>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Time filter</strong> — print only what's available right now</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Add a title</strong> — "Tonight's specials", "Lunch", "Prix fixe"</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Date stamp</strong> — automatically shows today's date if enabled</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Select categories</strong> — tick only the sections relevant to tonight</div></div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Best used for</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Specials board · Event evening menu · Lunch card · Wine of the week · Private dining</div>
+        </div>
+      </div>
+      <div style="max-width:280px;">
+        <div style="background:#fff;border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1);">
+          <div style="background:var(--warm);padding:.8rem 1rem .6rem;border-bottom:1px solid var(--border);">
+            <div style="font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem;">The Artyst · Thursday evening</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--dark);">Tonight's menu</div>
+          </div>
+          <div style="padding:.8rem 1rem;">
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.5rem;padding-bottom:.25rem;border-bottom:.5px solid var(--gold-border);">Food</div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:.3px solid #f0ece7;"><span style="font-size:.85rem;font-weight:500;color:var(--dark);">Soup of the day</span><span style="font-size:.85rem;font-weight:700;color:var(--dark);">£5.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:.3px solid #f0ece7;"><span style="font-size:.85rem;font-weight:500;color:var(--dark);">Toastie</span><span style="font-size:.85rem;font-weight:700;color:var(--dark);">£8.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;"><span style="font-size:.85rem;font-weight:500;color:var(--dark);">Bagel</span><span style="font-size:.85rem;font-weight:700;color:var(--dark);">£7.50</span></div>
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.7rem 0 .15rem;padding-bottom:.25rem;border-bottom:.5px solid var(--gold-border);">Cocktails</div>
+            <div style="font-size:.48rem;color:#8a6a2e;font-style:italic;margin-bottom:.35rem;opacity:.85;">In association with La Dispensa</div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:.3px solid #f0ece7;"><span style="font-size:.85rem;font-weight:500;color:var(--dark);">Bloody Mary</span><span style="font-size:.85rem;font-weight:700;color:var(--dark);">£9.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.4rem 0;"><span style="font-size:.85rem;font-weight:500;color:var(--dark);">Cocktail of the day</span><span style="font-size:.85rem;font-weight:700;color:var(--dark);">~£9</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU EXAMPLE 3: CLEAN CARD -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow a1">Menu format 3 of 5</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Clean Card — A5</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <p class="body-text" style="margin-bottom:1.2rem;">Larger text, no descriptions, no dietary tags. Just names and prices. A clean, elegant layout for table cards, bar menus, or anywhere that needs a neat at-a-glance reference rather than a detailed menu.</p>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);">Select just the categories you want — <strong>Bar only, Coffee only, Lunch only</strong></div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>No clutter</strong> — just the essentials for the customer</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);">Print as A5 for table cards or 1/3 A4 for <strong>slim bar inserts</strong></div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);">The QR code underneath sends them to the <strong>full digital menu</strong> with all the detail</div></div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Best used for</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Table insert cards · Bar top card · Drinks list · Wine menu · Quick reference for staff</div>
+        </div>
+      </div>
+      <div style="max-width:280px;">
+        <div style="background:#fff;border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1);">
+          <div style="background:var(--warm);padding:.8rem 1rem .6rem;border-bottom:1px solid var(--border);">
+            <div style="font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem;">The Artyst</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--dark);">Bar menu</div>
+          </div>
+          <div style="padding:.8rem 1rem;">
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.15rem;padding-bottom:.2rem;border-bottom:.5px solid var(--gold-border);">Wine &amp; Cider</div>
+            <div style="font-size:.48rem;color:#8a6a2e;font-style:italic;margin-bottom:.35rem;opacity:.85;">Wines from Cambridge Wine Merchants</div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;border-bottom:.3px solid #f0ece7;font-size:.78rem;color:var(--dark);"><span>House red</span><span style="font-weight:600;">£6</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;border-bottom:.3px solid #f0ece7;font-size:.78rem;color:var(--dark);"><span>House white</span><span style="font-weight:600;">£6</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;font-size:.78rem;color:var(--dark);"><span>Cider</span><span style="font-weight:600;">£5</span></div>
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.55rem 0 .45rem;padding-bottom:.2rem;border-bottom:.5px solid var(--gold-border);">Spirits</div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;border-bottom:.3px solid #f0ece7;font-size:.78rem;color:var(--dark);"><span>Gin &amp; Tonic</span><span style="font-weight:600;">£7.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;border-bottom:.3px solid #f0ece7;font-size:.78rem;color:var(--dark);"><span>Rum &amp; mixer</span><span style="font-weight:600;">£7.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;font-size:.78rem;color:var(--dark);"><span>Bourbon</span><span style="font-weight:600;">£4/7.50</span></div>
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.55rem 0 .45rem;padding-bottom:.2rem;border-bottom:.5px solid var(--gold-border);">Cocktails</div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;border-bottom:.3px solid #f0ece7;font-size:.78rem;color:var(--dark);"><span>Bloody Mary</span><span style="font-weight:600;">£9.50</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.32rem 0;font-size:.78rem;color:var(--dark);"><span>Cocktail of the day</span><span style="font-weight:600;">~£9</span></div>
+          </div>
+          <div style="padding:.5rem 1rem;border-top:1px solid var(--border);background:var(--warm);display:flex;align-items:center;gap:.5rem;">
+            <div style="width:24px;height:24px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div style="font-size:.5rem;color:var(--muted);">Full menu on your phone</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU EXAMPLE 4: SUMMARY CARD -->
+<div class="slide bg-warm">
+  <div class="slide-inner wide">
+    <div class="eyebrow a1">Menu format 4 of 5</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Summary Card — A5 duplex</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <p class="body-text" style="margin-bottom:1rem;">A double-sided A5 card — printed front and back. The front carries a compact menu overview. The back carries the next upcoming events and any current job openings. Both sides always show live data.</p>
+        <p class="body-text" style="margin-bottom:1.2rem;">Designed to sit permanently on every table. Print a batch at the start of the week. When events change, reprint. Takes 5 minutes.</p>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Front:</strong> compact menu, 2–5 items per section, QR to full menu</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Back:</strong> next 3–4 events auto-fetched live from the events engine</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Jobs:</strong> select which current openings to feature on the back</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);">Print duplex — <strong>flip on short edge</strong> — and it aligns perfectly</div></div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Best used for</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Permanent table card · Events promotion · Jobs visibility · Welcome pack inserts</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;max-width:420px;">
+        <!-- Front -->
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Front</div>
+          <div style="background:#fff;border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+            <div style="background:var(--warm);padding:.6rem .8rem .4rem;border-bottom:1px solid var(--border);">
+              <div style="font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);">The Artyst · Cambridge</div>
+              <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);">Menu</div>
+            </div>
+            <div style="padding:.6rem .8rem;display:grid;grid-template-columns:1fr 1fr;gap:0 .6rem;">
+              <div>
+                <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.35rem 0 .12rem;">Coffee</div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Espresso</span><span style="font-weight:600;">£3.50</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Latte</span><span style="font-weight:600;">£3.75</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;font-size:.55rem;color:var(--dark);"><span>Flat white</span><span style="font-weight:600;">£3.75</span></div>
+                <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.35rem 0 .12rem;">Food</div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Toastie</span><span style="font-weight:600;">£8.50</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;font-size:.55rem;color:var(--dark);"><span>Soup</span><span style="font-weight:600;">£5.50</span></div>
+              </div>
+              <div>
+                <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.35rem 0 .12rem;">Bar</div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Wine</span><span style="font-weight:600;">£6</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Gin &amp; T</span><span style="font-weight:600;">£7.50</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;font-size:.55rem;color:var(--dark);"><span>Cocktail</span><span style="font-weight:600;">~£9</span></div>
+                <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.35rem 0 .12rem;">Soft</div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;border-bottom:.3px solid #f0ece7;font-size:.55rem;color:var(--dark);"><span>Kombucha</span><span style="font-weight:600;">£3.50</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.14rem 0;font-size:.55rem;color:var(--dark);"><span>Milk</span><span style="font-weight:600;">£2</span></div>
+              </div>
+            </div>
+            <div style="padding:.4rem .8rem;border-top:1px solid var(--border);background:var(--warm);display:flex;align-items:center;gap:.4rem;">
+              <div style="width:20px;height:20px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:2.5px;flex-shrink:0;">
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              </div>
+              <div style="font-size:.44rem;color:var(--muted);line-height:1.3;">Full menu<br/>on your phone</div>
+            </div>
+          </div>
+        </div>
+        <!-- Back -->
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Back</div>
+          <div style="background:var(--cream);border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+            <div style="background:var(--warm);padding:.6rem .8rem .4rem;border-bottom:1px solid var(--border);">
+              <div style="font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);">The Artyst · Cambridge</div>
+              <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);">What's On</div>
+            </div>
+            <div style="padding:.6rem .8rem;">
+              <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:.35rem;padding-bottom:.15rem;border-bottom:.5px solid var(--border);">Upcoming Events</div>
+              <div style="display:flex;gap:.35rem;align-items:flex-start;padding:.2rem 0;border-bottom:.3px solid #e8e4dc;">
+                <div style="width:14px;height:14px;background:var(--dark);border-radius:2px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;padding:2px;margin-top:1px;">
+                  <div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div>
+                </div>
+                <div><div style="font-size:.55rem;font-weight:600;color:var(--dark);">Tarot Reading</div><div style="font-size:.44rem;color:var(--red);">Wed 29 Apr · 18:00 · £1</div></div>
+              </div>
+              <div style="display:flex;gap:.35rem;align-items:flex-start;padding:.2rem 0;border-bottom:.3px solid #e8e4dc;">
+                <div style="width:14px;height:14px;background:var(--dark);border-radius:2px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;padding:2px;margin-top:1px;">
+                  <div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div>
+                </div>
+                <div><div style="font-size:.55rem;font-weight:600;color:var(--dark);">Cozy Art Evening</div><div style="font-size:.44rem;color:var(--red);">Thu 30 Apr · 19:00 · Free</div></div>
+              </div>
+              <div style="display:flex;gap:.35rem;align-items:flex-start;padding:.2rem 0;border-bottom:.3px solid #e8e4dc;">
+                <div style="width:14px;height:14px;background:var(--dark);border-radius:2px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;padding:2px;margin-top:1px;">
+                  <div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div><div style="background:#fff;border-radius:.5px;"></div>
+                </div>
+                <div><div style="font-size:.55rem;font-weight:600;color:var(--dark);">Social Salsa</div><div style="font-size:.44rem;color:var(--red);">Sat 2 May · 15:30 · Free</div></div>
+              </div>
+              <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:.45rem 0 .2rem;padding-bottom:.15rem;border-bottom:.5px solid var(--border);">Join Us</div>
+              <div style="font-size:.52rem;color:var(--dark);padding:.15rem 0;">Bar Manager — apply via QR below</div>
+            </div>
+            <div style="padding:.4rem .8rem;border-top:1px solid var(--border);background:#fff;display:flex;align-items:center;gap:.4rem;">
+              <div style="width:20px;height:20px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:2.5px;flex-shrink:0;">
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+                <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              </div>
+              <div style="font-size:.44rem;color:var(--muted);line-height:1.3;">Book tickets &amp;<br/>find out more</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU EXAMPLE 5: PRIVATE HIRE + COVER -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow a1">Menu format 5 of 5</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.2rem;">Private Hire Menu — with cover page</h2>
+    <div class="two-col a4" style="align-items:start;gap:4vw;">
+      <div>
+        <p class="body-text" style="margin-bottom:1rem;">Add a cover page to any menu format. It carries the venue name, a tagline, the event title, the date, and a QR code. Fully editable — change the title, the tagline, or the details for each hire.</p>
+        <p class="body-text" style="margin-bottom:1.2rem;">Combined with a time-filtered menu (Afternoon Tea, Evening etc.), this produces a professional branded menu for any private hire — in minutes, from scratch, every time.</p>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Title:</strong> "Afternoon Tea — 3 May 2026"</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Filter:</strong> Afternoon Tea slot only</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Style:</strong> Clean Card — elegant, no clutter</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);"><strong>Cover page:</strong> on — with event QR linking to booking page</div></div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;"><div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.45rem;"></div><div style="font-size:.85rem;color:var(--dark);">Last-minute price change? <strong>Edit and reprint in 2 minutes.</strong></div></div>
+        </div>
+        <div style="background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;padding:.8rem 1rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Best used for</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Private hires · Afternoon teas · Wine tastings · Event menus · Group bookings · Presentation menus</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;max-width:380px;">
+        <!-- Cover page -->
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Cover page</div>
+          <div style="background:var(--warm);border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:220px;">
+            <div style="font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:.8rem;">Est. 2025</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--dark);line-height:1.1;margin-bottom:.3rem;">The Artyst</div>
+            <div style="font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;">Café · Bar · Culture</div>
+            <div style="width:1.5rem;height:1px;background:#ccc;margin-bottom:.8rem;"></div>
+            <div style="font-family:'Playfair Display',serif;font-size:.9rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">Afternoon Tea</div>
+            <div style="font-size:.55rem;color:var(--muted);margin-bottom:.8rem;">Saturday 3 May 2026</div>
+            <div style="width:1.5rem;height:1px;background:#ccc;margin-bottom:.8rem;"></div>
+            <div style="font-size:.44rem;color:#555;line-height:1.4;margin-bottom:.5rem;">54–56 Chesterton Road<br/>Cambridge CB4 1EN</div>
+            <div style="width:28px;height:28px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3px;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Afternoon tea menu -->
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Page 1 — filtered</div>
+          <div style="background:#fff;border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+            <div style="background:var(--warm);padding:.6rem .8rem .4rem;border-bottom:1px solid var(--border);">
+              <div style="font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);">The Artyst · Afternoon tea</div>
+              <div style="font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--dark);">Menu</div>
+            </div>
+            <div style="padding:.6rem .8rem;">
+              <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.35rem;padding-bottom:.15rem;border-bottom:.5px solid var(--gold-border);">Afternoon Tea</div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:.3px solid #f0ece7;font-size:.68rem;color:var(--dark);"><span>Afternoon tea for two</span><span style="font-weight:600;">£12</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.68rem;color:var(--dark);"><span>Single afternoon tea</span><span style="font-weight:600;">£7</span></div>
+              <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .35rem;padding-bottom:.15rem;border-bottom:.5px solid var(--gold-border);">Hot drinks</div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:.3px solid #f0ece7;font-size:.68rem;color:var(--dark);"><span>Tea — cup</span><span style="font-weight:600;">£2.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:.3px solid #f0ece7;font-size:.68rem;color:var(--dark);"><span>Tea — pot for two</span><span style="font-weight:600;">£5</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.68rem;color:var(--dark);"><span>Coffee</span><span style="font-weight:600;">from £3.50</span></div>
+              <div style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.5rem 0 .35rem;padding-bottom:.15rem;border-bottom:.5px solid var(--gold-border);">Wine</div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.68rem;color:var(--dark);"><span>House wine (glass)</span><span style="font-weight:600;">£6</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8c WHAT BUILDING THIS COST -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow dark a1">The value of what you're using</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3">If we'd hired an agency<br/>to build this,<br/>here's the bill.</h2>
+        <p class="body-text dark-text a4" style="margin-top:.8rem;">Every tool in this system — the menu editor, the print engine, the screens, the QR codes, the events integration, the job engine, the social exports — was built in-house using AI assistance. No agency. No tender. No eighteen-month project plan.</p>
+        <p class="body-text dark-text a4" style="margin-top:.7rem;">The same work, commissioned from a UK digital agency at standard rates, would look like this:</p>
+        <div class="a5" style="margin-top:1.5rem;padding:1rem 1.2rem;background:rgba(192,57,43,.06);border-left:3px solid var(--red);border-radius:3px;">
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.8;">Every time you update a price, print a specials board, or send a WhatsApp to 3,000 people — you're using something that would otherwise have cost more than most people's annual salary to build.</div>
+        </div>
+      </div>
+      <div class="a5">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:1rem;">
+          <thead>
+            <tr>
+              <th style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:.5rem .8rem;border-bottom:1px solid var(--border);text-align:left;">Component</th>
+              <th style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:.5rem .8rem;border-bottom:1px solid var(--border);text-align:right;">Agency rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">Discovery, scoping &amp; architecture</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£5k–10k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">UX design &amp; UI system</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£8k–15k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">Database &amp; backend APIs</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£12k–22k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">Admin panels &amp; staff interfaces</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£15k–25k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">QR engine, screens &amp; distribution</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£8k–15k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">AI content generation</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£6k–12k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">Testing, QA &amp; deployment</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£5k–8k</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="font-size:.8rem;color:var(--mid);padding:.5rem .8rem;">Project management (15%)</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--gold);padding:.5rem .8rem;text-align:right;">£9k–16k</td>
+            </tr>
+            <tr>
+              <td style="font-size:.88rem;font-weight:600;color:var(--dark);padding:.6rem .8rem;border-top:2px solid var(--border);">Total</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.88rem;color:var(--red);font-weight:600;padding:.6rem .8rem;border-top:2px solid var(--border);text-align:right;">£68k–123k</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:flex;gap:1.5rem;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--dark);line-height:1;">~£400</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem;">Actual annual running cost</div>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--dark);line-height:1;">Weeks</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem;">Build time, not months</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: NOT JUST FOOD -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="eyebrow dark a1">The menu as a platform</div>
+    <div class="rule dark a2"></div>
+    <h2 class="section dark-text a3" style="margin-bottom:.8rem;">The menu isn't just<br/>about food and drink.</h2>
+    <p class="body-text dark-text a4" style="margin-bottom:1.5rem;">The same system that puts a gin price in front of a customer can put an event, a job, a piece of merchandise, or a story in front of them just as easily. Every QR code is tracked. Every surface updates instantly. It's one platform for everything we want to say.</p>
+    <div class="a5" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">🎟</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Events</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">Every event auto-generates a QR poster, screen content, and appears on the Summary Card back. Customers at the bar see what's on.</p>
+      </div>
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">🛍</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Merchandise</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">An IC puffa, a print, a glass Bede. Give any merch item a QR code, a poster, and a listing page. Table card, window, Instagram — one click.</p>
+      </div>
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">💼</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Jobs</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">AI writes the job description. A poster appears in the window. A QR code on the bar card links directly to the application form.</p>
+      </div>
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">🏛</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Our story</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">The Artyst's identity — Syd Barrett, Mick Rock, the Invysible College — lives in the menu drawer, the tour QRs, and the cultural pages.</p>
+      </div>
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">🍂</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Seasonal &amp; outdoor</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">October events, outdoor sessions, Syd Barrett anniversary programming. One menu update. Every surface reflects the season.</p>
+      </div>
+      <div class="card" style="border-color:var(--gold-border);background:var(--gold-bg);">
+        <div style="font-size:1.4rem;margin-bottom:.5rem;">🔧</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.3rem;">Building for others</h3>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.6;">The system is reusable. Any café, bar, or venue could have this. That's a commercial opportunity — and one we're already exploring.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PLATFORM: 1/3 A4 DUPLEX CARD -->
+<div class="slide bg-warm">
+  <div class="slide-inner wide" style="justify-content:center;">
+    <div class="eyebrow dark a1">New format — 1/3 A4 duplex card</div>
+    <div class="rule dark a2"></div>
+    <h2 class="section dark-text a3" style="margin-bottom:.6rem;">Menu on the front.<br/>Everything else on the back.</h2>
+    <div class="a4" style="display:grid;grid-template-columns:auto auto 1fr;gap:2.5vw;align-items:start;margin-top:.5rem;">
+
+      <!-- Front face — 1:2.12 aspect ratio, tall -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;text-align:center;">Front</div>
+        <div style="width:min(165px,16vw);height:min(350px,34vw);background:#fff;border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;">
+          <div style="background:var(--warm);padding:.7rem 1rem .5rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);">The Artyst · Cambridge</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--dark);line-height:1.1;">Menu</div>
+          </div>
+          <div style="padding:.6rem .8rem;flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0 .6rem;overflow:hidden;">
+            <div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Coffee</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Espresso</span><span style="font-weight:600;">£3.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Flat white</span><span style="font-weight:600;">£3.75</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>Latte</span><span style="font-weight:600;">£3.75</span></div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Tea</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Cup</span><span style="font-weight:600;">£2.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>Pot</span><span style="font-weight:600;">£5</span></div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Food</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Toastie</span><span style="font-weight:600;">£8.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>Soup</span><span style="font-weight:600;">£5.50</span></div>
+            </div>
+            <div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Wine</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>House red</span><span style="font-weight:600;">£6</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>House white</span><span style="font-weight:600;">£6</span></div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Spirits</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Gin &amp; T</span><span style="font-weight:600;">£7.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>Rum</span><span style="font-weight:600;">£7.50</span></div>
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:.4rem 0 .15rem;">Cocktails</div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:.3px solid #f0ece7;font-size:.62rem;color:var(--dark);"><span>Bloody Mary</span><span style="font-weight:600;">£9.50</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.15rem 0;font-size:.62rem;color:var(--dark);"><span>Of the day</span><span style="font-weight:600;">~£9</span></div>
+            </div>
+          </div>
+          <div style="padding:.5rem .8rem;border-top:1px solid var(--border);background:var(--warm);display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
+            <div style="width:28px;height:28px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div>
+              <div style="font-size:.52rem;font-weight:600;color:var(--dark);line-height:1.3;">Full menu on your phone</div>
+              <div style="font-size:.46rem;color:var(--muted);">All items · specials · dietary info</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back face — same proportions -->
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;text-align:center;">Back</div>
+        <div style="width:min(165px,16vw);height:min(350px,34vw);background:var(--cream);border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;">
+          <div style="background:var(--warm);padding:.7rem .9rem .5rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);">The Artyst</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);line-height:1.1;">Find out more</div>
+          </div>
+          <!-- Section 1: Events -->
+          <div style="padding:.55rem .7rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:.5rem;flex:1;">
+            <div style="width:32px;height:32px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3.5px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div><div style="font-size:.6rem;font-weight:600;color:var(--dark);">What's On</div><div style="font-size:.5rem;color:var(--muted);">Events &amp; bookings</div></div>
+          </div>
+          <!-- Section 2: Jobs -->
+          <div style="padding:.55rem .7rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:.5rem;flex:1;background:var(--gold-bg);">
+            <div style="width:32px;height:32px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3.5px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div><div style="font-size:.6rem;font-weight:600;color:var(--dark);">Work with us</div><div style="font-size:.5rem;color:var(--muted);">Current vacancies</div></div>
+          </div>
+          <!-- Section 3: Tours -->
+          <div style="padding:.55rem .7rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:.5rem;flex:1;">
+            <div style="width:32px;height:32px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3.5px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div><div style="font-size:.6rem;font-weight:600;color:var(--dark);">Cambridge Tours</div><div style="font-size:.5rem;color:var(--muted);">Syd Barrett &amp; Wittgenstein</div></div>
+          </div>
+          <!-- Section 4: Syd Barrett Merch -->
+          <div style="padding:.55rem .7rem;display:flex;align-items:center;gap:.5rem;flex:1;background:var(--gold-bg);">
+            <div style="width:32px;height:32px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3.5px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div><div style="font-size:.6rem;font-weight:600;color:var(--dark);">Syd Barrett Prints</div><div style="font-size:.5rem;color:var(--muted);">Mick Rock · limited editions</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="a5">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.8rem;">Why this format works</h3>
+        <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem;">
+          <div style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--dark);">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.4rem;"></div>
+            <div><strong>Fits anywhere</strong> — table holders, A-boards, takeaway bags, welcome packs, handed at the Tarot Ambulance</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--dark);">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.4rem;"></div>
+            <div><strong>Every QR is tracked</strong> — know which placement drives event bookings, tour sign-ups, and job applications</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--dark);">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.4rem;"></div>
+            <div><strong>Print it yourself</strong> — A4 sheet, cut into thirds. Crop marks included. Costs pence per card.</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--dark);">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.4rem;"></div>
+            <div><strong>Back never goes out of date</strong> — QR destinations update without reprinting</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--dark);">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:.4rem;"></div>
+            <div><strong>Swap any section</strong> — crowdfunder, merch, WhatsApp signup, seasonal offer</div>
+          </div>
+        </div>
+        <div style="padding:.8rem 1rem;background:#fff;border:1px solid var(--border);border-radius:4px;margin-bottom:.6rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">How to print it</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.6;">Print Menu → Format: <strong>1/3 A4</strong> → Style: Clean Card → Print.</div>
+        </div>
+        <div style="padding:.8rem 1rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">Four-QR back — in development</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.6;">The back panel with four tracked QR sections is a planned addition. The 1/3 A4 front is available now.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: PAYMENTS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col" style="align-items:start;gap:4vw;">
+      <div>
+        <div class="eyebrow dark a1">Platform — payments</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3" style="margin-bottom:1rem;">Sell tickets directly.<br/>No commission.<br/>Order from the table.</h2>
+        <div style="display:flex;flex-direction:column;gap:.8rem;" class="a4">
+
+          <div class="card" style="border-left:3px solid var(--red);">
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">
+              <div style="font-size:1.1rem;">💳</div>
+              <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);font-weight:600;">Stripe — live now</div>
+            </div>
+            <p style="font-size:.82rem;color:var(--mid);line-height:1.7;margin-bottom:.7rem;">The system is connected directly to Stripe. Every event ticket, afternoon tea booking, and private hire deposit can be paid online — straight to The Artyst. No third-party platform taking a cut.</p>
+            <div style="padding:.6rem .8rem;background:var(--gold-bg);border-radius:3px;border:0.5px solid var(--gold-border);">
+              <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.3rem;">What this saves</div>
+              <div style="display:flex;flex-direction:column;gap:.25rem;">
+                <div style="font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;"><span>Eventbrite fee per ticket</span><span style="font-family:'DM Mono',monospace;color:var(--red);">3.7% + £1.79</span></div>
+                <div style="font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;"><span>Stripe fee per transaction</span><span style="font-family:'DM Mono',monospace;color:var(--green,#2a6a2a);">1.4% + 25p</span></div>
+                <div style="font-size:.75rem;color:var(--dark);font-weight:500;display:flex;justify-content:space-between;padding-top:.3rem;border-top:0.5px solid var(--border);"><span>On 100 tickets at £10 each</span><span style="font-family:'DM Mono',monospace;color:var(--green,#2a6a2a);">~£220 saved</span></div>
+              </div>
+            </div>
+            <div style="margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+              <span style="font-size:.7rem;padding:.2rem .5rem;background:var(--detail);border-radius:2px;color:var(--dark);">Event tickets</span>
+              <span style="font-size:.7rem;padding:.2rem .5rem;background:var(--detail);border-radius:2px;color:var(--dark);">Afternoon teas</span>
+              <span style="font-size:.7rem;padding:.2rem .5rem;background:var(--detail);border-radius:2px;color:var(--dark);">Private hire deposits</span>
+              <span style="font-size:.7rem;padding:.2rem .5rem;background:var(--detail);border-radius:2px;color:var(--dark);">Workshop bookings</span>
+            </div>
+          </div>
+
+          <div class="card" style="border-left:3px solid var(--gold);">
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">
+              <div style="font-size:1.1rem;">🖥</div>
+              <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600;">Epos Now integration — next phase</div>
+            </div>
+            <p style="font-size:.82rem;color:var(--mid);line-height:1.7;">The next phase of the menu build will connect the digital menu to Epos Now — the venue's point-of-sale system. Customers will be able to browse the menu on their phone, place their order, and pay from the table. No waiting for a member of staff to take the order.</p>
+            <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.3rem;">
+              <div style="font-size:.8rem;color:var(--dark);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;font-weight:700;">→</div>Customer browses the digital menu at their table</div>
+              <div style="font-size:.8rem;color:var(--dark);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;font-weight:700;">→</div>Taps to add items, selects options</div>
+              <div style="font-size:.8rem;color:var(--dark);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;font-weight:700;">→</div>Pays on their phone via Stripe</div>
+              <div style="font-size:.8rem;color:var(--dark);display:flex;gap:.5rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;font-weight:700;">→</div>Order appears in Epos Now — sent to bar</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="a5">
+        <!-- Visual: ticket sale flow -->
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;">Direct ticket sale — what the customer sees</div>
+        <div style="background:#fff;border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);margin-bottom:1rem;">
+          <div style="background:var(--dark);padding:.5rem .8rem;display:flex;align-items:center;gap:.4rem;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#28c840;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.6);margin-left:.4rem;">go.theartyst.co.uk/e/wine-tasting</span>
+          </div>
+          <div style="padding:.8rem 1rem;">
+            <div style="font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:.25rem;">The Artyst · Event</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--dark);margin-bottom:.2rem;">French Wine Tasting</div>
+            <div style="font-size:.62rem;color:var(--muted);margin-bottom:.6rem;">Fri 9 May · 7:00pm · £28 per person</div>
+            <div style="font-size:.75rem;color:var(--mid);line-height:1.6;margin-bottom:.8rem;">An evening of six exceptional French wines led by Cambridge Wine Merchants. Includes tasting notes and food pairings throughout.</div>
+            <div style="background:var(--dark);color:#fff;border-radius:6px;padding:.6rem 1rem;text-align:center;font-size:.82rem;font-weight:500;cursor:pointer;margin-bottom:.4rem;">Book tickets — £28 ↗</div>
+            <div style="font-size:.6rem;color:var(--muted);text-align:center;">Secure payment via Stripe · Direct to The Artyst</div>
+          </div>
+        </div>
+
+        <!-- Epos Now diagram -->
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;">Epos Now — how table ordering will work</div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:.8rem 1rem;">
+          <div style="display:flex;flex-direction:column;gap:.4rem;">
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.4rem .6rem;background:var(--warm);border-radius:3px;font-size:.75rem;color:var(--dark);">
+              <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gold);flex-shrink:0;">1</span>Customer scans table QR → opens digital menu
+            </div>
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.4rem .6rem;background:var(--warm);border-radius:3px;font-size:.75rem;color:var(--dark);">
+              <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gold);flex-shrink:0;">2</span>Taps + to add items · selects sizes &amp; options
+            </div>
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.4rem .6rem;background:var(--warm);border-radius:3px;font-size:.75rem;color:var(--dark);">
+              <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gold);flex-shrink:0;">3</span>Pays via Stripe on their phone
+            </div>
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.4rem .6rem;background:var(--gold-bg);border:0.5px solid var(--gold-border);border-radius:3px;font-size:.75rem;color:var(--dark);">
+              <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--red);flex-shrink:0;">4</span>Order goes directly to Epos Now at the bar
+            </div>
+          </div>
+          <div style="margin-top:.6rem;font-size:.68rem;color:var(--muted);font-style:italic;">No card machine. No writing down orders. No missed rounds.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: EVENTS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow dark a1">Platform use — events</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3">Create an event once.<br/>It promotes itself.</h2>
+        <p class="body-text dark-text a4" style="margin-top:.8rem;">When an event is created in the Events Engine, the QR system reads it automatically. Everything below happens without any extra work.</p>
+        <div class="a5" style="display:flex;flex-direction:column;gap:.6rem;margin-top:1.2rem;">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><h4>Create the event</h4><p>Title, date, time, price, description. Done in 3 minutes in the Events Engine.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><h4>QR code auto-created</h4><p>go.theartyst.co.uk/e/event-slug — points to the booking page. Tracked per placement.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><h4>Poster ready to print</h4><p>Open the QR Engine. The event auto-populates an A5 EventCard with title, date, price, image and QR. Print or download for social.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><h4>Summary Card back updated</h4><p>The next 3 events appear automatically on the back of every Summary Card — without you doing anything.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:var(--green,#2a6a2a);">5</div>
+            <div class="step-body"><h4>Assign to a screen zone</h4><p>Add the event QR to the window or POS screen zone. Every customer who walks past sees it.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <div style="background:#fff;border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);max-width:240px;margin:0 auto;">
+          <div style="height:65px;background:linear-gradient(135deg,#2a3a2a,#3d5a3d);position:relative;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 8px);"></div>
+            <div style="position:absolute;bottom:6px;left:10px;font-size:.45rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.9);">The Artyst · Cambridge</div>
+          </div>
+          <div style="padding:.7rem .9rem;">
+            <div style="font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:.2rem;">Event</div>
+            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.2rem;">Tarot Reading</div>
+            <div style="font-size:.55rem;color:var(--muted);margin-bottom:.4rem;">With Rebecka Eriksson</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem;margin-bottom:.5rem;">
+              <div><div style="font-size:.42rem;letter-spacing:.08em;text-transform:uppercase;color:#bbb;">When</div><div style="font-size:.6rem;font-weight:600;color:var(--dark);">Wed 29 Apr · 18:00</div></div>
+              <div><div style="font-size:.42rem;letter-spacing:.08em;text-transform:uppercase;color:#bbb;">Tickets</div><div style="font-size:.6rem;font-weight:600;color:var(--red);">£1.00</div></div>
+            </div>
+          </div>
+          <div style="padding:.4rem .9rem .6rem;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:.2rem;">
+            <div style="width:38px;height:38px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:3px;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div style="font-size:.45rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);">Book a place</div>
+            <div style="font-size:.4rem;font-family:'DM Mono',monospace;color:#bbb;">go.theartyst.co.uk/e/tarot-reading</div>
+          </div>
+        </div>
+        <div style="margin-top:.8rem;padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;font-size:.78rem;color:var(--dark);line-height:1.6;max-width:240px;margin-left:auto;margin-right:auto;">
+          The same event also appears on the <strong>back of every Summary Card</strong> on the table — automatically. No reprinting needed until the event passes.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: JOBS & MERCH -->
+<div class="slide bg-warm">
+  <div class="slide-inner">
+    <div class="two-col" style="align-items:start;gap:4vw;">
+      <div>
+        <div class="eyebrow dark a1">Platform use — jobs &amp; merchandise</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3" style="margin-bottom:1rem;">The bar card that<br/>fills your vacancies<br/>and sells your merch.</h2>
+        <div style="display:flex;flex-direction:column;gap:.8rem;" class="a4">
+          <div class="card">
+            <div style="font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem;">Jobs</div>
+            <p style="font-size:.82rem;color:var(--mid);line-height:1.7;">Open the Job Engine. Type the role title and a few notes. AI writes a complete, on-brand job description in the Artyst's voice. A print-ready poster appears. A QR code links to the application form. Put it in the window, send it to 3,000 WhatsApp subscribers, post it on the Pink Floyd Facebook page. The right person finds it — wherever they are.</p>
+            <div style="margin-top:.7rem;padding:.5rem .7rem;background:var(--gold-bg);border-radius:3px;font-size:.75rem;color:var(--gold);">Current roles can appear on the Summary Card back — customers at the table see you're hiring.</div>
+          </div>
+          <div class="card">
+            <div style="font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem;">Syd Barrett Merchandise</div>
+            <p style="font-size:.82rem;color:var(--mid);line-height:1.7;">Mick Rock photography prints, limited-edition artwork, records, books, and Artyst-branded Syd Barrett items — all produced or stocked with Barrett estate approval. Each piece gets its own QR code, its own A5 card, and its own listing page. A customer at the bar sees it on the screen, scans it, and can enquire or order directly.</p>
+            <div style="display:flex;flex-direction:column;gap:.3rem;margin-top:.6rem;">
+              <div style="font-size:.75rem;color:var(--dark);display:flex;gap:.4rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;">◆</div>Mick Rock photography prints — limited editions</div>
+              <div style="font-size:.75rem;color:var(--dark);display:flex;gap:.4rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;">◆</div>Syd Barrett books, records &amp; archival items</div>
+              <div style="font-size:.75rem;color:var(--dark);display:flex;gap:.4rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;">◆</div>Artyst-branded heritage prints &amp; posters</div>
+              <div style="font-size:.75rem;color:var(--dark);display:flex;gap:.4rem;align-items:flex-start;"><div style="color:var(--gold);flex-shrink:0;">◆</div>Storm Thorgerson artwork reproductions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <!-- Jobs poster preview -->
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Job poster — A5 · window display</div>
+        <div style="background:#fff;border-radius:5px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-bottom:.8rem;">
+          <div style="background:var(--dark);padding:.7rem .9rem .5rem;">
+            <div style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,110,.95);margin-bottom:.2rem;">The Artyst · Cambridge · Join us</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#fff;line-height:1.1;">Bar Manager</div>
+            <div style="font-size:.55rem;color:rgba(255,255,255,.8);margin-top:.2rem;">Part-time · Competitive · Cambridge</div>
+          </div>
+          <div style="padding:.6rem .9rem;">
+            <div style="font-size:.58rem;color:var(--mid);line-height:1.6;margin-bottom:.5rem;">We're looking for a passionate, experienced bar manager to lead service at Cambridge's only Syd Barrett heritage venue — a cultural space, not just a bar. Our music, exhibitions, and events programme draws people who care about what they're drinking and why they're here.</div>
+            <div style="font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.25rem;">The role</div>
+            <div style="font-size:.56rem;color:var(--mid);line-height:1.65;margin-bottom:.45rem;">Lead the bar through daily service, events, and private hires. Develop the cocktail and wine list in partnership with our suppliers. Manage stock, ordering, and cellar. Train and support front-of-house staff. Help shape the atmosphere that makes The Artyst distinct.</div>
+            <div style="font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.25rem;">What you'll bring</div>
+            <div style="font-size:.56rem;color:var(--mid);line-height:1.65;">· Proven bar management experience<br/>· Knowledge of wine, spirits, and cocktails<br/>· Calm under pressure during events &amp; private hires<br/>· Genuine interest in arts, music, and culture<br/>· A personal investment in the venue's identity</div>
+          </div>
+          <div style="padding:.5rem .9rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--warm);">
+            <div style="width:28px;height:28px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:3px;flex-shrink:0;">
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+              <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            </div>
+            <div><div style="font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);">Apply here</div><div style="font-size:.44rem;font-family:'DM Mono',monospace;color:#bbb;">go.theartyst.co.uk/e/bar-manager</div></div>
+          </div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);font-style:italic;line-height:1.5;">The job description above was written entirely by AI in under 2 minutes, from a brief of one sentence.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: THE ARTYST & SYD BARRETT -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow dark a1">Platform use — our story</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3">Every customer<br/>who opens the menu<br/>can find our story.</h2>
+        <p class="body-text dark-text a4" style="margin-top:.8rem;">The menu drawer — the hamburger menu in the top right of the digital menu — carries the full context of what The Artyst is and why it exists. It's already there for every customer who scans the table QR code.</p>
+        <div class="a4" style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.5rem;">
+          <div style="padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.7rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">About The Artyst</div>
+            <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">The only dedicated Syd Barrett heritage venue in the world, operating with approval of the Barrett estate and exhibiting Mick Rock photography.</div>
+          </div>
+          <div style="padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;">
+            <div style="font-size:.7rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">Cambridge tours</div>
+            <div style="font-size:.78rem;color:var(--muted);line-height:1.6;">Syd Barrett's Cambridge and Wittgenstein &amp; Friends — both listed in the drawer with booking links. Tours end at the Artyst.</div>
+          </div>
+        </div>
+        <div class="a5" style="margin-top:1rem;padding:.7rem .9rem;background:var(--detail);border-radius:4px;border:1px solid var(--border);">
+          <div style="font-size:.72rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">Matthew Taylor &amp; The City Wakes, 2008</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.6;">Matthew directed the first-ever official Syd Barrett tribute festival — held in Cambridge, 22 October – 1 November 2008, two years after Syd's death. Exhibitions by Mick Rock and Storm Thorgerson. Contributions from Rosemary Barrett, David Gale, and others. The Artyst is the continuation of that work — a permanent home for it.</div>
+        </div>
+      </div>
+      <div class="a5">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07);">
+          <div style="background:var(--dark);padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;">
+            <div style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);">go.theartyst.co.uk/menu</div>
+          </div>
+          <div style="padding:.8rem 1rem;">
+            <div style="font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">The Artyst</div>
+            <div style="font-size:.9rem;font-weight:500;color:var(--dark);margin-bottom:.4rem;">What's here</div>
+            <!-- Drawer sections preview -->
+            <div style="padding:.5rem .6rem;background:var(--gold-bg);border-radius:4px;border:0.5px solid var(--gold-border);margin-bottom:.5rem;">
+              <div style="font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;">About The Artyst</div>
+              <div style="font-size:.65rem;color:var(--mid);line-height:1.5;">Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive. The Artyst is built on that conviction.</div>
+              <div style="font-size:.6rem;color:var(--gold);margin-top:.3rem;">Read more →</div>
+            </div>
+            <div style="font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:.5rem 0 .3rem;">The venue</div>
+            <div style="font-size:.65rem;color:var(--dark);padding:.3rem 0;border-bottom:0.5px solid var(--border);">What's on ↗</div>
+            <div style="font-size:.65rem;color:var(--dark);padding:.3rem 0;border-bottom:0.5px solid var(--border);">Book a table ↗</div>
+            <div style="font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:.5rem 0 .3rem;">Cambridge tours</div>
+            <div style="font-size:.65rem;color:var(--dark);padding:.3rem 0;border-bottom:0.5px solid var(--border);">Syd Barrett's Cambridge ↗</div>
+            <div style="font-size:.65rem;color:var(--dark);padding:.3rem 0;border-bottom:0.5px solid var(--border);">Wittgenstein &amp; Friends ↗</div>
+
+          </div>
+        </div>
+        <div style="margin-top:.7rem;font-size:.68rem;color:var(--muted);font-style:italic;line-height:1.5;">Every customer who scans a table QR or taps the hamburger menu has access to the full story of the venue and the tours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM: OCTOBER & OUTDOOR EVENTS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow dark a1">October 2026 — Cambridge</div>
+    <div class="rule dark a2"></div>
+    <h2 class="section dark-text a3" style="margin-bottom:1rem;">Three events.<br/>One city.<br/>One legacy.</h2>
+    <p class="body-text dark-text a4" style="margin-bottom:1.5rem;">October 2026 marks a major moment for Syd Barrett's Cambridge legacy — three distinct events, each promoted through the same system, each reaching the same 3,000 subscribers plus the Pink Floyd Facebook audience.</p>
+    <div class="three-col a5" style="gap:1.2rem;">
+
+      <!-- Concert -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+        <div style="background:var(--dark);padding:.8rem 1rem;">
+          <div style="font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,110,.9);margin-bottom:.3rem;">Live music · Cambridge Corn Exchange</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#fff;line-height:1.2;">Syd Barrett<br/>Tribute Concert</div>
+        </div>
+        <div style="padding:.8rem 1rem;">
+          <p style="font-size:.8rem;color:var(--mid);line-height:1.7;margin-bottom:.8rem;">A full tribute concert at the Cambridge Corn Exchange — one of Cambridge's landmark live music venues — celebrating Syd Barrett's music and his lasting influence on British culture. Artists performing his solo work and Pink Floyd's Syd-era catalogue.</p>
+          <div style="padding:.5rem .7rem;background:var(--gold-bg);border-radius:3px;border:0.5px solid var(--gold-border);">
+            <div style="font-size:.68rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">How the system promotes it</div>
+            <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">EventCard poster, A5 print, screen zones, WhatsApp blast, Summary Card back, Pink Floyd Facebook post. One event in the engine — everywhere in minutes.</div>
+          </div>
+        </div>
+        <div style="padding:.5rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--warm);">
+          <div style="width:22px;height:22px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:2.5px;flex-shrink:0;">
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+          </div>
+          <div style="font-size:.48rem;color:var(--muted);">Tickets &amp; info → QR</div>
+        </div>
+      </div>
+
+      <!-- Album -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+        <div style="background:linear-gradient(135deg,#2a1a08,#4a3010);padding:.8rem 1rem;">
+          <div style="font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,110,.9);margin-bottom:.3rem;">Music · Tribute album release</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#fff;line-height:1.2;">Tribute Album<br/>Release</div>
+        </div>
+        <div style="padding:.8rem 1rem;">
+          <p style="font-size:.8rem;color:var(--mid);line-height:1.7;margin-bottom:.8rem;">A tribute album release — new recordings of Syd Barrett songs by contemporary artists, launched in Cambridge in October 2026. The Artyst as launch venue and cultural home for the release.</p>
+          <div style="padding:.5rem .7rem;background:var(--gold-bg);border-radius:3px;border:0.5px solid var(--gold-border);">
+            <div style="font-size:.68rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">How the system promotes it</div>
+            <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Album artwork as a poster. QR code links to streaming or purchase. Merchandise card in window for physical copies. Table card for launch night details.</div>
+          </div>
+        </div>
+        <div style="padding:.5rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--warm);">
+          <div style="width:22px;height:22px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:2.5px;flex-shrink:0;">
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+          </div>
+          <div style="font-size:.48rem;color:var(--muted);">Stream &amp; buy → QR</div>
+        </div>
+      </div>
+
+      <!-- Football -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+        <div style="background:linear-gradient(135deg,#1a2a1a,#2a4a2a);padding:.8rem 1rem;">
+          <div style="font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,110,.9);margin-bottom:.3rem;">Sport · Cambridge United FC</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#fff;line-height:1.2;">Charity Football<br/>Match</div>
+        </div>
+        <div style="padding:.8rem 1rem;">
+          <p style="font-size:.8rem;color:var(--mid);line-height:1.7;margin-bottom:.8rem;">A charity football match at Cambridge United, with players wearing Syd Barrett-inspired football shirts. One of the most vivid and unexpected expressions of his Cambridge legacy — bright, playful, psychedelic — on the pitch.</p>
+          <div style="padding:.5rem .7rem;background:var(--gold-bg);border-radius:3px;border:0.5px solid var(--gold-border);">
+            <div style="font-size:.68rem;font-weight:600;color:var(--dark);margin-bottom:.2rem;">How the system promotes it</div>
+            <div style="font-size:.72rem;color:var(--muted);line-height:1.5;">Match poster with shirt artwork. QR for tickets and charity page. Shirt designs as merchandise cards. Post-match event back at The Artyst — separate listing and QR.</div>
+          </div>
+        </div>
+        <div style="padding:.5rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--warm);">
+          <div style="width:22px;height:22px;background:var(--dark);border-radius:2px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;padding:2.5px;flex-shrink:0;">
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:var(--dark);border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+            <div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div><div style="background:#fff;border-radius:1px;"></div>
+          </div>
+          <div style="font-size:.48rem;color:var(--muted);">Tickets &amp; charity → QR</div>
+        </div>
+      </div>
+
+    </div>
+    <p class="body-text dark-text a5" style="margin-top:1rem;font-size:.78rem;">All three events — one system, one admin panel, one WhatsApp send. The same infrastructure that manages a gin price on a Tuesday handles a city-wide cultural programme in October.</p>
+  </div>
+</div>
+
+<!-- PLATFORM: BUILD FOR OTHERS -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="two-col center">
+      <div>
+        <div class="eyebrow dark a1">Platform use — building for others</div>
+        <div class="rule dark a2"></div>
+        <h2 class="section dark-text a3">This system can be<br/>built for any venue.</h2>
+        <p class="body-text dark-text a4" style="margin-top:.8rem;">Everything you've seen in this guide — the menu management, print formats, QR codes, screen zones, job engine, event posters, distribution channels — is modular. It can be re-deployed for any café, bar, theatre, or events space.</p>
+        <p class="body-text dark-text a4" style="margin-top:.7rem;">The Artyst is the first deployment. But the infrastructure is reusable, and there's a clear commercial opportunity in offering this to other venues that are currently paying £14,000+ a year for tools that do less.</p>
+        <div class="a5" style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.5rem;">
+          <div style="padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;display:flex;align-items:flex-start;gap:.8rem;">
+            <div style="font-size:1.1rem;flex-shrink:0;">💡</div>
+            <div style="font-size:.78rem;color:var(--dark);line-height:1.6;">A white-label deployment for another venue — custom branding, onboarding, training — would represent a <strong>£15,000–35,000 engagement</strong> at standard rates. Built on infrastructure that already exists and works.</div>
+          </div>
+          <div style="padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;display:flex;align-items:flex-start;gap:.8rem;">
+            <div style="font-size:1.1rem;flex-shrink:0;">🔧</div>
+            <div style="font-size:.78rem;color:var(--dark);line-height:1.6;">Each new venue gets: menu management, QR engine, print formats, screen zones, job engine, events integration, AI content, distribution to email and WhatsApp. All in the venue's own branding.</div>
+          </div>
+          <div style="padding:.7rem .9rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;display:flex;align-items:flex-start;gap:.8rem;">
+            <div style="font-size:1.1rem;flex-shrink:0;">🌍</div>
+            <div style="font-size:.78rem;color:var(--dark);line-height:1.6;">The Pink Floyd Facebook page has 23 million followers. We have permission to post. Any venue we work with would access that reach — a genuinely extraordinary distribution channel for a hospitality business.</div>
+          </div>
+        </div>
+      </div>
+      <div class="a5">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:1.2rem;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.8rem;">What a new venue gets</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Live menu management — edit and publish in seconds</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Print engine — A4, A5, summary card, specials, cover page</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>QR codes — tracked per placement, never go dead</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Screen zones — window, POS, wall, live updates</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Events engine — auto-posters, screen content, bookings</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Job engine — AI job descriptions, poster, application form</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Distribution — email list, WhatsApp, social, screens, print</div>
+            <div style="display:flex;align-items:flex-start;gap:.6rem;font-size:.82rem;color:var(--dark);"><div style="color:var(--green,#2a6a2a);flex-shrink:0;font-weight:700;">✓</div>Scan analytics — per placement, per channel, per day</div>
+          </div>
+          <div style="margin-top:1rem;padding:.6rem .8rem;background:var(--detail);border-radius:3px;font-size:.72rem;color:var(--muted);line-height:1.5;">All of this built, deployed, and running — in weeks, not months — at a fraction of the cost of commissioning it from scratch.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 QUICK REFERENCE -->
+<div class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="eyebrow a1">Quick reference</div>
+    <div class="rule a2"></div>
+    <h2 class="section a3" style="margin-bottom:1.5rem;">Everything in one place.</h2>
+    <div class="three-col a4">
+      <div class="card">
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.7rem;">Edit the menu</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>URL:</strong> go.theartyst.co.uk/admin</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Path:</strong> Configure → Menu Editor</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>To edit:</strong> Click any name, description or price</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>To toggle:</strong> On / T/A toggles per item</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>To add:</strong> + Add Item or + New Category</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Attribution:</strong> + add attribution under any category name</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>To hide:</strong> Hide Category (reversible)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.7rem;">Print the menu</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Path:</strong> Menu Editor → Print Menu button</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Format:</strong> A4, A5, 1/3 A4, Square, Story</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Style:</strong> Full, Clean, Specials, Event, Summary</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Time filter:</strong> All day, Brunch, Lunch, Tea, Evening</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Export:</strong> Print/PDF · Download PNG · Copy HTML</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Options:</strong> Cover page · Date stamp · Page footers</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.7rem;">Manage screens &amp; QR</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Screens:</strong> Publish → Screens</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Zones:</strong> window / pos / wall</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Assign:</strong> Pick a code, pick a zone, save</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>QR codes:</strong> Manage → Library</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Digital menu URL:</strong> go.theartyst.co.uk/menu</div>
+          <div style="font-size:.78rem;color:var(--dark);line-height:1.5;"><strong>Scan tracking:</strong> Review → Reports</div>
+        </div>
+      </div>
+    </div>
+    <div class="a5" style="margin-top:1.2rem;padding:.8rem 1rem;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:4px;display:flex;align-items:flex-start;gap:.8rem;">
+      <div style="font-size:1rem;flex-shrink:0;">💡</div>
+      <p style="font-size:.8rem;color:var(--dark);line-height:1.6;"><strong>If something looks wrong on the digital menu:</strong> hard refresh the page (Ctrl+Shift+R / Cmd+Shift+R). If it still looks wrong, check the item is toggled On in Menu Editor. If the screens aren't showing the latest content, check that the screen URL is loading in a browser — it refreshes every 5 minutes automatically.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 10 END -->
+<div class="slide bg-warm">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);"></div>
+  <div class="slide-inner" style="justify-content:space-between;padding-top:8vh;padding-bottom:7vh;">
+    <div class="a1" style="display:flex;align-items:center;gap:.7rem;">
+      <div style="width:22px;height:22px;background:var(--red);border-radius:2px;"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);">The Artyst · Internal guide</span>
+    </div>
+    <div>
+      <h1 class="display a2" style="font-size:clamp(2rem,4.5vw,4rem);">You're in charge<br/><span class="accent">of the menu.</span></h1>
+      <p class="body-text a3" style="margin-top:1rem;max-width:50ch;">No waiting for a designer. No file versions. No wondering if the screen is showing the right thing. The system is live, it's yours, and it takes minutes to use.</p>
+    </div>
+    <div class="a4" style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Admin panel</div>
+        <div style="font-size:.88rem;color:var(--dark);font-weight:500;">go.theartyst.co.uk/admin</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Digital menu</div>
+        <div style="font-size:.88rem;color:var(--dark);font-weight:500;">go.theartyst.co.uk/menu</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Questions</div>
+        <div style="font-size:.88rem;color:var(--dark);font-weight:500;">matthew@othersyde.co.uk</div>
+      </div>
+    </div>
+    <div class="a5" style="display:flex;gap:.7rem;flex-wrap:wrap;">
+      <span class="tag">Menu Editor</span>
+      <span class="tag">Print Menu</span>
+      <span class="tag">Screens</span>
+      <span class="tag">QR Engine</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="progress"><div class="progress-bar" id="pb"></div></div>
+<div class="nav">
+  <button class="nav-btn" onclick="go(-1)">‹</button>
+  <button class="nav-btn" onclick="go(1)">›</button>
+</div>
+<div class="slide-counter" id="ctr"></div>
+<div class="watermark">The Artyst — Internal use</div>
+
+<script>
+const TOTAL=26,slides=document.querySelectorAll('.slide');
+let cur=0;
+function show(n){
+  slides[cur].classList.remove('active');slides[cur].classList.add('exit');
+  setTimeout(()=>slides[cur].classList.remove('exit'),450);
+  cur=((n%TOTAL)+TOTAL)%TOTAL;slides[cur].classList.add('active');
+  document.getElementById('pb').style.width=((cur+1)/TOTAL*100)+'%';
+  document.getElementById('ctr').textContent=(cur+1)+' / '+TOTAL;
+}
+function go(d){show(cur+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
+});
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)go(d<0?1:-1);});
+document.getElementById('pb').style.width=(1/TOTAL*100)+'%';
+document.getElementById('ctr').textContent='1 / '+TOTAL;
+</script>
+</body>
+</html>
