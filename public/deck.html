@@ -12,11 +12,11 @@
   --cream:#faf8f4;--warm:#f2ede6;--gold:#8a6a2e;--gold-light:#c8a96e;
   --red:#c0392b;--dark:#1a1a18;--mid:#3a3a38;--muted:#777770;--border:#ddd9d0;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'DM Sans',sans-serif;}
-.deck{width:100%;height:100%;position:relative;overflow:hidden;}
-.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .5s ease,transform .5s ease;transform:translateY(30px);}
-.slide.active{opacity:1;pointer-events:all;transform:translateY(0);}
-.slide.exit{opacity:0;transform:translateY(-30px);}
+html,body{width:100%;height:100%;background:var(--dark);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+.deck{width:100%;height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;}
+.slide{width:100%;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;position:relative;opacity:1;pointer-events:all;transform:none;transition:none;}
+.slide.active{}
+.slide.exit{}
 .bg-cream{background:var(--cream);}
 .bg-dark{background:var(--dark);}
 .bg-mid{background:#111110;}
@@ -104,12 +104,12 @@ h3.card-title.dark-text{color:var(--dark);}
 .qr-cell{background:#fff;border-radius:1px;}
 .dark-qr{background:var(--dark);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.slide.active .a1{animation:fadeUp .5s .1s both}
-.slide.active .a2{animation:fadeUp .5s .2s both}
-.slide.active .a3{animation:fadeUp .5s .3s both}
-.slide.active .a4{animation:fadeUp .5s .4s both}
-.slide.active .a5{animation:fadeUp .5s .5s both}
-.slide.active .a6{animation:fadeUp .5s .6s both}
+.slide.visible .a1{animation:fadeUp .5s .1s both}
+.slide.visible .a2{animation:fadeUp .5s .2s both}
+.slide.visible .a3{animation:fadeUp .5s .3s both}
+.slide.visible .a4{animation:fadeUp .5s .4s both}
+.slide.visible .a5{animation:fadeUp .5s .5s both}
+.slide.visible .a6{animation:fadeUp .5s .6s both}
 @media(max-width:900px){.two-col,.three-col,.four-col,.channel-grid{grid-template-columns:1fr;}h1.display{font-size:2rem;}h2.section{font-size:1.5rem;}}
 
   /* ── Password gate ── */
@@ -125,6 +125,18 @@ h3.card-title.dark-text{color:var(--dark);}
   .gate-btn:hover{background:#a93226;}
   .gate-err{font-size:.75rem;color:#c0392b;font-family:'DM Mono',monospace;letter-spacing:.06em;min-height:1em;}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Scroll-snap mobile support */
+.a1,.a2,.a3,.a4,.a5,.a6,
+.animate-1,.animate-2,.animate-3,.animate-4,.animate-5,.animate-6{
+  opacity:0;transform:translateY(16px);
+}
+.slide.visible .a1,.slide.visible .a2,.slide.visible .a3,
+.slide.visible .a4,.slide.visible .a5,.slide.visible .a6,
+.slide.visible .animate-1,.slide.visible .animate-2,.slide.visible .animate-3,
+.slide.visible .animate-4,.slide.visible .animate-5,.slide.visible .animate-6{
+  opacity:1;transform:translateY(0);
+}
 </style>
 </head>
 <body>
@@ -636,23 +648,53 @@ function checkGate(){
 <script>
 const TOTAL=10,slides=document.querySelectorAll('.slide');
 let cur=0;
-function show(n){
-  slides[cur].classList.remove('active');slides[cur].classList.add('exit');
-  setTimeout(()=>slides[cur].classList.remove('exit'),500);
-  cur=((n%TOTAL)+TOTAL)%TOTAL;slides[cur].classList.add('active');
+
+// Scroll to slide
+function scrollToSlide(n){
+  n=((n%TOTAL)+TOTAL)%TOTAL;
+  cur=n;
+  slides[n].scrollIntoView({behavior:'smooth',block:'start'});
+  updateUI();
+}
+function go(d){scrollToSlide(cur+d);}
+
+function updateUI(){
   document.getElementById('pb').style.width=((cur+1)/TOTAL*100)+'%';
   document.getElementById('ctr').textContent=(cur+1)+' / '+TOTAL;
 }
-function go(d){show(cur+d);}
+
+// IntersectionObserver — marks slide visible for animations + updates counter
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      const idx=Array.from(slides).indexOf(e.target);
+      if(idx!==-1){cur=idx;updateUI();}
+    }
+  });
+},{threshold:0.4});
+slides.forEach(s=>observer.observe(s));
+
+// Keyboard
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')go(1);
   if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
 });
-let tx=0;
-document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
-document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)go(d<0?1:-1);});
-document.getElementById('pb').style.width=(1/TOTAL*100)+'%';
-document.getElementById('ctr').textContent='1 / '+TOTAL;
+
+// Touch swipe on the deck container
+let tx=0,ty=0;
+const deck=document.querySelector('.deck');
+deck.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+deck.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  // Only treat as navigation if clearly horizontal swipe
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50)go(dx<0?1:-1);
+});
+
+// Init
+updateUI();
+slides[0].classList.add('visible');
 </script>
 </body>
 </html>
