@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-h -->
+<!-- cache-bust: 2026-04-26-i -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3211,6 +3211,9 @@ function MenuPrintEditor(){
             </div>
           </div>
         )}
+
+        <div className="card">
+          <h2>Format</h2>
           <select value={fmt} onChange={e=>setFmt(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.83rem'}}>
             {MENU_FORMATS.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}
           </select>
