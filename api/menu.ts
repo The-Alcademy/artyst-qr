@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const [catRes, itemsRes] = await Promise.all([
-      fetch(`${url}/rest/v1/menu_categories?active=eq.true&order=side,sort_order`, { headers }),
+      fetch(`${url}/rest/v1/menu_categories?select=id,name,slug,side,sort_order,active,attribution&active=eq.true&order=side,sort_order`, { headers }),
       fetch(`${url}/rest/v1/menu_items?order=category_id,sort_order`, { headers }),
     ]);
     if (!catRes.ok || !itemsRes.ok) throw new Error('Supabase fetch failed');
