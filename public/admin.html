@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-c -->
+<!-- cache-bust: 2026-04-26-d -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2901,7 +2901,25 @@ function MenuPrintEditor(){
     </div>`;
   }
 
-  useEffect(()=>{\n    if(!previewRef.current) return;\n    setTimeout(()=>{\n      if(showCover&&coverShowQr){\n        const el=document.getElementById('cover-qr');\n        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:coverQrUrl,width:72,height:72,colorDark:'#1a1a18',colorLight:'#faf8f4'});}\n      }\n      if(qrOption==='footer'){\n        const el=document.getElementById('menu-export-qr');\n        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl,width:60,height:60,colorDark:'#111',colorLight:'#fff'});}\n      }\n      if(qrOption==='section'){\n        cats.filter(c=>selectedCats.has(c.id)).forEach(cat=>{\n          const el=document.getElementById('qr-sec-'+cat.id);\n          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl+'?cat='+cat.slug,width:40,height:40,colorDark:'#111',colorLight:'#fff'});}\n        });\n      }\n    },200);\n  },[selectedCats,style,fmt,slot,showFooter,showCover,coverShowQr,coverQrUrl,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats]);
+  useEffect(()=>{
+    if(!previewRef.current) return;
+    setTimeout(()=>{
+      if(showCover&&coverShowQr){
+        const el=document.getElementById('cover-qr');
+        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:coverQrUrl,width:72,height:72,colorDark:'#1a1a18',colorLight:'#faf8f4'});}
+      }
+      if(qrOption==='footer'){
+        const el=document.getElementById('menu-export-qr');
+        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl,width:60,height:60,colorDark:'#111',colorLight:'#fff'});}
+      }
+      if(qrOption==='section'){
+        cats.filter(c=>selectedCats.has(c.id)).forEach(cat=>{
+          const el=document.getElementById('qr-sec-'+cat.id);
+          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl+'?cat='+cat.slug,width:40,height:40,colorDark:'#111',colorLight:'#fff'});}
+        });
+      }
+    },200);
+  },[selectedCats,style,fmt,slot,showFooter,showCover,coverShowQr,coverQrUrl,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats]);
 
   function handlePrint(){
     const w=window.open('','_blank');
