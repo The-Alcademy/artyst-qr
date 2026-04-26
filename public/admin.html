@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-f -->
+<!-- cache-bust: 2026-04-26-g -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2731,6 +2731,7 @@ const MENU_STYLES=[
   {id:'clean',label:'Clean Card',desc:'Larger text, no descriptions'},
   {id:'specials',label:'Specials',desc:'Big type, 1–2 items per section'},
   {id:'event',label:'Event Menu',desc:'Headed with title and date, course-style'},
+  {id:'summary',label:'Summary Card',desc:'Duplex A5 — mini menu front, events & jobs back'},
 ];
 
 function MenuPrintEditor(){
@@ -2749,6 +2750,13 @@ function MenuPrintEditor(){
   const [slot,setSlot]=useState('all');
   const [showFooter,setShowFooter]=useState(true);
   const [showCover,setShowCover]=useState(false);
+  // Summary Card state
+  const [summaryEvents,setSummaryEvents]=useState([]);
+  const [summaryOpps,setSummaryOpps]=useState([]);
+  const [selectedOpps,setSelectedOpps]=useState(new Set());
+  const [summaryMenuQr,setSummaryMenuQr]=useState('https://go.theartyst.co.uk/menu');
+  const [summaryEventsQr,setSummaryEventsQr]=useState('https://invysible-college-events-engine.vercel.app');
+  const [summaryItemsPerSection,setSummaryItemsPerSection]=useState(3);
   const [coverTitle,setCoverTitle]=useState('The Artyst');
   const [coverSubtitle,setCoverSubtitle]=useState('Café · Bar · Culture · Cambridge');
   const [coverTagline,setCoverTagline]=useState('Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive.');
@@ -2829,7 +2837,122 @@ function MenuPrintEditor(){
     </div>`;
   }
 
+  function buildSummaryCardHtml(){
+    const A5W='148mm'; const A5H='210mm'; const PAD='8mm';
+    const activeCats=cats.filter(c=>selectedCats.has(c.id));
+    const featuredOpps=summaryOpps.filter(o=>selectedOpps.has(o.id));
+
+    function fmtDate(iso){
+      if(!iso) return '';
+      const d=new Date(iso);
+      return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})
+        +' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    }
+    function fmtPrice(p){return p?`£${(p/100).toFixed(2)}`:'Free';}
+
+    // ── Side A: mini menu ──────────────────────────────
+    const menuItemsHtml=activeCats.map(cat=>{
+      const catItems=items.filter(i=>i.category_id===cat.id).slice(0,summaryItemsPerSection);
+      if(!catItems.length) return '';
+      return `<div style="margin-bottom:3mm;">
+        <div style="font-size:6pt;letter-spacing:.18em;text-transform:uppercase;color:#8a6a2e;font-weight:600;margin-bottom:1mm;padding-bottom:.5mm;border-bottom:0.3pt solid #e8d5a8;">${cat.name}</div>
+        ${catItems.map(i=>`
+          <div style="display:flex;justify-content:space-between;padding:.6mm 0;border-bottom:0.2pt solid #f0ece7;font-size:8pt;color:#1a1a18;">
+            <span>${i.name}</span>
+            ${i.price_display?`<span style="font-weight:600;white-space:nowrap;margin-left:2mm;">${i.price_display}</span>`:''}
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+
+    const sideA=`<div style="width:${A5W};height:${A5H};background:#fff;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;page-break-after:always;overflow:hidden;">
+      <!-- Red top bar -->
+      <div style="height:3mm;background:#c0392b;flex-shrink:0;"></div>
+      <!-- Header -->
+      <div style="padding:4mm ${PAD} 3mm;border-bottom:0.5pt solid #eee;flex-shrink:0;">
+        <div style="font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:#8a6a2e;">The Artyst · Cambridge</div>
+        <div style="font-size:18pt;font-weight:700;color:#1a1a18;line-height:1.1;">${title||'Menu'}</div>
+        ${slot!=='all'?`<div style="font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-top:.5mm;">${MENU_SLOTS.find(s=>s.id===slot)?.label||''}</div>`:''}
+      </div>
+      <!-- Menu items -->
+      <div style="flex:1;padding:3mm ${PAD};overflow:hidden;columns:2;column-gap:4mm;font-size:8pt;">
+        ${menuItemsHtml}
+      </div>
+      <!-- App CTA -->
+      <div style="padding:3mm ${PAD};border-top:0.5pt solid #eee;display:flex;align-items:center;gap:4mm;flex-shrink:0;background:#faf8f4;">
+        <div id="summary-menu-qr" style="flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:8pt;font-weight:600;color:#1a1a18;line-height:1.3;">Full menu on your phone</div>
+          <div style="font-size:7pt;color:#888;line-height:1.4;">Scan for all options, descriptions,<br/>dietary info and today's specials</div>
+          <div style="font-size:6pt;font-family:monospace;color:#bbb;margin-top:.5mm;">${summaryMenuQr}</div>
+        </div>
+      </div>
+      <!-- Red bottom bar -->
+      <div style="height:2mm;background:#c0392b;flex-shrink:0;"></div>
+    </div>`;
+
+    // ── Side B: what's on ──────────────────────────────
+    const eventsHtml=summaryEvents.slice(0,3).map((ev,i)=>`
+      <div style="padding:2mm 0;border-bottom:0.3pt solid #eee;display:flex;gap:3mm;align-items:flex-start;">
+        <div id="summary-ev-qr-${i}" style="flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:8.5pt;font-weight:600;color:#1a1a18;line-height:1.2;">${ev.title}</div>
+          <div style="font-size:7pt;color:#8a6a2e;margin-top:.3mm;">${fmtDate(ev.starts_at)}</div>
+          ${ev.description?`<div style="font-size:7pt;color:#777;margin-top:.3mm;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${ev.description}</div>`:''}
+          <div style="font-size:7pt;font-weight:600;color:#1a1a18;margin-top:.3mm;">${fmtPrice(ev.price_pence)}</div>
+        </div>
+      </div>`).join('');
+
+    const oppsHtml=featuredOpps.map((opp,i)=>`
+      <div style="padding:2mm 0;border-bottom:0.3pt solid #eee;display:flex;gap:3mm;align-items:flex-start;">
+        <div id="summary-opp-qr-${i}" style="flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:8.5pt;font-weight:600;color:#1a1a18;">${opp.title}</div>
+          <div style="font-size:7pt;letter-spacing:.08em;text-transform:uppercase;color:#c0392b;margin-top:.2mm;">${opp.type||'Opportunity'}</div>
+          ${opp.description?`<div style="font-size:7pt;color:#777;margin-top:.3mm;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${opp.description}</div>`:''}
+        </div>
+      </div>`).join('');
+
+    const sideB=`<div style="width:${A5W};height:${A5H};background:#1a1a18;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Red top bar -->
+      <div style="height:3mm;background:#c0392b;flex-shrink:0;"></div>
+      <!-- Header -->
+      <div style="padding:4mm ${PAD} 3mm;flex-shrink:0;">
+        <div style="font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:#8a6a2e;">The Artyst · Cambridge</div>
+        <div style="font-size:16pt;font-weight:700;color:#fff;line-height:1.1;">What's On</div>
+      </div>
+      <!-- Events section -->
+      ${summaryEvents.length?`
+      <div style="padding:0 ${PAD};flex-shrink:0;">
+        <div style="font-size:6pt;letter-spacing:.18em;text-transform:uppercase;color:#c0392b;font-weight:600;margin-bottom:2mm;padding-bottom:1mm;border-bottom:0.5pt solid #333;">Upcoming Events</div>
+        <div style="background:#fff;border-radius:3px;padding:2mm 3mm;">${eventsHtml}</div>
+      </div>`:''}
+      <!-- Opportunities section -->
+      ${featuredOpps.length?`
+      <div style="padding:3mm ${PAD} 0;flex-shrink:0;">
+        <div style="font-size:6pt;letter-spacing:.18em;text-transform:uppercase;color:#c0392b;font-weight:600;margin-bottom:2mm;padding-bottom:1mm;border-bottom:0.5pt solid #333;">Join Us</div>
+        <div style="background:#fff;border-radius:3px;padding:2mm 3mm;">${oppsHtml}</div>
+      </div>`:''}
+      <!-- Spacer -->
+      <div style="flex:1;"></div>
+      <!-- Events app CTA -->
+      <div style="padding:3mm ${PAD};display:flex;align-items:center;gap:4mm;flex-shrink:0;border-top:0.5pt solid #333;">
+        <div id="summary-events-qr" style="flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:8pt;font-weight:600;color:#fff;line-height:1.3;">Book tickets &amp; find out more</div>
+          <div style="font-size:7pt;color:#888;line-height:1.4;">Scan for our full events calendar,<br/>booking, and what's coming up</div>
+          <div style="font-size:6pt;font-family:monospace;color:#555;margin-top:.5mm;">${summaryEventsQr}</div>
+        </div>
+      </div>
+      <!-- Red bottom bar -->
+      <div style="height:2mm;background:#c0392b;flex-shrink:0;"></div>
+    </div>`;
+
+    const footerCss=`<style>@page{size:${A5W} ${A5H};margin:0;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>`;
+    return `${footerCss}${sideA}${sideB}`;
+  }
+
   function buildMenuHtml(){
+    if(style==='summary') return buildSummaryCardHtml();
     const activeCats=cats.filter(c=>selectedCats.has(c.id));
     const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const isClean=style==='clean';
@@ -2901,10 +3024,37 @@ function MenuPrintEditor(){
     </div>`;
   }
 
+  // Fetch upcoming events + opportunities when summary style selected
   useEffect(()=>{
-    if(!previewRef.current) return;
+    if(style!=='summary') return;
+    const now=new Date().toISOString();
+    Promise.all([
+      supabase(`/rest/v1/events?select=id,title,starts_at,ends_at,location,price_pence,description&starts_at=gte.${now}&order=starts_at&limit=4`),
+      supabase(`/rest/v1/opportunities?select=id,title,type,description,slug&active=eq.true&order=created_at.desc&limit=8`),
+    ]).then(([evs,opps])=>{
+      setSummaryEvents(Array.isArray(evs)?evs:[]);
+      const oppList=Array.isArray(opps)?opps:[];
+      setSummaryOpps(oppList);
+      // Default: select first 2
+      setSelectedOpps(new Set(oppList.slice(0,2).map(o=>o.id)));
+    });
+  },[style]);
     setTimeout(()=>{
-      if(showCover&&coverShowQr){
+      if(style==='summary'){
+        const mqr=document.getElementById('summary-menu-qr');
+        if(mqr&&window.QRCode){mqr.innerHTML='';new window.QRCode(mqr,{text:summaryMenuQr,width:48,height:48,colorDark:'#1a1a18',colorLight:'#faf8f4'});}
+        const eqr=document.getElementById('summary-events-qr');
+        if(eqr&&window.QRCode){eqr.innerHTML='';new window.QRCode(eqr,{text:summaryEventsQr,width:48,height:48,colorDark:'#fff',colorLight:'#1a1a18'});}
+        summaryEvents.slice(0,3).forEach((_,i)=>{
+          const el=document.getElementById('summary-ev-qr-'+i);
+          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:summaryEventsQr,width:36,height:36,colorDark:'#1a1a18',colorLight:'#fff'});}
+        });
+        summaryOpps.filter(o=>selectedOpps.has(o.id)).forEach((opp,i)=>{
+          const el=document.getElementById('summary-opp-qr-'+i);
+          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:`https://go.theartyst.co.uk/opportunity/${opp.slug}`,width:36,height:36,colorDark:'#1a1a18',colorLight:'#fff'});}
+        });
+        return;
+      }
         const el=document.getElementById('cover-qr');
         if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:coverQrUrl,width:72,height:72,colorDark:'#1a1a18',colorLight:'#faf8f4'});}
       }
@@ -2919,7 +3069,7 @@ function MenuPrintEditor(){
         });
       }
     },200);
-  },[selectedCats,style,fmt,slot,showFooter,showCover,coverShowQr,coverQrUrl,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats]);
+  },[selectedCats,style,fmt,slot,showFooter,showCover,coverShowQr,coverQrUrl,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats,summaryEvents,summaryOpps,selectedOpps,summaryMenuQr,summaryEventsQr,summaryItemsPerSection]);
 
   function handlePrint(){
     const w=window.open('','_blank');
@@ -3005,8 +3155,58 @@ function MenuPrintEditor(){
           </div>
         </div>
 
-        <div className="card">
-          <h2>Format</h2>
+        {style==='summary'&&(
+          <div className="card">
+            <h2>Summary Card</h2>
+            <div style={{display:'flex',flexDirection:'column',gap:'.7rem'}}>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.3rem'}}>Items per section (Front)</label>
+                <div style={{display:'flex',gap:'.4rem'}}>
+                  {[2,3,4,5].map(n=>(
+                    <button key={n} onClick={()=>setSummaryItemsPerSection(n)}
+                      style={{flex:1,padding:'.3rem',border:'1px solid '+(summaryItemsPerSection===n?'#c0392b':'#333'),borderRadius:'2px',background:summaryItemsPerSection===n?'#1a0808':'none',color:summaryItemsPerSection===n?'#c8a96e':'#888',cursor:'pointer',fontSize:'.82rem'}}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Menu app QR URL</label>
+                <input value={summaryMenuQr} onChange={e=>setSummaryMenuQr(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem'}}/>
+              </div>
+              <div>
+                <div style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',marginBottom:'.4rem'}}>Upcoming Events (auto — next {summaryEvents.length})</div>
+                {summaryEvents.length===0&&<div style={{fontSize:'.78rem',color:'#555'}}>No upcoming events found in CA-017</div>}
+                {summaryEvents.map(ev=>(
+                  <div key={ev.id} style={{fontSize:'.78rem',color:'#888',padding:'.2rem 0',borderBottom:'1px solid #1a1a1a'}}>
+                    <span style={{color:'#c8a96e'}}>{ev.title}</span>
+                    {ev.starts_at&&<span style={{color:'#555',marginLeft:'.5rem',fontSize:'.72rem'}}>{new Date(ev.starts_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.4rem'}}>Opportunities to feature (Back)</label>
+                {summaryOpps.length===0&&<div style={{fontSize:'.78rem',color:'#555'}}>No active opportunities found</div>}
+                {summaryOpps.map(opp=>(
+                  <label key={opp.id} style={{display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer',fontSize:'.82rem',padding:'.2rem 0',borderBottom:'1px solid #1a1a1a'}}>
+                    <input type="checkbox" checked={selectedOpps.has(opp.id)}
+                      onChange={()=>setSelectedOpps(s=>{const n=new Set(s);n.has(opp.id)?n.delete(opp.id):n.add(opp.id);return n;})}
+                      style={{accentColor:'#c0392b'}}/>
+                    <span style={{flex:1}}>{opp.title}</span>
+                    <span style={{fontSize:'.7rem',color:'#555',textTransform:'uppercase',letterSpacing:'.06em'}}>{opp.type||''}</span>
+                  </label>
+                ))}
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Events app QR URL (Back)</label>
+                <input value={summaryEventsQr} onChange={e=>setSummaryEventsQr(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem'}}/>
+              </div>
+              <div style={{fontSize:'.72rem',color:'#555',lineHeight:1.5,padding:'.4rem',background:'#111',borderRadius:'2px'}}>
+                📄 Print duplex (flip on short edge) for a double-sided A5 card. Format is fixed at A5.
+              </div>
+            </div>
+          </div>
+        )}
           <select value={fmt} onChange={e=>setFmt(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.83rem'}}>
             {MENU_FORMATS.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}
           </select>
