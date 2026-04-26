@@ -125,9 +125,56 @@ h2.section.light{color:var(--cream);}
 .slide.active .a5{animation:fadeUp .45s .40s both}
 .slide.active .a6{animation:fadeUp .45s .48s both}
 @media(max-width:900px){.two-col,.three-col,.ba-grid{grid-template-columns:1fr;}h1.display{font-size:2rem;}h2.section{font-size:1.5rem;}}
+
+  /* ── Password gate ── */
+  .gate{position:fixed;inset:0;background:var(--dark,#1a1a18);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;}
+  .gate-logo{width:36px;height:36px;background:#c0392b;border-radius:4px;}
+  .gate-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#faf8f4;letter-spacing:-.01em;}
+  .gate-sub{font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,110,.6);}
+  .gate-form{display:flex;flex-direction:column;align-items:center;gap:.8rem;margin-top:.5rem;}
+  .gate-input{background:rgba(255,255,255,.06);border:1px solid rgba(200,169,110,.25);border-radius:4px;padding:.7rem 1.2rem;font-size:1rem;color:#faf8f4;text-align:center;letter-spacing:.08em;width:220px;outline:none;font-family:'DM Mono',monospace;}
+  .gate-input:focus{border-color:rgba(200,169,110,.6);}
+  .gate-input.shake{animation:shake .35s ease;}
+  .gate-btn{background:#c0392b;color:#fff;border:none;border-radius:4px;padding:.65rem 2rem;font-size:.88rem;font-weight:500;cursor:pointer;letter-spacing:.04em;transition:background .15s;}
+  .gate-btn:hover{background:#a93226;}
+  .gate-err{font-size:.75rem;color:#c0392b;font-family:'DM Mono',monospace;letter-spacing:.06em;min-height:1em;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <div class="gate-logo"></div>
+  <div class="gate-title">The Artyst</div>
+  <div class="gate-sub">The Artyst · Internal guide</div>
+  <div class="gate-form">
+    <input class="gate-input" id="gate-input" type="password" placeholder="Password" autocomplete="off"
+      onkeydown="if(event.key==='Enter')checkGate()"/>
+    <button class="gate-btn" onclick="checkGate()">Enter</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('artyst-access')==='1'){
+    document.getElementById('gate').style.display='none';
+    document.body.style.overflow='hidden';
+  }
+})();
+function checkGate(){
+  var v=document.getElementById('gate-input').value;
+  if(v==='gotabike'){
+    sessionStorage.setItem('artyst-access','1');
+    document.getElementById('gate').style.display='none';
+    document.body.style.overflow='hidden';
+  } else {
+    var inp=document.getElementById('gate-input');
+    document.getElementById('gate-err').textContent='Incorrect password.';
+    inp.value='';inp.classList.add('shake');
+    setTimeout(function(){inp.classList.remove('shake');},400);
+  }
+}
+</script>
+
 <div class="deck">
 
 <!-- 1 COVER -->
