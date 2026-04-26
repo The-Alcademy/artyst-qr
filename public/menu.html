@@ -1294,11 +1294,12 @@ var offerHtml = '';
             + '</div>';
         }).join('');
         if (!itemsHtml.trim()) return '';
-        return '<div class="cat-block" id="cat-' + cat.slug + '">'
-          + '<p class="cat-label">' + cat.name + '</p>'
-          + (note ? '<p class="cat-note">' + note + '</p>' : '')
-          + itemsHtml
-          + '</div>';
+return '<div class="cat-block" id="cat-' + cat.slug + '">'
+  + '<p class="cat-label">' + cat.name + '</p>'
+  + (cat.attribution ? '<p class="cat-attribution">' + cat.attribution + '</p>' : '')
+  + (note ? '<p class="cat-note">' + note + '</p>' : '')
+  + itemsHtml
+  + '</div>';
       }).join('');
     }
 
