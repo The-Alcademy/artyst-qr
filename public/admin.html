@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-g -->
+<!-- cache-bust: 2026-04-26-h -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3039,6 +3039,9 @@ function MenuPrintEditor(){
       setSelectedOpps(new Set(oppList.slice(0,2).map(o=>o.id)));
     });
   },[style]);
+
+  useEffect(()=>{
+    if(!previewRef.current) return;
     setTimeout(()=>{
       if(style==='summary'){
         const mqr=document.getElementById('summary-menu-qr');
@@ -3055,6 +3058,7 @@ function MenuPrintEditor(){
         });
         return;
       }
+      if(showCover&&coverShowQr){
         const el=document.getElementById('cover-qr');
         if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:coverQrUrl,width:72,height:72,colorDark:'#1a1a18',colorLight:'#faf8f4'});}
       }
