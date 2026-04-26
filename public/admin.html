@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-k -->
+<!-- cache-bust: 2026-04-26-m -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -872,7 +872,7 @@ function PosterEditor({code,templates,designs,onClose,onSaved}){
           <div style={{fontSize:fmt.small?'4pt':'5.5pt',fontFamily:'monospace',color:'#aaa',marginTop:'.5mm',letterSpacing:'.02em'}}>{BASE_URL}/e/{code.slug}</div>
         </div>
       )}
-      <div style={{flex:'0 0 auto',height:fmt.small?'3mm':'5mm',background:'#c0392b'}}/>
+      
     </div>
   ):(
     <div ref={posterRef} style={posterStyle}>
@@ -2798,10 +2798,7 @@ function MenuPrintEditor(){
     const slotDef=MENU_SLOTS.find(s=>s.id===slot);
     const detailLines=(coverDetails||'').split('\n').filter(Boolean);
     return `<div style="width:${fmtDef.w};height:${fmtDef.h};background:#faf8f4;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16mm;page-break-after:always;position:relative;">
-      <!-- decorative top bar -->
-      <div style="position:absolute;top:0;left:0;right:0;height:3mm;background:#c0392b;"></div>
-      <!-- decorative bottom bar -->
-      <div style="position:absolute;bottom:0;left:0;right:0;height:3mm;background:#c0392b;"></div>
+
 
       <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
         <!-- eyebrow -->
@@ -2869,8 +2866,7 @@ function MenuPrintEditor(){
     }).join('');
 
     const sideA=`<div style="width:${A5W};height:${A5H};background:#fff;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;page-break-after:always;overflow:hidden;">
-      <!-- Red top bar -->
-      <div style="height:3mm;background:#c0392b;flex-shrink:0;"></div>
+
       <!-- Header -->
       <div style="padding:4mm ${PAD} 3mm;border-bottom:0.5pt solid #eee;flex-shrink:0;">
         <div style="font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:#8a6a2e;">The Artyst · Cambridge</div>
@@ -2890,8 +2886,7 @@ function MenuPrintEditor(){
           <div style="font-size:6pt;font-family:monospace;color:#bbb;margin-top:.5mm;">${summaryMenuQr}</div>
         </div>
       </div>
-      <!-- Red bottom bar -->
-      <div style="height:2mm;background:#c0392b;flex-shrink:0;"></div>
+
     </div>`;
 
     // ── Side B: what's on ──────────────────────────────
@@ -2917,8 +2912,7 @@ function MenuPrintEditor(){
       </div>`).join('');
 
     const sideB=`<div style="width:${A5W};height:${A5H};background:#faf8f4;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;border-top:none;">
-      <!-- Red top bar -->
-      <div style="height:3mm;background:#c0392b;flex-shrink:0;"></div>
+
       <!-- Header -->
       <div style="padding:4mm ${PAD} 3mm;flex-shrink:0;border-bottom:0.5pt solid #e8d5a8;background:#fff;">
         <div style="font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:#8a6a2e;">The Artyst · Cambridge</div>
@@ -2947,8 +2941,7 @@ function MenuPrintEditor(){
           <div style="font-size:6pt;font-family:monospace;color:#bbb;margin-top:.5mm;">${summaryEventsQr}</div>
         </div>
       </div>
-      <!-- Red bottom bar -->
-      <div style="height:2mm;background:#c0392b;flex-shrink:0;"></div>
+
     </div>`;
 
     const footerCss=`<style>@page{size:${A5W} ${A5H};margin:0;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>`;
@@ -3151,9 +3144,9 @@ function MenuPrintEditor(){
           <div style={{display:'flex',flexDirection:'column',gap:'.3rem'}}>
             {MENU_SLOTS.map(s=>(
               <div key={s.id} onClick={()=>setSlot(s.id)}
-                style={{padding:'.4rem .6rem',borderRadius:'3px',border:'1.5px solid '+(slot===s.id?'#c0392b':'#2a2a2a'),background:slot===s.id?'#1a0808':'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <span style={{fontSize:'.83rem',fontWeight:slot===s.id?700:400,color:slot===s.id?'#c8a96e':'#ccc'}}>{s.label}</span>
-                <span style={{fontSize:'.7rem',color:'#555'}}>{s.desc}</span>
+                style={{padding:'.4rem .6rem',borderRadius:'3px',border:'1.5px solid '+(slot===s.id?'#c0392b':'var(--border,#ddd)'),background:slot===s.id?'var(--gold-bg,#fff8ee)':'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:'.83rem',fontWeight:slot===s.id?700:400,color:slot===s.id?'#c0392b':'var(--text-1,#1a1a18)'}}>{s.label}</span>
+                <span style={{fontSize:'.7rem',color:'var(--text-3,#999)'}}>{s.desc}</span>
               </div>
             ))}
           </div>
@@ -3164,9 +3157,9 @@ function MenuPrintEditor(){
           <div style={{display:'flex',flexDirection:'column',gap:'.35rem'}}>
             {MENU_STYLES.map(s=>(
               <div key={s.id} onClick={()=>setStyle(s.id)}
-                style={{padding:'.45rem .6rem',borderRadius:'3px',border:'1.5px solid '+(style===s.id?'#c0392b':'#2a2a2a'),background:style===s.id?'#1a0808':'none',cursor:'pointer'}}>
-                <div style={{fontSize:'.82rem',fontWeight:style===s.id?700:400,color:style===s.id?'#c8a96e':'#ccc'}}>{s.label}</div>
-                <div style={{fontSize:'.7rem',color:'#555',marginTop:'.1rem'}}>{s.desc}</div>
+                style={{padding:'.45rem .6rem',borderRadius:'3px',border:'1.5px solid '+(style===s.id?'#c0392b':'var(--border,#ddd)'),background:style===s.id?'var(--gold-bg,#fff8ee)':'none',cursor:'pointer'}}>
+                <div style={{fontSize:'.82rem',fontWeight:style===s.id?700:400,color:style===s.id?'#c0392b':'var(--text-1,#1a1a18)'}}>{s.label}</div>
+                <div style={{fontSize:'.7rem',color:'var(--text-3,#999)',marginTop:'.1rem'}}>{s.desc}</div>
               </div>
             ))}
           </div>
@@ -3218,7 +3211,7 @@ function MenuPrintEditor(){
                 <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Events app QR URL (Back)</label>
                 <input value={summaryEventsQr} onChange={e=>setSummaryEventsQr(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem'}}/>
               </div>
-              <div style={{fontSize:'.72rem',color:'#555',lineHeight:1.5,padding:'.4rem',background:'#111',borderRadius:'2px'}}>
+              <div style={{fontSize:'.72rem',color:'var(--text-2,#666)',lineHeight:1.5,padding:'.4rem',background:'var(--bg-detail,#ede9e2)',borderRadius:'2px',border:'1px solid var(--border,#ddd)'}}>
                 📄 Print duplex (flip on short edge) for a double-sided A5 card. Format is fixed at A5.
               </div>
             </div>
