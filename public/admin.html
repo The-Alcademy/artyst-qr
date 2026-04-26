@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-a -->
+<!-- cache-bust: 2026-04-26-c -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2710,6 +2710,14 @@ function BackToTop(){
 
 // ── MENU PRINT EDITOR ────────────────────────────────────
 
+const MENU_SLOTS=[
+  {id:'all',label:'All day',desc:'Show everything'},
+  {id:'brunch',label:'Brunch',desc:'8am – 12pm'},
+  {id:'lunch',label:'Lunch',desc:'12pm – 2pm'},
+  {id:'tea',label:'Afternoon tea',desc:'2pm – 5pm'},
+  {id:'evening',label:'Evening',desc:'5pm – close'},
+];
+
 const MENU_FORMATS=[
   {id:'a4',label:'A4',w:'210mm',h:'297mm',cols:2},
   {id:'a5',label:'A5',w:'148mm',h:'210mm',cols:1},
@@ -2738,6 +2746,16 @@ function MenuPrintEditor(){
   const [showBranding,setShowBranding]=useState(true);
   const [qrOption,setQrOption]=useState('none');
   const [qrUrl,setQrUrl]=useState('https://go.theartyst.co.uk/menu');
+  const [slot,setSlot]=useState('all');
+  const [showFooter,setShowFooter]=useState(true);
+  const [showCover,setShowCover]=useState(false);
+  const [coverTitle,setCoverTitle]=useState('The Artyst');
+  const [coverSubtitle,setCoverSubtitle]=useState('Café · Bar · Culture · Cambridge');
+  const [coverTagline,setCoverTagline]=useState('Syd Barrett taught us that creativity is serious play — psychedelic, experimental, alive.');
+  const [coverDetails,setCoverDetails]=useState('54–56 Chesterton Road, Cambridge CB4 1EN\ntheartyst.co.uk');
+  const [coverShowQr,setCoverShowQr]=useState(true);
+  const [coverQrUrl,setCoverQrUrl]=useState('https://go.theartyst.co.uk/menu');
+  const [coverQrLabel,setCoverQrLabel]=useState('Scan to open the digital menu on your phone');
   const [exporting,setExporting]=useState(false);
   const [copied,setCopied]=useState(false);
   const previewRef=useRef(null);
@@ -2763,18 +2781,68 @@ function MenuPrintEditor(){
 
   const fmtDef=MENU_FORMATS.find(f=>f.id===fmt)||MENU_FORMATS[0];
 
+  function buildCoverHtml(){
+    const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const slotDef=MENU_SLOTS.find(s=>s.id===slot);
+    const detailLines=(coverDetails||'').split('\n').filter(Boolean);
+    return `<div style="width:${fmtDef.w};height:${fmtDef.h};background:#faf8f4;font-family:Georgia,serif;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16mm;page-break-after:always;position:relative;">
+      <!-- decorative top bar -->
+      <div style="position:absolute;top:0;left:0;right:0;height:3mm;background:#c0392b;"></div>
+      <!-- decorative bottom bar -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3mm;background:#c0392b;"></div>
+
+      <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
+        <!-- eyebrow -->
+        <div style="font-size:7pt;letter-spacing:.25em;text-transform:uppercase;color:#c0392b;margin-bottom:6mm;">Est. 2025</div>
+
+        <!-- main title -->
+        <div style="font-size:36pt;font-weight:700;color:#1a1a18;line-height:1.1;margin-bottom:3mm;letter-spacing:-.01em;">${coverTitle||'The Artyst'}</div>
+
+        <!-- subtitle line -->
+        ${coverSubtitle?`<div style="font-size:10pt;letter-spacing:.14em;text-transform:uppercase;color:#8a6a2e;margin-bottom:8mm;">${coverSubtitle}</div>`:''}
+
+        <!-- divider -->
+        <div style="width:30mm;height:.5pt;background:#c0392b;margin-bottom:8mm;opacity:.4;"></div>
+
+        <!-- menu type + slot -->
+        <div style="font-size:16pt;font-weight:500;color:#1a1a18;margin-bottom:${coverTagline?'5mm':'8mm'};">${title||'Menu'}${slot!=='all'?' — '+slotDef.label:''}</div>
+
+        <!-- tagline -->
+        ${coverTagline?`<div style="font-size:9.5pt;color:#666;line-height:1.7;max-width:120mm;text-align:center;font-style:italic;margin-bottom:8mm;">&ldquo;${coverTagline}&rdquo;</div>`:''}
+
+        <!-- date -->
+        ${showDate?`<div style="font-size:8pt;color:#999;letter-spacing:.08em;margin-bottom:6mm;">${today}</div>`:''}
+
+        <!-- divider -->
+        <div style="width:20mm;height:.5pt;background:#ddd;margin-bottom:8mm;"></div>
+
+        <!-- address / details -->
+        ${detailLines.length?`<div style="text-align:center;">${detailLines.map(l=>`<div style="font-size:8.5pt;color:#888;line-height:1.9;letter-spacing:.04em;">${l}</div>`).join('')}</div>`:''}
+
+        <!-- QR code -->
+        ${coverShowQr?`<div style="margin-top:8mm;text-align:center;">
+          <div id="cover-qr" style="display:inline-block;margin-bottom:2mm;"></div>
+          <div style="font-size:7pt;color:#aaa;letter-spacing:.08em;">${coverQrLabel||'Scan to open the digital menu'}</div>
+          <div style="font-size:6pt;font-family:monospace;color:#ccc;margin-top:.5mm;">${coverQrUrl}</div>
+        </div>`:''}
+      </div>
+    </div>`;
+  }
+
   function buildMenuHtml(){
     const activeCats=cats.filter(c=>selectedCats.has(c.id));
     const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const isClean=style==='clean';
     const isSpecials=style==='specials';
     const cols=isSpecials||isClean?1:fmtDef.cols;
+    const slotDef=MENU_SLOTS.find(s=>s.id===slot);
 
     const headerHtml=`
       <div style="text-align:center;margin-bottom:${isSpecials?'8mm':'5mm'};padding-bottom:4mm;border-bottom:0.5pt solid #ccc;">
         ${showBranding?`<div style="font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:#8a6a2e;margin-bottom:2mm;">The Artyst &middot; 54&ndash;56 Chesterton Road &middot; Cambridge</div>`:''}
         ${title?`<div style="font-size:${isSpecials?'22pt':'16pt'};font-weight:600;font-family:Georgia,serif;color:#1a1a18;line-height:1.2;margin-bottom:1mm;">${title}</div>`:''}
         ${subtitle?`<div style="font-size:10pt;color:#666;margin-bottom:1mm;">${subtitle}</div>`:''}
+        ${slot!=='all'?`<div style="font-size:8pt;letter-spacing:.12em;text-transform:uppercase;color:#8a6a2e;margin-bottom:1mm;">${slotDef.label} &middot; ${slotDef.desc}</div>`:''}
         ${showDate?`<div style="font-size:8pt;color:#999;letter-spacing:.08em;">${today}</div>`:''}
         ${!title&&!subtitle&&!showDate&&showBranding?`<div style="font-size:${isSpecials?'20pt':'14pt'};font-weight:600;font-family:Georgia,serif;color:#1a1a18;margin-top:2mm;">Menu</div>`:''}
       </div>`;
@@ -2786,8 +2854,27 @@ function MenuPrintEditor(){
         <div style="font-size:6pt;font-family:monospace;color:#bbb;margin-top:.5mm;">${qrUrl}</div>
       </div>`:'';
 
+    // Print footer CSS — @page margin boxes for reliable cross-browser footer
+    const footerCss=showFooter?`
+      <style>
+        @page {
+          size: ${fmtDef.w} ${fmtDef.h};
+          margin: 10mm;
+          @bottom-left { content: "The Artyst · 54–56 Chesterton Road · Cambridge"; font-family: Georgia, serif; font-size: 7pt; color: #aaa; }
+          @bottom-center { content: "${title||'Menu'}${slot!=='all'?' · '+slotDef.label:''}"; font-family: Georgia, serif; font-size: 7pt; color: #aaa; }
+          @bottom-right { content: "Page " counter(page) " of " counter(pages); font-family: Georgia, serif; font-size: 7pt; color: #aaa; }
+        }
+        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style>`:`<style>@page{size:${fmtDef.w} ${fmtDef.h};margin:10mm;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>`;
+
     const catHtml=activeCats.map(cat=>{
-      const catItems=items.filter(i=>i.category_id===cat.id);
+      // Filter items by slot
+      const catItems=items.filter(i=>{
+        if(i.category_id!==cat.id) return false;
+        if(slot==='all') return true;
+        if(!i.time_slots||!i.time_slots.length) return true; // no restriction = always available
+        return i.time_slots.includes(slot);
+      });
       if(!catItems.length) return '';
       const sectionQrHtml=qrOption==='section'?`<div id="qr-sec-${cat.id}" style="float:right;margin:0 0 2mm 3mm;"></div>`:'';
       const itemHtml=catItems.slice(0,isSpecials?3:999).map(item=>`
@@ -2807,28 +2894,14 @@ function MenuPrintEditor(){
         </div>`;
     }).join('');
 
-    return `<div id="menu-print-root" style="width:${fmtDef.w};min-height:${fmtDef.h};background:#fff;padding:${isSpecials?'12mm':'10mm'};font-family:Georgia,serif;box-sizing:border-box;color:#1a1a18;">
+    return `${footerCss}${showCover?buildCoverHtml():''}<div id="menu-print-root" style="width:${fmtDef.w};min-height:${fmtDef.h};background:#fff;padding:${isSpecials?'12mm':'10mm'};font-family:Georgia,serif;box-sizing:border-box;color:#1a1a18;">
       ${headerHtml}
       <div style="columns:${cols};column-gap:6mm;">${catHtml}</div>
       ${qrFooterHtml}
     </div>`;
   }
 
-  useEffect(()=>{
-    if(!previewRef.current||qrOption==='none') return;
-    setTimeout(()=>{
-      if(qrOption==='footer'){
-        const el=document.getElementById('menu-export-qr');
-        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl,width:60,height:60,colorDark:'#111',colorLight:'#fff'});}
-      }
-      if(qrOption==='section'){
-        cats.filter(c=>selectedCats.has(c.id)).forEach(cat=>{
-          const el=document.getElementById('qr-sec-'+cat.id);
-          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl+'?cat='+cat.slug,width:40,height:40,colorDark:'#111',colorLight:'#fff'});}
-        });
-      }
-    },200);
-  },[selectedCats,style,fmt,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats]);
+  useEffect(()=>{\n    if(!previewRef.current) return;\n    setTimeout(()=>{\n      if(showCover&&coverShowQr){\n        const el=document.getElementById('cover-qr');\n        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:coverQrUrl,width:72,height:72,colorDark:'#1a1a18',colorLight:'#faf8f4'});}\n      }\n      if(qrOption==='footer'){\n        const el=document.getElementById('menu-export-qr');\n        if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl,width:60,height:60,colorDark:'#111',colorLight:'#fff'});}\n      }\n      if(qrOption==='section'){\n        cats.filter(c=>selectedCats.has(c.id)).forEach(cat=>{\n          const el=document.getElementById('qr-sec-'+cat.id);\n          if(el&&window.QRCode){el.innerHTML='';new window.QRCode(el,{text:qrUrl+'?cat='+cat.slug,width:40,height:40,colorDark:'#111',colorLight:'#fff'});}\n        });\n      }\n    },200);\n  },[selectedCats,style,fmt,slot,showFooter,showCover,coverShowQr,coverQrUrl,qrOption,qrUrl,title,subtitle,showDate,showBranding,items,cats]);
 
   function handlePrint(){
     const w=window.open('','_blank');
@@ -2889,7 +2962,17 @@ function MenuPrintEditor(){
         </div>
 
         <div className="card">
-          <h2>Style</h2>
+          <h2>Time of Day</h2>
+          <div style={{display:'flex',flexDirection:'column',gap:'.3rem'}}>
+            {MENU_SLOTS.map(s=>(
+              <div key={s.id} onClick={()=>setSlot(s.id)}
+                style={{padding:'.4rem .6rem',borderRadius:'3px',border:'1.5px solid '+(slot===s.id?'#c0392b':'#2a2a2a'),background:slot===s.id?'#1a0808':'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:'.83rem',fontWeight:slot===s.id?700:400,color:slot===s.id?'#c8a96e':'#ccc'}}>{s.label}</span>
+                <span style={{fontSize:'.7rem',color:'#555'}}>{s.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
           <div style={{display:'flex',flexDirection:'column',gap:'.35rem'}}>
             {MENU_STYLES.map(s=>(
               <div key={s.id} onClick={()=>setStyle(s.id)}
@@ -2925,11 +3008,53 @@ function MenuPrintEditor(){
             <label style={{display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer',fontSize:'.83rem'}}>
               <input type="checkbox" checked={showBranding} onChange={e=>setShowBranding(e.target.checked)} style={{accentColor:'#c0392b'}}/>Show Artyst branding
             </label>
+            <label style={{display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer',fontSize:'.83rem'}}>
+              <input type="checkbox" checked={showFooter} onChange={e=>setShowFooter(e.target.checked)} style={{accentColor:'#c0392b'}}/>Page footers (venue · title · page number)
+            </label>
           </div>
         </div>
 
         <div className="card">
-          <h2>QR Code</h2>
+          <h2 style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span>Cover Page</span>
+            <label style={{display:'flex',alignItems:'center',gap:'.4rem',cursor:'pointer',fontSize:'.78rem',fontWeight:400,color:'#888'}}>
+              <input type="checkbox" checked={showCover} onChange={e=>setShowCover(e.target.checked)} style={{accentColor:'#c0392b'}}/>Include
+            </label>
+          </h2>
+          {showCover&&(
+            <div style={{display:'flex',flexDirection:'column',gap:'.55rem'}}>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Venue name</label>
+                <input value={coverTitle} onChange={e=>setCoverTitle(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.83rem'}}/>
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Subtitle line</label>
+                <input value={coverSubtitle} onChange={e=>setCoverSubtitle(e.target.value)} placeholder="e.g. Café · Bar · Culture" style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.83rem'}}/>
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Tagline (italic quote)</label>
+                <textarea value={coverTagline} onChange={e=>setCoverTagline(e.target.value)} rows={3} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem',resize:'vertical'}}/>
+              </div>
+              <div>
+                <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>Details (one per line)</label>
+                <textarea value={coverDetails} onChange={e=>setCoverDetails(e.target.value)} rows={3} placeholder={"54–56 Chesterton Road\ntheartyst.co.uk"} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem',resize:'vertical'}}/>
+              </div>
+              <label style={{display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer',fontSize:'.83rem'}}>
+                <input type="checkbox" checked={coverShowQr} onChange={e=>setCoverShowQr(e.target.checked)} style={{accentColor:'#c0392b'}}/>Include QR code on cover
+              </label>
+              {coverShowQr&&(<>
+                <div>
+                  <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>QR destination</label>
+                  <input value={coverQrUrl} onChange={e=>setCoverQrUrl(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.78rem'}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:'.72rem',letterSpacing:'.08em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'.25rem'}}>QR label</label>
+                  <input value={coverQrLabel} onChange={e=>setCoverQrLabel(e.target.value)} style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid #333',color:'var(--text-1)',borderRadius:'3px',fontSize:'.83rem'}}/>
+                </div>
+              </>)}
+            </div>
+          )}
+        </div>
           <div style={{display:'flex',flexDirection:'column',gap:'.35rem',marginBottom:qrOption!=='none'?'.7rem':0}}>
             {[['none','None'],['footer','Footer — one code for the whole menu'],['section','Per section']].map(([val,lbl])=>(
               <label key={val} style={{display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer',fontSize:'.83rem'}}>
@@ -2961,7 +3086,7 @@ function MenuPrintEditor(){
       <div>
         <div style={{fontSize:'.72rem',letterSpacing:'.1em',textTransform:'uppercase',color:'#666',marginBottom:'.6rem',display:'flex',justifyContent:'space-between'}}>
           <span>Preview — {fmtDef.label}</span>
-          <span style={{color:'#555'}}>{selectedCats.size} of {cats.length} sections · {items.filter(i=>selectedCats.has(i.category_id)).length} items</span>
+          <span style={{color:'#555'}}>{selectedCats.size} of {cats.length} sections · {items.filter(i=>selectedCats.has(i.category_id)&&(slot==='all'||!i.time_slots||!i.time_slots.length||i.time_slots.includes(slot))).length} items</span>
         </div>
         <div ref={previewRef} style={{background:'#e8e8e8',padding:'1rem',borderRadius:'4px',overflow:'auto',maxHeight:'85vh'}}>
           <div dangerouslySetInnerHTML={{__html:buildMenuHtml()}} style={{boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}/>
