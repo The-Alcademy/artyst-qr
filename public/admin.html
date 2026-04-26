@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-m -->
+<!-- cache-bust: 2026-04-26-n -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2154,6 +2154,9 @@ function MenuEditor({anchor,onAnchorUsed,isAdmin,onPrintMenu}){
   const toggleAvailable=async(item)=>{await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{available:!item.available});loadMenu();}
   const toggleTakeaway=async(item)=>{await supabase(`/rest/v1/menu_items?id=eq.${item.id}`,'PATCH',{takeaway:!item.takeaway});loadMenu();}
   const toggleCategoryActive=async(cat)=>{await supabase(`/rest/v1/menu_categories?id=eq.${cat.id}`,'PATCH',{active:!cat.active});loadMenu();}
+  const saveAttribution=async(catId,val)=>{await supabase(`/rest/v1/menu_categories?id=eq.${catId}`,'PATCH',{attribution:val||null});setEditingAttrib(null);flash('Attribution saved.');loadMenu();}
+  const [editingAttrib,setEditingAttrib]=useState(null);
+  const [attribVal,setAttribVal]=useState('');
   function startEdit(item,field){setEditingDetails(null);setEditingItem({id:item.id,field});setEditVal(item[field]||'');}
   const saveEdit=async(itemId,field)=>{await supabase(`/rest/v1/menu_items?id=eq.${itemId}`,'PATCH',{[field]:editVal||null});setEditingItem(null);flash('Saved.');loadMenu();}
   function startEditDetails(item){setEditingItem(null);if(editingDetails===item.id){setEditingDetails(null);}else{setEditingDetails(item.id);setDetailVal(item.details||'');setSlotVal(item.time_slots||['brunch','lunch','tea','evening']);}}
@@ -2183,7 +2186,27 @@ function MenuEditor({anchor,onAnchorUsed,isAdmin,onPrintMenu}){
         {cats.map(cat=>(
           <div key={cat.id} id={'menu-cat-'+cat.slug} style={{marginBottom:'1.5rem',paddingBottom:'1.5rem',borderBottom:'1px solid #222'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.6rem',padding:'.4rem .7rem',background:cat.active?'var(--gold-bg,#f5eedf)':'var(--bg-raised,#f2efe9)',borderLeft:'3px solid '+(cat.active?'var(--gold,#c8a96e)':'#ccc'),borderRadius:'2px'}}>
-              <span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',fontWeight:600,color:cat.active?'var(--gold,#c8a96e)':'#999'}}>{cat.name}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{fontSize:'.8rem',letterSpacing:'.1em',textTransform:'uppercase',fontWeight:600,color:cat.active?'var(--gold,#c8a96e)':'#999'}}>{cat.name}</span>
+                {editingAttrib===cat.id?(
+                  <div style={{display:'flex',gap:'.3rem',marginTop:'.35rem',alignItems:'center'}}>
+                    <input value={attribVal} onChange={e=>setAttribVal(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter')saveAttribution(cat.id,attribVal);if(e.key==='Escape')setEditingAttrib(null);}}
+                      autoFocus placeholder="e.g. Wines from Cambridge Wine Merchants"
+                      style={{flex:1,padding:'.25rem .4rem',fontSize:'.78rem',background:'#fff',border:'1px solid var(--gold,#c8a96e)',color:cat.active?'var(--dark,#1a1a18)':'#555',borderRadius:'2px'}}/>
+                    <button className="btn btn-primary btn-small" onClick={()=>saveAttribution(cat.id,attribVal)}>Save</button>
+                    <button className="btn btn-secondary btn-small" onClick={()=>setEditingAttrib(null)}>✕</button>
+                  </div>
+                ):(
+                  <div style={{display:'flex',alignItems:'center',gap:'.4rem',marginTop:cat.attribution?'.25rem':'0'}}>
+                    {cat.attribution&&<span style={{fontSize:'.75rem',color:'var(--gold,#8a6a2e)',fontStyle:'italic',fontWeight:400,textTransform:'none',letterSpacing:'normal'}}>{cat.attribution}</span>}
+                    {isAdmin&&<button onClick={()=>{setEditingAttrib(cat.id);setAttribVal(cat.attribution||'');}}
+                      style={{background:'none',border:'none',cursor:'pointer',fontSize:'.65rem',color:'#aaa',padding:0,flexShrink:0}}>
+                      {cat.attribution?'✏ edit attribution':'+ add attribution'}
+                    </button>}
+                  </div>
+                )}
+              </div>
               <div style={{display:'flex',gap:'.4rem'}}>
                 {isAdmin&&<><button className={"btn btn-small "+(cat.active?'btn-secondary':'btn-primary')} onClick={()=>toggleCategoryActive(cat)}>
                   {cat.active?'Hide category':'Show category'}
@@ -2855,8 +2878,10 @@ function MenuPrintEditor(){
     const menuItemsHtml=activeCats.map(cat=>{
       const catItems=items.filter(i=>i.category_id===cat.id).slice(0,summaryItemsPerSection);
       if(!catItems.length) return '';
-      return `<div style="margin-bottom:3mm;">
+      return `
+        <div style="margin-bottom:3mm;">
         <div style="font-size:6pt;letter-spacing:.18em;text-transform:uppercase;color:#8a6a2e;font-weight:600;margin-bottom:1mm;padding-bottom:.5mm;border-bottom:0.3pt solid #e8d5a8;">${cat.name}</div>
+        ${cat.attribution?`<div style="font-size:5.5pt;color:#8a6a2e;font-style:italic;margin-bottom:.8mm;opacity:.8;">${cat.attribution}</div>`:''}
         ${catItems.map(i=>`
           <div style="display:flex;justify-content:space-between;padding:.6mm 0;border-bottom:0.2pt solid #f0ece7;font-size:8pt;color:#1a1a18;">
             <span>${i.name}</span>
@@ -3010,6 +3035,7 @@ function MenuPrintEditor(){
         <div style="margin-bottom:${isSpecials?'6mm':'4mm'};page-break-inside:avoid;">
           ${sectionQrHtml}
           <div style="font-size:${isSpecials?'8pt':'7pt'};letter-spacing:.18em;text-transform:uppercase;color:#8a6a2e;font-weight:600;margin-bottom:${isSpecials?'2mm':'1.5mm'};padding-bottom:1mm;border-bottom:0.5pt solid #e8d5a8;">${cat.name}</div>
+          ${cat.attribution?`<div style="font-size:6.5pt;color:#8a6a2e;font-style:italic;margin-bottom:${isSpecials?'2mm':'1mm'};opacity:.8;">${cat.attribution}</div>`:''}
           ${itemHtml}
         </div>`;
     }).join('');
