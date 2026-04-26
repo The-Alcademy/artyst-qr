@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-j -->
+<!-- cache-bust: 2026-04-26-k -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2077,19 +2077,12 @@ function MenuJumpNav({categories,isAdmin}){
         className="menu-jump-chip">
         Opening Hours
       </div>
-      {cafe.map(c=>(
+      {[...cafe,...bar].map((c,idx)=>(
         <div key={c.id} onClick={()=>jump('menu-cat-'+c.slug)}
           style={{padding:'.3rem .8rem',borderRadius:'20px',cursor:'pointer',fontSize:'.75rem',
-            border:'1px solid var(--border,#ddd)',background:'var(--bg-raised,#f2efe9)',color:'var(--text-2,#555)',flexShrink:0}}
+            border:'1px solid var(--border,#ddd)',background:'var(--bg-raised,#f2efe9)',color:'var(--text-2,#555)',flexShrink:0,display:'flex',alignItems:'center',gap:'.35rem'}}
           className="menu-jump-chip">
-          {c.name}
-        </div>
-      ))}
-      {bar.map(c=>(
-        <div key={c.id} onClick={()=>jump('menu-cat-'+c.slug)}
-          style={{padding:'.3rem .8rem',borderRadius:'20px',cursor:'pointer',fontSize:'.75rem',
-            border:'1px solid var(--border,#ddd)',background:'var(--bg-raised,#f2efe9)',color:'var(--text-2,#555)',flexShrink:0}}
-          className="menu-jump-chip">
+          <span style={{fontSize:'.65rem',fontWeight:700,color:'#c0392b',opacity:.8}}>{idx+1}</span>
           {c.name}
         </div>
       ))}
@@ -2121,7 +2114,7 @@ function MenuJumpNav({categories,isAdmin}){
   );
 }
 
-function MenuEditor({anchor,onAnchorUsed,isAdmin}){
+function MenuEditor({anchor,onAnchorUsed,isAdmin,onPrintMenu}){
   const [categories,setCategories]=useState([]);
   const [loading,setLoading]=useState(true);
   const [editingItem,setEditingItem]=useState(null);
@@ -2361,11 +2354,11 @@ function MenuEditor({anchor,onAnchorUsed,isAdmin}){
       <div className="warning-box" style={{marginBottom:'1rem',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'.5rem'}}>
         <span>Click any name, description or price to edit inline. <strong>On</strong> = available on the eat-in menu. <strong>T/A</strong> = available for takeaway. Changes are live immediately.
         {' '}<span style={{cursor:'pointer',textDecoration:'underline'}} onClick={()=>document.getElementById('menu-jump-nav')?.scrollIntoView({behavior:'smooth',block:'start'})}>↑ Jump to section</span></span>
-        <a href="https://go.theartyst.co.uk/menu?print=1" target="_blank"
+        <button onClick={onPrintMenu}
           style={{padding:'.3rem .8rem',borderRadius:'3px',background:'#c0392b',color:'#fff',
-            fontSize:'.78rem',textDecoration:'none',flexShrink:0,letterSpacing:'.04em'}}>
+            fontSize:'.78rem',border:'none',cursor:'pointer',flexShrink:0,letterSpacing:'.04em'}}>
           🖨 Print menu
-        </a>
+        </button>
       </div>
       {loading&&<div className="empty">Loading menu...</div>}
       {!loading&&renderSection(cafe,'Cafe and food')}
@@ -3609,7 +3602,7 @@ function App(){
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
         {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
-        {tab==='menu'&&<MenuEditor anchor={menuAnchor} onAnchorUsed={()=>setMenuAnchor(null)} isAdmin={isAdmin}/>}
+        {tab==='menu'&&<MenuEditor anchor={menuAnchor} onAnchorUsed={()=>setMenuAnchor(null)} isAdmin={isAdmin} onPrintMenu={()=>setTab('menuprint')}/>}
         {tab==='users'&&isAdmin&&<UsersTab/>}
         {tab==='reviews'&&<ReviewResponder/>}
       </>}
