@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/events",
+      "destination": "https://invysible-college-events-engine.vercel.app",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     { "source": "/e/:slug", "destination": "/api/redirect?slug=:slug" },
     { "source": "/display/:zone", "destination": "/api/display?zone=:zone" },
