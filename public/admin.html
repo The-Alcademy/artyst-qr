@@ -1344,7 +1344,7 @@ function SharePanelHost({code}){
     let cancelled = false;
     (async () => {
       const rows = await supabase(
-        '/rest/v1/opportunities?slug=eq.' + encodeURIComponent(code.slug) + '&select=slug,share_disabled,title,description,embed_excerpt,og_image_url',
+        '/rest/v1/opportunities?qr_code_id=eq.' + encodeURIComponent(code.id) + '&select=slug,share_disabled,title,description,embed_excerpt,og_image_url',
         'GET'
       );
       if (cancelled) return;
