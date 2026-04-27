@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-27-d -->
+<!-- cache-bust: 2026-04-27-e -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -204,6 +204,7 @@
     body.light-mode .section-btn.active{color:#1a1a18;border-bottom-color:#c0392b}
     body.light-mode .subtab-btn{border-color:#ddd;color:#888}
     body.light-mode .subtab-btn:hover:not(.active){border-color:#aaa;color:#333}
+    body.light-mode .subtab-btn.active{background:#c0392b!important;border-color:#c0392b!important;color:#fff!important}
     body.light-mode .tab-desc{background:#f8f6f2;border-color:#e0dbd4;color:#666}
     body.light-mode .stats-toggle{color:#bbb}
     body.light-mode .tab.active{background:#c0392b;border-color:#c0392b;color:#fff}
@@ -3073,7 +3074,7 @@ function AdminAssistant(){
 
 function TaskBanner({activeTask,tab,visitedTabs,onDismiss}){
   const TAB_TO_STEP={'create':'New Code','print':'Print Queue','distribute':'Distribute',
-    'screens':'Screens','menu':'Menu Editor','reports':'Reports','applications':'Applications',
+    'screens':'Screens','menu':'Menu Editor','menuappearance':'Menu Appearance','reports':'Reports','applications':'Applications',
     'destinations':'Destinations','groups':'Groups','library':'Library','history':'History','reviews':'Review Responder'};
   const currentStepLabel=TAB_TO_STEP[tab]||'';
   const currentIdx=activeTask.steps.findIndex(s=>s===currentStepLabel||s.startsWith(currentStepLabel));
@@ -3090,7 +3091,8 @@ function TaskBanner({activeTask,tab,visitedTabs,onDismiss}){
             const isDone=stepTab&&visitedTabs.includes(stepTab)&&!isCurrent;
             return <span key={s} style={{fontSize:'.7rem',padding:'.15rem .5rem',borderRadius:'2px',
               background:isCurrent?'#c0392b':isDone?'#1a5c1a':'#2a4a6c',
-              color:isCurrent?'#fff':isDone?'#5aff7a':'#88aacc',
+              color:isCurrent?'#ffffff':isDone?'#5aff7a':'#88aacc',
+              WebkitTextFillColor:isCurrent?'#ffffff':undefined,
               textDecoration:isDone?'line-through':'none'}}>{s}</span>;
           })}
         </div>
