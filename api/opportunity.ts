@@ -1,359 +1,190 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+// ─────────────────────────────────────────────────────────────────
+// api/opportunities/index.ts
+//
+// GET /api/opportunities — public list endpoint for the JSON API.
+// Part of CA-022 Sharing & Embedding extension (Phase 1).
+//
+// Query parameters (all optional):
+//   type      — only "job" returns rows for now (table is jobs-shaped).
+//               Any other value returns an empty list.
+//   status    — "open" (default) or "closed".
+//   property  — slug or full text. e.g. "artyst", "the-artyst", "The Artyst".
+//   sort      — "newest" (default) or "oldest".
+//   limit     — default 20, max 100.
+//   offset    — default 0.
+//
+// Public visibility floor (always enforced):
+//   active = true AND share_disabled = false
+// ─────────────────────────────────────────────────────────────────
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
+// (Vercel Node runtime: req and res have the same shape as @vercel/node
+// types but we skip the import so the build does not require the package.)
+import { createClient } from "@supabase/supabase-js";
 
-interface Opportunity {
-  id: string;
-  slug: string;
-  title: string;
-  property: string;
-  employment_type: string | null;
-  hours: string | null;
-  pay: string | null;
-  description: string | null;
-  apply_email: string;
-  status: 'open' | 'filled' | 'suspended';
+const SUPABASE_URL      = process.env.SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY!;
+const CANONICAL_HOST    = "https://go.theartyst.co.uk";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ─── Property slug → canonical text mapping ──────────────────────
+// Accept either the slug ("artyst") or the canonical text ("The Artyst").
+// The DB stores the canonical text, so we map slugs → text on the way in.
+const PROPERTY_MAP: Record<string, string> = {
+  artyst:               "The Artyst",
+  "the-artyst":         "The Artyst",
+  theartyst:            "The Artyst",
+  alcademy:             "The Alcademy",
+  "the-alcademy":       "The Alcademy",
+  ic:                   "Invysible College",
+  invysible:            "Invysible College",
+  "invysible-college":  "Invysible College",
+  othersyde:            "OtherSyde",
+  "other-syde":         "OtherSyde",
+};
+
+function normaliseProperty(input: string): string {
+  return PROPERTY_MAP[input.toLowerCase().trim()] || input;
 }
 
-// Parse the Claude-generated JD markdown into HTML.
-// Skips the ## Poster Line section — that's poster-only.
-function parseJD(text: string): string {
-  const lines = text.split('\n');
-  let html = '';
-  let inList = false;
-  let inSection = false;
-  let skipSection = false;
+// ─── Property text → slug for output ──────────────────────────────
+// Inverse of the above, used when shaping the JSON response so the
+// consumer doesn't have to do this mapping themselves.
+function propertyToSlug(p: string): string {
+  const key = (p || "").toLowerCase().trim();
+  if (key.includes("artyst"))    return "artyst";
+  if (key.includes("alcademy"))  return "alcademy";
+  if (key.includes("invysible")) return "ic";
+  if (key.includes("othersyde")) return "othersyde";
+  return key.replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
 
-  for (const line of lines) {
-    const t = line.trim();
+// ─── Excerpt derivation ──────────────────────────────────────────
+// Use embed_excerpt if set; otherwise strip basic markdown from
+// description and take the first 240 chars.
+function deriveExcerpt(row: any): string {
+  const e = (row.embed_excerpt || "").trim();
+  if (e) return e;
+  const desc = (row.description || "").trim();
+  if (!desc) return "";
+  const plain = desc
+    .replace(/^#+\s+/gm,            "")     // markdown headings
+    .replace(/\*\*(.+?)\*\*/g,      "$1")   // bold
+    .replace(/\*(.+?)\*/g,          "$1")   // italic
+    .replace(/`([^`]+)`/g,          "$1")   // inline code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // links → label only
+    .replace(/\n+/g, " ")
+    .trim();
+  return plain.length > 240 ? plain.slice(0, 237) + "…" : plain;
+}
 
-    if (t.startsWith('## ')) {
-      if (inList)    { html += '</ul>'; inList = false; }
-      if (inSection) { html += '</div>'; inSection = false; }
+// ─── Format a single DB row to the public response shape ─────────
+function formatOpportunity(row: any) {
+  return {
+    slug:            row.slug,
+    type:            "job",                     // Phase 1.5: introduce real type col
+    status:          row.status,
+    property:        row.property,
+    property_slug:   propertyToSlug(row.property || ""),
+    title:           row.title,
+    employment_type: row.employment_type,
+    hours:           row.hours,
+    pay:             row.pay,
+    excerpt:         deriveExcerpt(row),
+    description:     row.description,           // raw text/markdown; consumers render
+    apply_email:     row.apply_email,
+    apply_url:       `${CANONICAL_HOST}/opportunity/${row.slug}#apply`,
+    urls: {
+      public: `${CANONICAL_HOST}/opportunity/${row.slug}`,
+      short:  `${CANONICAL_HOST}/e/${row.slug}`,
+      json:   `${CANONICAL_HOST}/api/opportunities/${row.slug}`,
+    },
+    og_image_url:    row.og_image_url,
+    created_at:      row.created_at,
+    updated_at:      row.updated_at,
+  };
+}
 
-      const title = t.replace(/^##\s*/, '');
-      skipSection = title.toLowerCase().includes('poster');
+// ─────────────────────────────────────────────────────────────────
+export default async function handler(req: any, res: any) {
+  // CORS — read endpoints are public-by-design.
+  res.setHeader("Access-Control-Allow-Origin",  "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-      if (!skipSection) {
-        html += `<div class="jd-section"><h3 class="jd-h">${title}</h3>`;
-        inSection = true;
-      }
-      continue;
-    }
-
-    if (skipSection || !t) {
-      if (!t && inList) { html += '</ul>'; inList = false; }
-      continue;
-    }
-
-    if (t.startsWith('- ')) {
-      if (!inList) { html += '<ul class="jd-list">'; inList = true; }
-      html += `<li>${t.replace(/^-\s*/, '')}</li>`;
-    } else {
-      if (inList) { html += '</ul>'; inList = false; }
-      html += `<p class="jd-p">${t}</p>`;
-    }
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
   }
 
-  if (inList)    html += '</ul>';
-  if (inSection) html += '</div>';
-  return html;
-}
-
-function esc(s: string): string {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Page states ────────────────────────────────────────────────────────────
-
-function renderPage(opp: Opportunity): string {
-  const metaItems: { label: string; value: string }[] = [];
-  if (opp.employment_type) metaItems.push({ label: 'Type',     value: opp.employment_type });
-  if (opp.hours)           metaItems.push({ label: 'Hours',    value: opp.hours });
-  if (opp.pay)             metaItems.push({ label: 'Pay',      value: opp.pay });
-  metaItems.push({ label: 'Location', value: 'Cambridge' });
-
-  const jdHtml   = opp.description ? parseJD(opp.description) : '';
-  const metaHtml = metaItems.map(m =>
-    `<div class="meta-item"><span class="meta-label">${esc(m.label)}</span><span class="meta-value">${esc(m.value)}</span></div>`
-  ).join('');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(opp.title)} — ${esc(opp.property)}</title>
-<meta name="description" content="Apply for ${esc(opp.title)} at ${esc(opp.property)}, Cambridge.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #faf9f7; color: #1a1614; font-family: 'Crimson Pro', Georgia, serif; font-size: 18px; line-height: 1.7; }
-
-  /* Header */
-  .site-header { background: #fff; border-bottom: 1px solid #e8e4de; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
-  .site-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #1a1614; text-decoration: none; }
-  .breadcrumb { font-size: 11px; color: #8a7e72; letter-spacing: 0.2em; text-transform: uppercase; }
-
-  /* Hero */
-  .hero { background: #fff; border-bottom: 1px solid #e8e4de; padding: 48px 32px 40px; }
-  .inner { max-width: 760px; margin: 0 auto; }
-  .property-name { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #8a7e72; margin-bottom: 10px; }
-  .job-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 52px); font-weight: 900; line-height: 1.1; color: #1a1614; margin-bottom: 24px; }
-  .meta-strip { display: flex; flex-wrap: wrap; border: 1px solid #e8e4de; border-radius: 3px; overflow: hidden; }
-  .meta-item { flex: 1; min-width: 110px; padding: 10px 16px; border-right: 1px solid #e8e4de; background: #faf9f7; }
-  .meta-item:last-child { border-right: none; }
-  .meta-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #8a7e72; display: block; margin-bottom: 2px; }
-  .meta-value { font-size: 15px; font-weight: 600; color: #1a1614; }
-
-  /* JD */
-  .jd-body { padding: 40px 0; border-bottom: 1px solid #e8e4de; }
-  .jd-section { margin-bottom: 28px; }
-  .jd-h { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #8a7e72; margin-bottom: 10px; }
-  .jd-p { margin-bottom: 10px; color: #3a3028; }
-  .jd-list { list-style: none; padding: 0; }
-  .jd-list li { padding-left: 22px; position: relative; color: #3a3028; margin-bottom: 6px; }
-  .jd-list li::before { content: '—'; position: absolute; left: 0; color: #8a7e72; }
-
-  /* Application form */
-  .apply-section { padding: 48px 0 64px; }
-  .apply-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 6px; }
-  .apply-sub { font-size: 16px; color: #8a7e72; font-style: italic; margin-bottom: 32px; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .fg { display: flex; flex-direction: column; gap: 6px; }
-  .fg-full { grid-column: 1 / -1; }
-  label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #8a7e72; }
-  .req { color: #c84040; }
-  input, textarea { width: 100%; padding: 12px 16px; border: 1px solid #e8e4de; border-radius: 3px; font-family: 'Crimson Pro', serif; font-size: 17px; color: #1a1614; background: #fff; outline: none; transition: border-color 0.15s; }
-  input:focus, textarea:focus { border-color: #8a7e72; }
-  input[type="file"] { padding: 10px 16px; cursor: pointer; background: #faf9f7; font-size: 14px; }
-  textarea { resize: vertical; min-height: 120px; }
-  .submit-btn { width: 100%; padding: 16px; background: #1a1614; color: #faf9f7; border: none; border-radius: 3px; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.15s; }
-  .submit-btn:hover { opacity: 0.85; }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .form-note { font-size: 13px; color: #8a7e72; font-style: italic; text-align: center; margin-top: 10px; }
-  .success-msg { display: none; background: #f4f8f4; border: 1px solid #c8dcc8; border-radius: 3px; padding: 32px; text-align: center; }
-  .success-msg h3 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 8px; }
-  .err-msg { font-size: 14px; color: #c84040; margin-top: 8px; display: none; }
-  .err-msg a { color: #c84040; }
-
-  /* Footer */
-  .site-footer { background: #1a1614; color: #8a7e72; text-align: center; padding: 32px; font-size: 15px; font-style: italic; }
-  .site-footer strong { color: #ede8df; font-style: normal; }
-
-  @media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .fg-full { grid-column: 1; }
-    .hero, .inner { padding-left: 20px; padding-right: 20px; }
-    .site-header { padding: 14px 20px; }
+  if (req.method !== "GET") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
   }
-</style>
-</head>
-<body>
 
-<header class="site-header">
-  <a href="https://theartyst.co.uk" class="site-name">The Artyst</a>
-  <span class="breadcrumb">Opportunities</span>
-</header>
+  // ─── Parse query params ─────────────────────────────────────────
+  const q        = req.query;
+  const type     = typeof q.type     === "string" ? q.type     : null;
+  const status   = typeof q.status   === "string" ? q.status   : "open";
+  const property = typeof q.property === "string" ? q.property : null;
+  const sort     = typeof q.sort     === "string" ? q.sort     : "newest";
 
-<div class="hero">
-  <div class="inner">
-    <div class="property-name">${esc(opp.property)}</div>
-    <h1 class="job-title">${esc(opp.title)}</h1>
-    <div class="meta-strip">${metaHtml}</div>
-  </div>
-</div>
+  const limit  = Math.max(1, Math.min(100, parseInt(String(q.limit  ?? "20"), 10) || 20));
+  const offset = Math.max(0,               parseInt(String(q.offset ?? "0"),  10) || 0);
 
-<div class="inner" style="padding: 0 32px;">
+  // Draft is admin-only; never serve it from the public endpoint.
+  if (status === "draft") {
+    res.status(400).json({ error: "Cannot request draft opportunities via the public endpoint" });
+    return;
+  }
 
-  <div class="jd-body">${jdHtml}</div>
+  // The opportunities table is currently jobs-shaped only.
+  // If a non-job type is requested, return an empty list rather than
+  // pretending it's a server error.
+  if (type && type !== "job") {
+    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    res.json({ opportunities: [], total: 0, limit, offset });
+    return;
+  }
 
-  <div class="apply-section">
-    <h2 class="apply-title">Apply for this role</h2>
-    <p class="apply-sub">Fill in the form below and we'll be in touch.</p>
+  // ─── Build the query ────────────────────────────────────────────
+  let query = supabase
+    .from("opportunities")
+    .select("*", { count: "exact" })
+    .eq("active", true)
+    .eq("share_disabled", false);
 
-    <div id="success-msg" class="success-msg">
-      <h3>Application received.</h3>
-      <p>Thank you for applying for <strong>${esc(opp.title)}</strong>. We'll be in touch soon.</p>
-    </div>
+  if (status === "open" || status === "closed") {
+    query = query.eq("status", status);
+  }
 
-    <form id="apply-form">
-      <div class="form-grid">
-        <div class="fg">
-          <label>Full name <span class="req">*</span></label>
-          <input type="text" id="a-name" required placeholder="Your name">
-        </div>
-        <div class="fg">
-          <label>Email address <span class="req">*</span></label>
-          <input type="email" id="a-email" required placeholder="your@email.com">
-        </div>
-        <div class="fg fg-full">
-          <label>Phone number</label>
-          <input type="tel" id="a-phone" placeholder="+44 7700 000000">
-        </div>
-        <div class="fg fg-full">
-          <label>Why are you interested in this role? <span class="req">*</span></label>
-          <textarea id="a-message" required placeholder="Tell us a little about yourself and why this role appeals to you."></textarea>
-        </div>
-        <div class="fg fg-full">
-          <label>Attach CV <span style="letter-spacing:0;text-transform:none;font-style:italic;font-size:12px;">(PDF or Word, max 5MB — optional)</span></label>
-          <input type="file" id="a-cv" accept=".pdf,.doc,.docx">
-        </div>
-        <div class="fg fg-full" style="margin-top:8px;">
-          <button type="submit" class="submit-btn" id="submit-btn">Send application →</button>
-          <div class="err-msg" id="err-msg">Something went wrong — please try again or email <a href="mailto:${esc(opp.apply_email)}">${esc(opp.apply_email)}</a>.</div>
-          <p class="form-note">Applications go to ${esc(opp.apply_email)}</p>
-        </div>
-      </div>
-    </form>
-  </div>
+  if (property) {
+    query = query.eq("property", normaliseProperty(property));
+  }
 
-</div>
+  if (sort === "newest") {
+    query = query.order("created_at", { ascending: false });
+  } else if (sort === "oldest") {
+    query = query.order("created_at", { ascending: true });
+  }
+  // "closing-soon" is a no-op until ends_at is added.
 
-<footer class="site-footer">
-  <p>Or come in and talk to us.</p>
-  <p style="margin-top:6px;"><strong>The Artyst</strong> &nbsp;·&nbsp; 54–56 Chesterton Road &nbsp;·&nbsp; Cambridge CB4 1EN</p>
-</footer>
+  query = query.range(offset, offset + limit - 1);
 
-<script>
-  const OPP_SLUG = '${esc(opp.slug)}';
-  const OPP_ID   = '${esc(opp.id)}';
+  // ─── Execute ────────────────────────────────────────────────────
+  const { data, error, count } = await query;
 
-  document.getElementById('apply-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn    = document.getElementById('submit-btn');
-    const errEl  = document.getElementById('err-msg');
-    const succEl = document.getElementById('success-msg');
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
-    errEl.style.display = 'none';
+  if (error) {
+    console.error("Opportunities list error:", error);
+    res.status(500).json({ error: "Database error" });
+    return;
+  }
 
-    const cvFile = document.getElementById('a-cv').files[0];
-    let cvData = null;
-
-    if (cvFile) {
-      if (cvFile.size > 5 * 1024 * 1024) {
-        errEl.textContent = 'CV file must be under 5MB.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Send application →';
-        return;
-      }
-      cvData = await new Promise(resolve => {
-        const r = new FileReader();
-        r.onload = () => resolve({ filename: cvFile.name, mimeType: cvFile.type, data: r.result.split(',')[1] });
-        r.readAsDataURL(cvFile);
-      });
-    }
-
-    try {
-      const res = await fetch('/api/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          opportunitySlug: OPP_SLUG,
-          opportunityId:   OPP_ID,
-          name:    document.getElementById('a-name').value,
-          email:   document.getElementById('a-email').value,
-          phone:   document.getElementById('a-phone').value,
-          message: document.getElementById('a-message').value,
-          cv: cvData
-        })
-      });
-      if (!res.ok) throw new Error();
-      document.getElementById('apply-form').style.display = 'none';
-      succEl.style.display = 'block';
-      succEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch {
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Send application →';
-    }
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  res.json({
+    opportunities: (data || []).map(formatOpportunity),
+    total:  count ?? (data?.length ?? 0),
+    limit,
+    offset,
   });
-</script>
-
-</body>
-</html>`;
-}
-
-function renderFilled(opp: Opportunity): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>${esc(opp.title)} — Position Filled — The Artyst</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-<style>
-  body { font-family:'Crimson Pro',serif; background:#faf9f7; color:#1a1614; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:32px; text-align:center; }
-  .card { max-width:480px; }
-  .eyebrow { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#8a7e72; margin-bottom:16px; }
-  h1 { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:12px; }
-  p { font-size:18px; color:#8a7e72; font-style:italic; line-height:1.6; }
-  a { color:#1a1614; }
-</style>
-</head>
-<body>
-<div class="card">
-  <p class="eyebrow">The Artyst &nbsp;·&nbsp; Opportunities</p>
-  <h1>This position has been filled.</h1>
-  <p>${esc(opp.title)} is no longer accepting applications.</p>
-  <p style="margin-top:20px;">Visit <a href="https://theartyst.co.uk">theartyst.co.uk</a> for other opportunities,<br>or come in and talk to us at 54–56 Chesterton Road, Cambridge.</p>
-</div>
-</body>
-</html>`;
-}
-
-function renderNotFound(): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Not Found — The Artyst</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-<style>
-  body { font-family:'Crimson Pro',serif; background:#faf9f7; color:#1a1614; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:32px; text-align:center; }
-  .card { max-width:480px; }
-  .eyebrow { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#8a7e72; margin-bottom:16px; }
-  h1 { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:12px; }
-  p { font-size:18px; color:#8a7e72; font-style:italic; }
-  a { color:#1a1614; }
-</style>
-</head>
-<body>
-<div class="card">
-  <p class="eyebrow">The Artyst &nbsp;·&nbsp; Opportunities</p>
-  <h1>Opportunity not found.</h1>
-  <p>This link may have expired or been removed.<br>Visit <a href="https://theartyst.co.uk">theartyst.co.uk</a> for current opportunities.</p>
-</div>
-</body>
-</html>`;
-}
-
-// ── Handler ────────────────────────────────────────────────────────────────
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const slug = (req.query.slug as string) || req.url?.split('/opportunity/')[1]?.split('?')[0];
-  if (!slug) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(404).send(renderNotFound());
-  }
-
-  const { data: opp, error } = await supabase
-    .from('opportunities')
-    .select('*')
-    .eq('slug', slug)
-    .eq('active', true)
-    .maybeSingle();
-
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-  if (error || !opp) return res.status(404).send(renderNotFound());
-  if (opp.status === 'filled' || opp.status === 'suspended') return res.status(200).send(renderFilled(opp));
-
-  return res.status(200).send(renderPage(opp));
 }
