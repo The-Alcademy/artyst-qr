@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-27-c -->
+<!-- cache-bust: 2026-04-27-d -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -206,7 +206,7 @@
     body.light-mode .subtab-btn:hover:not(.active){border-color:#aaa;color:#333}
     body.light-mode .tab-desc{background:#f8f6f2;border-color:#e0dbd4;color:#666}
     body.light-mode .stats-toggle{color:#bbb}
-    body.light-mode .tab.active{color:#1a1a18;border-bottom-color:#c0392b}
+    body.light-mode .tab.active{background:#c0392b;border-color:#c0392b;color:#fff}
     body.light-mode .btn-secondary{background:#fff;border-color:#bbb;color:#333}
     body.light-mode .btn-secondary:hover{border-color:#555;color:#111}
     body.light-mode .warning-box{background:#fdf3e3;border-color:#e8b84a;color:#7a5a0a}
@@ -254,7 +254,7 @@
     body.light-mode .task-card:hover{border-color:#c0392b}
     body.light-mode .task-card-label{color:#1a1a18}
     body.light-mode .task-card-desc{color:#888}
-    body.light-mode .task-step{background:#f0ece7;border-color:#ddd;color:#888}
+    body.light-mode .task-step{background:#e8e4dc;border-color:#ccc;color:#444}
     body.light-mode .user-row{background:#f5f3ef;border-color:#ddd}
     body.light-mode .user-name{color:#1a1a18}
     body.light-mode .user-meta{color:#777}
@@ -3858,6 +3858,7 @@ const TASKS = [
   {id:'whatsapp-email', label:'Send to WhatsApp or email', desc:'Push a QR code to your subscriber lists', tab:'distribute', steps:['Distribute']},
   {id:'update-screens', label:'Update a venue screen', desc:'Change what QR codes show on the window, bar or wall screens', tab:'screens', steps:['Screens']},
   {id:'update-menu', label:'Update the menu', desc:'Edit café and bar items, prices and availability', tab:'menu', anchor:'menu-jump-nav', steps:['Menu Editor']},
+  {id:'menu-appearance', label:'Change menu appearance', desc:'Set the theme, background, typography and seasonal banner for the digital menu', tab:'menuappearance', steps:['Menu Appearance']},
   {id:'update-hours', label:'Change opening hours', desc:'Set opening and closing times for each day', tab:'menu', anchor:'menu-hours', steps:['Menu Editor → Hours']},
   {id:'add-news', label:'Add a news notice', desc:'Add a rotating banner message shown on the menu', tab:'menu', anchor:'menu-news', steps:['Menu Editor → News']},
   {id:'update-promos', label:'Update footer promos', desc:'Edit the promotional messages at the bottom of the menu page', tab:'menu', anchor:'menu-promos', steps:['Menu Editor → Promos']},
