@@ -1646,6 +1646,47 @@ function printMenu() {
     }
 
     // ── Init ──────────────────────────────────────────
+
+    function applyAppearance(s) {
+  var root = document.documentElement;
+  root.setAttribute('data-theme', s.theme === 'light' ? 'light' : 'dark');
+  var fontMap = { default: 'system-ui,sans-serif', serif: 'Georgia,serif',
+    playfair: '"Playfair Display",serif', mono: '"DM Mono",monospace' };
+  document.body.style.fontFamily = fontMap[s.font] || fontMap.default;
+  var bg = document.getElementById('menu-bg-layer');
+  if (!bg) { bg = document.createElement('div');
+    bg.id = 'menu-bg-layer';
+    bg.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;';
+    document.body.appendChild(bg); }
+  bg.style.background = '';
+  bg.style.backgroundImage = '';
+  bg.style.opacity = '';
+  if (s.bg_type === 'gradient') {
+    var presets = { 'dark-warm':'#1a1a18,#2a1a08','dark-cool':'#0e1218,#1a2030',
+      'cream-gold':'#faf8f4,#f0e8d0','night-red':'#1a0808,#1a1a18' };
+    var cols = s.bg_gradient === 'custom'
+      ? s.bg_gradient_from + ',' + s.bg_gradient_to
+      : (presets[s.bg_gradient] || '#faf8f4,#f0e8d0');
+    bg.style.background = 'linear-gradient(135deg,' + cols + ')';
+  } else if (s.bg_type === 'image' && s.bg_image_url) {
+    bg.style.backgroundImage = 'url(' + s.bg_image_url + ')';
+    bg.style.backgroundSize = 'cover';
+    bg.style.backgroundPosition = 'center';
+    bg.style.opacity = s.bg_opacity;
+  }
+  var banner = document.getElementById('appearance-banner');
+  if (s.banner_active && s.banner_text) {
+    if (!banner) { banner = document.createElement('div');
+      banner.id = 'appearance-banner';
+      banner.style.cssText = 'width:100%;padding:6px 20px;font-size:13px;font-weight:500;text-align:center;color:#fff;';
+      document.querySelector('.header').after(banner); }
+    banner.style.background = s.banner_colour || '#c0392b';
+    banner.textContent = s.banner_text;
+    banner.style.display = 'block';
+  } else if (banner) { banner.style.display = 'none'; }
+}
+
+async function init() {
     async function init() {
       loadOrder(); loadTable(); updateOrderBadge();
       currentSlot = detectSlot(); updateSlotUI();
