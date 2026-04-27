@@ -1669,6 +1669,7 @@ function printMenu() {
       if (menuRes.status === 'fulfilled' && menuRes.value.ok) {
         var data = await menuRes.value.json();
         allCategories = data.categories || [];
+        if (data.settings) applyAppearance(data.settings);
         var stateEl = document.getElementById('state');
         if (stateEl) stateEl.remove();
         renderBody();
