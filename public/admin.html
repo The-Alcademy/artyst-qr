@@ -1336,7 +1336,28 @@ function Destinations({destinations,codes,onRefresh,isAdmin}){
   const codesByDest=(codes||[]).reduce(function(acc,c){if(c.destination_id){acc[c.destination_id]=c;}return acc;},{});
   return(<div>{isAdmin&&<div id="dest-editor-top" className="card"><h2>{editing?'Edit Destination':'New Destination'}</h2>{status&&<div className={status.type==='error'?'error':'success'}>{status.msg}</div>}<div className="form-grid"><div className="form-group"><label>Label</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="e.g. Wine Tasting April — Tickets"/></div><div className="form-group"><label>Type</label><select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div><div className="form-group full"><label>URL</label><input value={form.url} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://..."/></div><div className="form-group full"><label style={{flexDirection:'row',display:'flex',alignItems:'center',gap:'.5rem',cursor:'pointer'}}><input type="checkbox" checked={form.pinned} onChange={e=>setForm(f=>({...f,pinned:e.target.checked}))}/>Pin — never auto-update QR codes pointing here</label></div><div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end',gap:'.5rem'}}>{editing&&<button className="btn btn-secondary" onClick={()=>{setEditing(null);setForm({label:'',url:'',type:'generic',pinned:false});}}>Cancel</button>}<button className="btn btn-primary" onClick={save}>{editing?'Save Changes':'Add Destination'}</button></div></div></div>}{TYPES.map(type=>{const items=byType[type]||[];if(!items.length) return null;const isCollapsed=collapsed[type];return(<div key={type} className="card"><h2 style={{cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',userSelect:'none'}} onClick={()=>toggleCollapse(type)}><span style={{display:'flex',alignItems:'center',gap:'.5rem',flexWrap:'wrap'}}><TypeBadge type={type}/><span style={{marginLeft:'.5rem'}}>{type.charAt(0).toUpperCase()+type.slice(1)} Destinations</span><span style={{fontSize:'.78rem',color:'#888',fontWeight:400}}>({items.length})</span></span>{type==='event'&&!isCollapsed&&<select value={sortBy} onChange={e=>{e.stopPropagation();setSortBy(e.target.value);}} onClick={e=>e.stopPropagation()} style={{fontSize:'.72rem',padding:'.15rem .4rem',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'2px',color:'var(--text-2)',cursor:'pointer',marginRight:'1rem'}}><option value='az'>A → Z</option><option value='za'>Z → A</option><option value='pinned'>Pinned first</option></select>}<span style={{fontSize:'1rem',color:'#888',transition:'transform 0.2s',display:'inline-block',transform:isCollapsed?'rotate(-90deg)':'rotate(0deg)'}}>&#x25BE;</span></h2>{!isCollapsed&&<div>{sortItems(items,type).map(d=>(<div className="dest-item" key={d.id} style={{alignItems:"flex-start",gap:"10px"}}><DestQR url={codesByDest[d.id]?`https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}`:d.url} scanUrl={codesByDest[d.id]?`https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}`:null}/><div className="dest-info"><div className="dest-label">{d.label}{d.pinned&&<span className="pin-badge">PINNED</span>}</div><div className="dest-url">{d.url}</div></div>{isAdmin&&<div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>startEdit(d)}>Edit</button><button className="btn btn-secondary btn-small" onClick={()=>{navigator.clipboard.writeText(d.url);setStatus({type:'success',msg:'URL copied.'});}}>Copy URL</button><button className="btn btn-blue btn-small" onClick={()=>setSharing({dest:d,scanUrl:codesByDest[d.id]?`https://go.theartyst.co.uk/e/${codesByDest[d.id].slug}`:null})}>Share</button><button className="btn btn-secondary btn-small" onClick={()=>remove(d.id)}>Delete</button></div>}</div>))}</div>}</div>);})}{!destinations.length&&<div className="empty">No destinations yet</div>}{sharing&&<ShareDestModal dest={sharing.dest} scanUrl={sharing.scanUrl} onClose={()=>setSharing(null)}/>}</div>);
 }
-
+function SharePanelHost({code}){
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !code || !code.slug) return;
+    let cancelled = false;
+    (async () => {
+      const rows = await supabase(
+        `/rest/v1/opportunities?slug=eq.${encodeURIComponent(code.slug)}&select=slug,share_disabled,title,description,embed_excerpt,og_image_url`,
+        'GET'
+      );
+      if (cancelled) return;
+      const opp = Array.isArray(rows) && rows.length ? rows[0] : null;
+      if (!opp) {
+        ref.current.innerHTML = '<div style="opacity:0.6;font-style:italic;padding:0.5rem 0;">No opportunity record found for this code.</div>';
+        return;
+      }
+      window.SharePanel.mount(ref.current, opp);
+    })();
+    return () => { cancelled = true; };
+  }, [code && code.id]);
+  return React.createElement('div', { ref: ref });
+}
 function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initialCode}){
   const [selectedCode,setSelectedCode]=useState(initialCode?.id||'');
   const [selectedChannels,setSelectedChannels]=useState([]);
