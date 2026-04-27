@@ -13,7 +13,8 @@
 // based on the status field).
 // ─────────────────────────────────────────────────────────────────
 
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+// (Vercel Node runtime: req and res have the same shape as @vercel/node
+// types but we skip the import so the build does not require the package.)
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL      = process.env.SUPABASE_URL!;
@@ -77,7 +78,7 @@ function formatOpportunity(row: any) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   // CORS
   res.setHeader("Access-Control-Allow-Origin",  "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
