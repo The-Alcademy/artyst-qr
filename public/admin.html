@@ -1,4 +1,4 @@
-<!-- cache-bust: 2026-04-26-n -->
+<!-- cache-bust: 2026-04-27-a -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2496,6 +2496,381 @@ Write only the email body (no subject line, no "Dear" or sign-off needed — tho
 }
 
 // ── REVIEW RESPONDER ─────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MenuAppearanceEditor
+// ─────────────────────────────────────────────────────────────────────────────
+const BG_TYPES=[
+  {id:'solid',    label:'Solid',    desc:'A flat background colour — clean and always legible'},
+  {id:'texture',  label:'Texture',  desc:'A subtle paper or linen texture over the background'},
+  {id:'gradient', label:'Gradient', desc:'A gentle two-colour gradient'},
+  {id:'pattern',  label:'Pattern',  desc:'A repeating geometric pattern at low opacity'},
+  {id:'image',    label:'Image',    desc:'A full-bleed photograph at reduced opacity'},
+];
+const TEXTURES=[
+  {id:'paper',  label:'Paper'},
+  {id:'linen',  label:'Linen'},
+  {id:'noise',  label:'Noise'},
+];
+const PATTERNS=[
+  {id:'dots',   label:'Dots'},
+  {id:'lines',  label:'Lines'},
+  {id:'grid',   label:'Grid'},
+  {id:'cross',  label:'Cross'},
+];
+const GRADIENTS=[
+  {id:'dark-warm',    label:'Dark warm',    from:'#1a1a18',to:'#2a1a08'},
+  {id:'dark-cool',    label:'Dark cool',    from:'#0e1218',to:'#1a2030'},
+  {id:'cream-gold',   label:'Cream & gold', from:'#faf8f4',to:'#f0e8d0'},
+  {id:'night-red',    label:'Night red',    from:'#1a0808',to:'#1a1a18'},
+  {id:'custom',       label:'Custom',       from:'#1a1a18',to:'#2a2a28'},
+];
+const THEMES=[
+  {id:'light',   label:'Light',   desc:'Warm cream — the default'},
+  {id:'dark',    label:'Dark',    desc:'Deep charcoal'},
+  {id:'evening', label:'Evening', desc:'Rich dark with red accents'},
+  {id:'barrett', label:'Barrett', desc:'Psychedelic — Syd-era inspired'},
+];
+const FONTS=[
+  {id:'default', label:'Default',    desc:'System sans-serif — clean and fast'},
+  {id:'serif',   label:'Serif',      desc:'Georgia — classic and editorial'},
+  {id:'playfair',label:'Playfair',   desc:'Playfair Display — distinctive and warm'},
+  {id:'mono',    label:'Monospace',  desc:'DM Mono — technical and precise'},
+];
+
+const DEFAULT_SETTINGS={
+  theme:'light', font:'default', density:'comfortable',
+  bg_type:'solid', bg_texture:'paper', bg_pattern:'dots',
+  bg_gradient:'cream-gold', bg_gradient_from:'#faf8f4', bg_gradient_to:'#f0e8d0',
+  bg_image_url:'', bg_opacity:0.08,
+  banner_active:false, banner_text:'', banner_colour:'#c0392b',
+};
+
+function MenuAppearanceEditor(){
+  const [settings,setSettings]=useState(DEFAULT_SETTINGS);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [saved,setSaved]=useState(false);
+  const [images,setImages]=useState([]);
+  const [uploadingImg,setUploadingImg]=useState(false);
+  const [previewOpen,setPreviewOpen]=useState(false);
+
+  useEffect(()=>{
+    loadSettings();
+    loadImages();
+  },[]);
+
+  async function loadSettings(){
+    setLoading(true);
+    const res=await supabase('/rest/v1/menu_settings?id=eq.1','GET');
+    if(Array.isArray(res)&&res.length>0){
+      setSettings({...DEFAULT_SETTINGS,...res[0]});
+    }
+    setLoading(false);
+  }
+
+  async function loadImages(){
+    // List images from Supabase storage bucket 'menu-backgrounds'
+    const res=await supabase('/storage/v1/object/list/menu-backgrounds','POST',{prefix:'',limit:50});
+    if(Array.isArray(res)) setImages(res.filter(f=>f.name&&!f.name.endsWith('/')));
+  }
+
+  async function save(){
+    setSaving(true);
+    await supabase('/rest/v1/menu_settings?id=eq.1','PATCH',settings,'return=minimal');
+    setSaving(false);setSaved(true);
+    setTimeout(()=>setSaved(false),2500);
+  }
+
+  function set(key,val){setSettings(s=>({...s,[key]:val}));}
+
+  async function uploadImage(file){
+    if(!file) return;
+    setUploadingImg(true);
+    const formData=new FormData();
+    formData.append('file',file);
+    const name='bg-'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9.]/g,'-');
+    // Upload via supabase storage endpoint
+    const res=await fetch('/api/supabase',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        path:'/storage/v1/object/menu-backgrounds/'+name,
+        method:'POST',
+        body:null,
+        prefer:'',
+        isUpload:true,
+        fileName:name,
+      })
+    });
+    setUploadingImg(false);
+    await loadImages();
+  }
+
+  function getImageUrl(name){
+    return `${window.location.origin.replace('go.theartyst.co.uk','go.theartyst.co.uk')}/api/supabase-image?bucket=menu-backgrounds&name=${name}`;
+  }
+
+  function getBgPreviewStyle(){
+    const s=settings;
+    if(s.bg_type==='solid') return {};
+    if(s.bg_type==='gradient'){
+      const g=GRADIENTS.find(g=>g.id===s.bg_gradient)||GRADIENTS[0];
+      const from=s.bg_gradient==='custom'?s.bg_gradient_from:g.from;
+      const to=s.bg_gradient==='custom'?s.bg_gradient_to:g.to;
+      return {background:`linear-gradient(135deg,${from},${to})`};
+    }
+    if(s.bg_type==='image'&&s.bg_image_url){
+      return {backgroundImage:`url(${s.bg_image_url})`,backgroundSize:'cover',backgroundPosition:'center'};
+    }
+    return {};
+  }
+
+  function getPatternSvg(id){
+    const op=settings.bg_opacity;
+    const c=settings.theme==='dark'?'rgba(255,255,255,'+op+')':'rgba(0,0,0,'+op+')';
+    switch(id){
+      case 'dots':   return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='1.5' fill='${encodeURIComponent(c)}'/%3E%3C/svg%3E")`;
+      case 'lines':  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='0' y1='10' x2='20' y2='10' stroke='${encodeURIComponent(c)}' stroke-width='0.5'/%3E%3C/svg%3E")`;
+      case 'grid':   return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='20' height='20' fill='none' stroke='${encodeURIComponent(c)}' stroke-width='0.4'/%3E%3C/svg%3E")`;
+      case 'cross':  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='0' x2='10' y2='20' stroke='${encodeURIComponent(c)}' stroke-width='0.4'/%3E%3Cline x1='0' y1='10' x2='20' y2='10' stroke='${encodeURIComponent(c)}' stroke-width='0.4'/%3E%3C/svg%3E")`;
+      default: return 'none';
+    }
+  }
+
+  // Mini menu preview
+  function MenuPreview(){
+    const s=settings;
+    const isDark=s.theme==='dark'||s.theme==='evening'||s.theme==='barrett';
+    const bgBase=s.theme==='light'?'#faf8f4':s.theme==='dark'?'#1a1a18':s.theme==='evening'?'#100808':'#1a0822';
+    const textCol=isDark?'#e8e4dc':'#1a1a18';
+    const goldCol=s.theme==='barrett'?'#ff69b4':'#8a6a2e';
+    const borderCol=isDark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)';
+    const gradStyle=getBgPreviewStyle();
+    return(
+      <div style={{width:200,height:300,borderRadius:8,overflow:'hidden',boxShadow:'0 8px 32px rgba(0,0,0,.3)',position:'relative',fontFamily:s.font==='playfair'?'Playfair Display,serif':s.font==='mono'?'DM Mono,monospace':s.font==='serif'?'Georgia,serif':'system-ui,sans-serif'}}>
+        {/* Background layer */}
+        <div style={{position:'absolute',inset:0,background:bgBase,...gradStyle}}/>
+        {/* Texture/pattern overlay */}
+        {s.bg_type==='texture'&&<div style={{position:'absolute',inset:0,opacity:s.bg_opacity,backgroundImage:s.bg_texture==='paper'?'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\' opacity=\'0.4\'/%3E%3C/svg%3E")':'none',backgroundSize:'300px'}}/>}
+        {s.bg_type==='pattern'&&<div style={{position:'absolute',inset:0,backgroundImage:getPatternSvg(s.bg_pattern)}}/>}
+        {s.bg_type==='image'&&s.bg_image_url&&<div style={{position:'absolute',inset:0,backgroundImage:`url(${s.bg_image_url})`,backgroundSize:'cover',backgroundPosition:'center',opacity:s.bg_opacity}}/>}
+        {/* Content */}
+        <div style={{position:'relative',zIndex:1,height:'100%',display:'flex',flexDirection:'column'}}>
+          <div style={{padding:'8px 10px 6px',borderBottom:`0.5px solid ${borderCol}`}}>
+            <div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:goldCol,marginBottom:2}}>The Artyst</div>
+            <div style={{fontSize:14,fontWeight:600,color:textCol}}>Menu</div>
+          </div>
+          {s.banner_active&&s.banner_text&&<div style={{padding:'4px 10px',background:s.banner_colour,fontSize:8,color:'#fff',fontWeight:500}}>{s.banner_text}</div>}
+          <div style={{padding:'8px 10px',flex:1}}>
+            <div style={{fontSize:7,letterSpacing:'0.16em',textTransform:'uppercase',color:goldCol,marginBottom:4,fontWeight:600}}>Espresso</div>
+            {['Espresso — £3.50','Flat white — £3.75','Latte — £3.75'].map(item=>(
+              <div key={item} style={{display:'flex',justifyContent:'space-between',padding:'3px 0',borderBottom:`0.3px solid ${borderCol}`,fontSize:9,color:textCol}}>
+                <span>{item.split(' — ')[0]}</span><span>{item.split(' — ')[1]}</span>
+              </div>
+            ))}
+            <div style={{fontSize:7,letterSpacing:'0.16em',textTransform:'uppercase',color:goldCol,margin:'8px 0 4px',fontWeight:600}}>Wine</div>
+            {['House red — £6','House white — £6'].map(item=>(
+              <div key={item} style={{display:'flex',justifyContent:'space-between',padding:'3px 0',borderBottom:`0.3px solid ${borderCol}`,fontSize:9,color:textCol}}>
+                <span>{item.split(' — ')[0]}</span><span>{item.split(' — ')[1]}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{padding:'6px 10px',borderTop:`0.5px solid ${borderCol}`,fontSize:7,color:goldCol,textAlign:'center'}}>go.theartyst.co.uk/menu</div>
+        </div>
+      </div>
+    );
+  }
+
+  if(loading) return <div className="card"><p style={{color:'#888',fontSize:'.85rem'}}>Loading appearance settings…</p></div>;
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:'1.5rem'}}>
+
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div>
+          <h2 style={{fontSize:'1.1rem',fontWeight:600,color:'var(--text-1)',marginBottom:'.2rem'}}>Menu Appearance</h2>
+          <p style={{fontSize:'.78rem',color:'#888'}}>Changes apply to the digital menu at go.theartyst.co.uk/menu</p>
+        </div>
+        <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+          {saved&&<span style={{fontSize:'.75rem',color:'#5aff7a'}}>✓ Saved</span>}
+          <button className="btn btn-primary" onClick={save} disabled={saving}>{saving?'Saving…':'Save changes'}</button>
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:'2rem',alignItems:'start'}}>
+        <div style={{display:'flex',flexDirection:'column',gap:'1.2rem'}}>
+
+          {/* Theme */}
+          <div className="card">
+            <h2>Theme</h2>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem',marginTop:'.5rem'}}>
+              {THEMES.map(t=>(
+                <div key={t.id} onClick={()=>set('theme',t.id)}
+                  style={{padding:'.6rem .8rem',borderRadius:4,border:'1.5px solid '+(settings.theme===t.id?'#c0392b':'var(--border)'),background:settings.theme===t.id?'rgba(192,57,43,.08)':'none',cursor:'pointer'}}>
+                  <div style={{fontSize:'.82rem',fontWeight:settings.theme===t.id?600:400,color:settings.theme===t.id?'#c0392b':'var(--text-1)'}}>{t.label}</div>
+                  <div style={{fontSize:'.7rem',color:'#666',marginTop:'.1rem'}}>{t.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Background type */}
+          <div className="card">
+            <h2>Background</h2>
+            <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap',marginTop:'.5rem',marginBottom:'1rem'}}>
+              {BG_TYPES.map(t=>(
+                <button key={t.id} onClick={()=>set('bg_type',t.id)}
+                  style={{padding:'.35rem .75rem',borderRadius:3,border:'1.5px solid '+(settings.bg_type===t.id?'#c0392b':'var(--border)'),background:settings.bg_type===t.id?'rgba(192,57,43,.08)':'none',color:settings.bg_type===t.id?'#c0392b':'var(--text-2)',cursor:'pointer',fontSize:'.8rem',fontWeight:settings.bg_type===t.id?600:400}}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div style={{fontSize:'.72rem',color:'#666',marginBottom:'.8rem',fontStyle:'italic'}}>{BG_TYPES.find(t=>t.id===settings.bg_type)?.desc}</div>
+
+            {/* Texture options */}
+            {settings.bg_type==='texture'&&(
+              <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',marginBottom:'.8rem'}}>
+                {TEXTURES.map(t=>(
+                  <button key={t.id} onClick={()=>set('bg_texture',t.id)}
+                    style={{padding:'.3rem .7rem',borderRadius:3,border:'1px solid '+(settings.bg_texture===t.id?'var(--gold)':'var(--border)'),background:settings.bg_texture===t.id?'var(--gold-bg)':'none',color:settings.bg_texture===t.id?'var(--gold)':'var(--text-2)',cursor:'pointer',fontSize:'.78rem'}}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Pattern options */}
+            {settings.bg_type==='pattern'&&(
+              <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',marginBottom:'.8rem'}}>
+                {PATTERNS.map(p=>(
+                  <button key={p.id} onClick={()=>set('bg_pattern',p.id)}
+                    style={{padding:'.3rem .7rem',borderRadius:3,border:'1px solid '+(settings.bg_pattern===p.id?'var(--gold)':'var(--border)'),background:settings.bg_pattern===p.id?'var(--gold-bg)':'none',color:settings.bg_pattern===p.id?'var(--gold)':'var(--text-2)',cursor:'pointer',fontSize:'.78rem'}}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Gradient options */}
+            {settings.bg_type==='gradient'&&(
+              <div style={{marginBottom:'.8rem'}}>
+                <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',marginBottom:'.5rem'}}>
+                  {GRADIENTS.map(g=>(
+                    <button key={g.id} onClick={()=>set('bg_gradient',g.id)}
+                      style={{padding:'.3rem .7rem',borderRadius:3,border:'1px solid '+(settings.bg_gradient===g.id?'var(--gold)':'var(--border)'),background:settings.bg_gradient===g.id?'var(--gold-bg)':'none',color:settings.bg_gradient===g.id?'var(--gold)':'var(--text-2)',cursor:'pointer',fontSize:'.78rem',display:'flex',alignItems:'center',gap:'.4rem'}}>
+                      <span style={{display:'inline-block',width:14,height:14,borderRadius:2,background:`linear-gradient(135deg,${g.from},${g.to})`}}></span>{g.label}
+                    </button>
+                  ))}
+                </div>
+                {settings.bg_gradient==='custom'&&(
+                  <div style={{display:'flex',gap:'.8rem',alignItems:'center',marginTop:'.4rem'}}>
+                    <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'.2rem'}}>From</label>
+                      <input type="color" value={settings.bg_gradient_from} onChange={e=>set('bg_gradient_from',e.target.value)} style={{width:48,height:28,border:'1px solid var(--border)',borderRadius:3,cursor:'pointer'}}/>
+                    </div>
+                    <div><label style={{fontSize:'.7rem',color:'#888',display:'block',marginBottom:'.2rem'}}>To</label>
+                      <input type="color" value={settings.bg_gradient_to} onChange={e=>set('bg_gradient_to',e.target.value)} style={{width:48,height:28,border:'1px solid var(--border)',borderRadius:3,cursor:'pointer'}}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Image options */}
+            {settings.bg_type==='image'&&(
+              <div style={{marginBottom:'.8rem'}}>
+                <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap',marginBottom:'.6rem'}}>
+                  {images.map(img=>(
+                    <div key={img.name} onClick={()=>set('bg_image_url',getImageUrl(img.name))}
+                      style={{width:60,height:60,borderRadius:4,cursor:'pointer',border:'2px solid '+(settings.bg_image_url===getImageUrl(img.name)?'#c0392b':'transparent'),overflow:'hidden',background:'#222',flexShrink:0}}>
+                      <img src={getImageUrl(img.name)} alt={img.name} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';}}/>
+                    </div>
+                  ))}
+                  <label style={{width:60,height:60,borderRadius:4,border:'1px dashed var(--border)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',gap:2,color:'#666'}}>
+                    <span style={{fontSize:'1.2rem'}}>+</span>
+                    <span style={{fontSize:'.6rem'}}>Upload</span>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>uploadImage(e.target.files[0])} disabled={uploadingImg}/>
+                  </label>
+                </div>
+                {!images.length&&<p style={{fontSize:'.75rem',color:'#666',fontStyle:'italic'}}>No images yet — upload one above. Supabase Storage bucket "menu-backgrounds" must exist.</p>}
+                {settings.bg_image_url&&(
+                  <div style={{marginTop:'.4rem'}}>
+                    <input value={settings.bg_image_url} onChange={e=>set('bg_image_url',e.target.value)} placeholder="Or paste an image URL" style={{width:'100%',padding:'.35rem .5rem',background:'var(--bg-raised)',border:'1px solid var(--border)',color:'var(--text-1)',borderRadius:3,fontSize:'.75rem'}}/>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Opacity slider — for texture, pattern, image */}
+            {(settings.bg_type==='texture'||settings.bg_type==='pattern'||settings.bg_type==='image')&&(
+              <div style={{marginTop:'.4rem'}}>
+                <label style={{fontSize:'.72rem',color:'#888',display:'flex',justifyContent:'space-between',marginBottom:'.3rem'}}>
+                  <span>Intensity / opacity</span>
+                  <span style={{color:'var(--text-1)'}}>{Math.round(settings.bg_opacity*100)}%</span>
+                </label>
+                <input type="range" min="0.02" max="0.35" step="0.01" value={settings.bg_opacity} onChange={e=>set('bg_opacity',parseFloat(e.target.value))}
+                  style={{width:'100%',accentColor:'#c0392b'}}/>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:'.65rem',color:'#555',marginTop:'.2rem'}}><span>Subtle</span><span>Strong</span></div>
+              </div>
+            )}
+          </div>
+
+          {/* Font */}
+          <div className="card">
+            <h2>Typography</h2>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem',marginTop:'.5rem'}}>
+              {FONTS.map(f=>(
+                <div key={f.id} onClick={()=>set('font',f.id)}
+                  style={{padding:'.6rem .8rem',borderRadius:4,border:'1.5px solid '+(settings.font===f.id?'#c0392b':'var(--border)'),background:settings.font===f.id?'rgba(192,57,43,.08)':'none',cursor:'pointer'}}>
+                  <div style={{fontSize:'.82rem',fontWeight:settings.font===f.id?600:400,color:settings.font===f.id?'#c0392b':'var(--text-1)',fontFamily:f.id==='serif'?'Georgia,serif':f.id==='mono'?'DM Mono,monospace':f.id==='playfair'?'Playfair Display,serif':'inherit'}}>{f.label}</div>
+                  <div style={{fontSize:'.7rem',color:'#666',marginTop:'.1rem'}}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Banner */}
+          <div className="card">
+            <h2>Announcement Banner</h2>
+            <p style={{fontSize:'.78rem',color:'#888',marginBottom:'.8rem'}}>An optional coloured strip below the menu header — useful for seasonal notes, kitchen closures, or event announcements.</p>
+            <label style={{display:'flex',alignItems:'center',gap:'.6rem',cursor:'pointer',marginBottom:'.8rem'}}>
+              <input type="checkbox" checked={settings.banner_active} onChange={e=>set('banner_active',e.target.checked)} style={{accentColor:'#c0392b',width:16,height:16}}/>
+              <span style={{fontSize:'.85rem',color:'var(--text-1)'}}>Show banner</span>
+            </label>
+            {settings.banner_active&&(
+              <div style={{display:'flex',flexDirection:'column',gap:'.6rem'}}>
+                <input value={settings.banner_text} onChange={e=>set('banner_text',e.target.value)}
+                  placeholder="e.g. Kitchen closes at 8pm tonight · October events now booking"
+                  style={{width:'100%',padding:'.4rem .6rem',background:'var(--bg-raised)',border:'1px solid var(--border)',color:'var(--text-1)',borderRadius:3,fontSize:'.82rem'}}/>
+                <div style={{display:'flex',alignItems:'center',gap:'.8rem'}}>
+                  <label style={{fontSize:'.72rem',color:'#888'}}>Colour</label>
+                  <input type="color" value={settings.banner_colour} onChange={e=>set('banner_colour',e.target.value)} style={{width:48,height:28,border:'1px solid var(--border)',borderRadius:3,cursor:'pointer'}}/>
+                  <div style={{flex:1,height:28,borderRadius:3,background:settings.banner_colour,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <span style={{fontSize:'.7rem',color:'#fff',fontWeight:500}}>{settings.banner_text||'Preview'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Live preview */}
+        <div style={{position:'sticky',top:'5rem'}}>
+          <div style={{fontSize:'.7rem',letterSpacing:'.1em',textTransform:'uppercase',color:'#666',marginBottom:'.6rem',textAlign:'center'}}>Live preview</div>
+          <MenuPreview/>
+          <div style={{marginTop:'.8rem',fontSize:'.68rem',color:'#555',textAlign:'center',lineHeight:1.5}}>Preview is approximate.<br/>Open the menu to see the full effect.</div>
+          <a href="https://go.theartyst.co.uk/menu" target="_blank"
+            style={{display:'block',marginTop:'.6rem',padding:'.4rem .8rem',background:'var(--bg-raised)',border:'1px solid var(--border)',borderRadius:3,color:'var(--gold)',fontSize:'.75rem',textDecoration:'none',textAlign:'center'}}>
+            Open live menu ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ReviewResponder(){
   const [reviewText,setReviewText]=useState('');
   const [rating,setRating]=useState('5');
@@ -3381,6 +3756,7 @@ const SECTIONS=[
   ]},
   {id:'configure',label:'Configure',desc:'Set up how the system works.',tabs:[
     {id:'menu',label:'Menu Editor',desc:'Edit the café and bar menu — items, prices, and availability — as shown to customers via QR.',adminOnly:false},
+    {id:'menuappearance',label:'Menu Appearance',desc:'Control the look and feel of the digital menu — theme, typography, background, and seasonal styling.',adminOnly:false},
     {id:'reviews',label:'Review Responder',desc:'Set up automated responses to customer reviews and feedback forms.',adminOnly:false},
     {id:'users',label:'Users',desc:'Manage who has access to the QR Engine and what they can do.',adminOnly:true},
   ]},
@@ -3624,6 +4000,7 @@ function App(){
         {tab==='menu'&&<MenuEditor anchor={menuAnchor} onAnchorUsed={()=>setMenuAnchor(null)} isAdmin={isAdmin} onPrintMenu={()=>setTab('menuprint')}/>}
         {tab==='users'&&isAdmin&&<UsersTab/>}
         {tab==='reviews'&&<ReviewResponder/>}
+        {tab==='menuappearance'&&<MenuAppearanceEditor/>}
       </>}
     </div>
   );
