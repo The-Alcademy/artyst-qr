@@ -1160,8 +1160,7 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
                   <td><span style={{fontSize:'.8rem'}}>{c.placement||'—'}</span></td>
                   <td>
                     <span className={`badge badge-${c.active?'active':'inactive'}`}>{c.active?'active':'inactive'}</span>
-                    {c.type==='opportunity'&&getOppStatus(c)==='closed'&&<span className="badge" style={{marginLeft:'.3rem',background:'#3a1a1a',color:'#ff8a8a'}}>filled</span>}
-                  </td>
+                    {c.type==='opportunity'&&getOppStatus(c)==='filled'&&<span className="badge" style={{marginLeft:'.3rem',background:'#3a1a1a',color:'#ff8a8a'}}>filled</span>}                  </td>
                   <td>
                     <div className="actions">
                       <button
