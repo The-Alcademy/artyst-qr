@@ -4055,7 +4055,8 @@ function App(){
 
   const loadAll=async()=>{
     setLoading(true);
-setCodes(Array.isArray(c)?c:[]);setDestinations(Array.isArray(dest)?dest:[]);setGroups(Array.isArray(g)?g:[]);setStaffList(Array.isArray(s)?s:[]);setDistributions(Array.isArray(d)?d:[]);setZones(Array.isArray(z)?z:[]);setAssignments(Array.isArray(a)?a:[]);setScanEvents(Array.isArray(se)?se:[]);setTemplates(Array.isArray(tmpl)?tmpl:[]);setDesigns(Array.isArray(dsgn)?dsgn:[]);setApplications(Array.isArray(apps)?apps:[]);setOpportunityStatuses(Array.isArray(opps)?opps:[]);setLoading(false);
+    const[c,dest,g,s,d,z,a,se,tmpl,dsgn,apps,opps]=await Promise.all([supabase('/rest/v1/qr_codes?order=created_at.desc'),supabase('/rest/v1/destinations?order=type.asc,label.asc'),supabase('/rest/v1/distribution_groups?order=name.asc'),supabase('/rest/v1/staff?order=name.asc'),supabase('/rest/v1/distributions?order=created_at.desc&limit=100'),supabase('/rest/v1/screen_zones?order=name.asc'),supabase('/rest/v1/screen_assignments?order=display_order.asc'),supabase('/rest/v1/scan_events?order=scanned_at.desc&limit=500'),supabase('/rest/v1/poster_templates?order=name.asc'),supabase('/rest/v1/poster_designs?order=name.asc'),supabase('/rest/v1/applications?order=submitted_at.desc&limit=200'),supabase('/rest/v1/opportunities?select=slug,status&order=slug.asc')]);
+    setCodes(Array.isArray(c)?c:[]);setDestinations(Array.isArray(dest)?dest:[]);setGroups(Array.isArray(g)?g:[]);setStaffList(Array.isArray(s)?s:[]);setDistributions(Array.isArray(d)?d:[]);setZones(Array.isArray(z)?z:[]);setAssignments(Array.isArray(a)?a:[]);setScanEvents(Array.isArray(se)?se:[]);setTemplates(Array.isArray(tmpl)?tmpl:[]);setDesigns(Array.isArray(dsgn)?dsgn:[]);setApplications(Array.isArray(apps)?apps:[]);setOpportunityStatuses(Array.isArray(opps)?opps:[]);setLoading(false);
   }
 
   useEffect(()=>{if(user) loadAll();},[user]);
