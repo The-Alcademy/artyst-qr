@@ -166,6 +166,16 @@
     .task-guide-chevron{font-size:.7rem;color:#555;transition:transform .2s}
     .task-guide-chevron.open{transform:rotate(180deg)}
     .task-guide-body{display:flex;flex-wrap:wrap;gap:.5rem;padding:.5rem 1rem 1rem}
+.task-group { margin-top: 1.2rem; }
+.task-group:first-child { margin-top: 0; }
+.task-group-header { display: flex; align-items: baseline; gap: .8rem; margin: 0 .25rem .55rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); }
+.task-group-label { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--text-2); }
+.task-group-desc { font-size: .72rem; color: var(--text-2); opacity: .75; font-style: italic; }
+.task-group-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .55rem; }
+.task-card-soon { opacity: .55; cursor: not-allowed; }
+.task-card-soon:hover { background: inherit; transform: none; }
+.task-card-soon-badge { display: inline-block; background: #2a2a2a; color: #999; font-size: .58rem; letter-spacing: .12em; padding: .12rem .4rem; border-radius: 2px; margin-left: .5rem; vertical-align: middle; }
+body.light-mode .task-card-soon-badge { background: #ddd; color: #555; }  
     .task-card{padding:.55rem .9rem;background:#111;border:1px solid #2a2a2a;border-radius:2px;cursor:pointer;transition:border-color .15s;flex:1 1 180px}
     .task-card:hover{border-color:#c0392b}
     .task-card-label{font-size:.82rem;font-weight:600;color:#eee;margin-bottom:.2rem}
