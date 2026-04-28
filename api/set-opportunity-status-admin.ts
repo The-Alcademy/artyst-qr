@@ -72,14 +72,6 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  // Mirror the status onto the QR code's opportunity_status field for consistency.
-  // (qr_codes carries this field as a denormalised cache for the admin UI.)
-  if (opp.qr_code_id) {
-    await supabase
-      .from("qr_codes")
-      .update({ opportunity_status: status })
-      .eq("id", opp.qr_code_id);
-  }
 
   res.status(200).json({ ok: true, ...opp });
 }
