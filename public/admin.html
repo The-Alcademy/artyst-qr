@@ -3903,6 +3903,14 @@ const TASK_GROUPS = [
 
 function TaskGuide({onSelectTask,open,setOpen}){
   function toggle(){setOpen(o=>!o);}
+  function handleClick(t){
+    if(t.comingSoon) return; // don't navigate to placeholders
+    if(t.external){
+      window.open(t.external,'_blank','noopener');
+      return;
+    }
+    onSelectTask(t);
+  }
   return(
     <div className="task-guide no-print">
       <div className="task-guide-header" onClick={toggle}>
@@ -3911,15 +3919,38 @@ function TaskGuide({onSelectTask,open,setOpen}){
       </div>
       {open&&(
         <div className="task-guide-body">
-          {TASKS.map(t=>(
-            <div key={t.id} className="task-card" onClick={()=>onSelectTask(t)}>
-              <div className="task-card-label">{t.label}</div>
-              <div className="task-card-desc">{t.desc}</div>
-              <div className="task-card-steps">
-                {t.steps.map(s=><span key={s} className="task-step">{s}</span>)}
+          {TASK_GROUPS.map(g=>{
+            const groupTasks=TASKS.filter(t=>t.group===g.id);
+            if(!groupTasks.length) return null;
+            return(
+              <div key={g.id} className="task-group">
+                <div className="task-group-header">
+                  <span className="task-group-label">{g.label}</span>
+                  {g.desc&&<span className="task-group-desc">{g.desc}</span>}
+                </div>
+                <div className="task-group-cards">
+                  {groupTasks.map(t=>(
+                    <div
+                      key={t.id}
+                      className={"task-card"+(t.comingSoon?" task-card-soon":"")}
+                      onClick={()=>handleClick(t)}
+                      title={t.comingSoon?("Coming in "+t.comingSoon):""}
+                    >
+                      <div className="task-card-label">
+                        {t.label}
+                        {t.comingSoon&&<span className="task-card-soon-badge">SOON</span>}
+                        {t.external&&<span className="task-card-soon-badge" style={{background:'#1a3a5c',color:'#5aafff'}}>OPENS NEW TAB</span>}
+                      </div>
+                      <div className="task-card-desc">{t.desc}</div>
+                      <div className="task-card-steps">
+                        {t.steps.map(s=><span key={s} className="task-step">{s}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
