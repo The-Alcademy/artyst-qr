@@ -1359,6 +1359,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   });
   const [filterStatus,setFilterStatus] = useState('all');
   const [expanded,setExpanded] = useState(null);
+  const [replyTarget,setReplyTarget] = useState(null);
 
   // If no opportunities at all
   if(!oppCodes.length){
@@ -1585,13 +1586,24 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
                         disabled={a.status===s}
                         onClick={()=>updateAppStatus(a.id,s)}>{s}</button>
                     ))}
-                  </div>
+               </div>
+                </div>
+                <div style={{marginTop:'1rem',borderTop:'1px solid var(--border)',paddingTop:'1rem'}}>
+                  <button className="btn btn-primary btn-small" onClick={()=>setReplyTarget(a)}>
+                    ✉ Reply to applicant
+                  </button>
                 </div>
               </div>
             )}
           </div>
-        ))}
+))}
       </div>
+      {replyTarget && (
+        <ReplyModal
+          application={replyTarget}
+          onClose={()=>setReplyTarget(null)}
+          onSent={onRefresh}/>
+      )}
     </div>
   );
 }
