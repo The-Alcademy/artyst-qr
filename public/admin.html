@@ -1194,7 +1194,157 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
     </div>
   );
 }
+function ReplyModal({application,onClose,onSent,defaultSentBy}){
+  const [from,setFrom]   = React.useState('jobs@theartyst.co.uk');
+  const [subject,setSubject] = React.useState('');
+  const [body,setBody]   = React.useState('');
+  const [template,setTemplate] = React.useState('acknowledge');
+  const [sentBy,setSentBy] = React.useState(defaultSentBy||'');
+  const [sending,setSending] = React.useState(false);
+  const [err,setErr] = React.useState('');
 
+  React.useEffect(()=>{
+    if(!application) return;
+    const firstName = (application.name||'').split(/\s+/)[0] || 'there';
+    const slug = application.opportunity_slug || 'the role';
+    const roleNice = slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+    const templates = {
+      acknowledge: {
+        subject: 'Thanks for applying — '+roleNice,
+        body: 'Hi '+firstName+',\n\nThanks for your application for the '+roleNice+' role at The Artyst — it has landed safely with us and we will be in touch within a week with next steps.\n\nIn the meantime, do let us know if anything changes in your availability or you have any questions.\n\nAll the best,\nThe Artyst team'
+      },
+      invite: {
+        subject: 'Interview invite — '+roleNice,
+        body: 'Hi '+firstName+',\n\nWe really enjoyed reading your application for the '+roleNice+' role and would love to invite you in for a chat.\n\nCould you let me know which of the following might work for you?\n\n— [day, time]\n— [day, time]\n— [day, time]\n\nWe are at 54-56 Chesterton Road, Cambridge. The chat will take about 30 minutes — informal, just a chance to get to know each other and answer any questions you have.\n\nLooking forward to hearing from you.\n\nAll the best,\nThe Artyst team'
+      },
+      request_info: {
+        subject: 'One quick thing — '+roleNice,
+        body: 'Hi '+firstName+',\n\nThanks for your application for the '+roleNice+' role.\n\nBefore we take it further, could you tell me a bit more about [...]?\n\nA few sentences is plenty — just helps us get a clearer picture.\n\nThanks,\nThe Artyst team'
+      },
+      decline: {
+        subject: 'Update on your application — '+roleNice,
+        body: 'Hi '+firstName+',\n\nThanks again for taking the time to apply for the '+roleNice+' role at The Artyst.\n\nAfter careful consideration, we have decided to go with another candidate this time. The decision was a difficult one — we had a lot of strong applications and yours stood out, but in the end we are moving forward with someone whose experience aligned more closely with what we are building right now.\n\nWe would love to keep your details on file and get in touch if a more suitable role comes up. And do keep an eye on theartyst.co.uk for what is next.\n\nAll the best,\nThe Artyst team'
+      },
+      custom: { subject:'', body:'' }
+    };
+    const t = templates[template] || templates.custom;
+    setSubject(t.subject);
+    setBody(t.body);
+  },[template,application]);
+
+  if(!application) return null;
+
+  async function send(){
+    if(!subject.trim()){ setErr('Subject required.'); return; }
+    if(!body.trim())   { setErr('Body required.');    return; }
+    setErr(''); setSending(true);
+    try{
+      const r = await fetch('/api/reply-to-applicant',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          application_id: application.id,
+          from_email: from,
+          subject: subject.trim(),
+          body: body,
+          template: template,
+          sent_by: sentBy.trim() || null,
+        })
+      });
+      if(!r.ok){
+        const d = await r.json().catch(()=>({}));
+        setErr(d.error || ('Send failed (HTTP '+r.status+')'));
+        setSending(false);
+        return;
+      }
+      setSending(false);
+      if(onSent) onSent();
+      onClose();
+    }catch(e){
+      setErr('Network error. Please try again.');
+      setSending(false);
+    }
+  }
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}
+         onClick={e=>{if(e.target===e.currentTarget&&!sending)onClose();}}>
+      <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'620px',maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.2)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1rem'}}>
+          <h3 style={{margin:0,fontSize:'1.1rem'}}>Reply to {application.name}</h3>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',fontSize:'1.4rem',color:'var(--text-2)',lineHeight:1}}>&times;</button>
+        </div>
+
+        <div style={{marginBottom:'.7rem',padding:'.6rem .8rem',background:'var(--bg-raised)',border:'1px solid var(--border)',borderRadius:'2px',fontSize:'.82rem'}}>
+          <div><strong>{application.name}</strong> · <a href={'mailto:'+application.email} style={{color:'#5aafff'}}>{application.email}</a></div>
+          <div style={{color:'var(--text-2)',marginTop:'.2rem',fontSize:'.78rem'}}>Applied for: {application.opportunity_slug}</div>
+        </div>
+
+        <div style={{marginBottom:'.8rem'}}>
+          <label style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-2)',display:'block',marginBottom:'.3rem'}}>Template</label>
+          <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap'}}>
+            {[
+              {id:'acknowledge', label:'Acknowledge'},
+              {id:'invite',      label:'Invite to interview'},
+              {id:'request_info',label:'Request more info'},
+              {id:'decline',     label:'Polite decline'},
+              {id:'custom',      label:'Custom'},
+            ].map(t=>(
+              <button key={t.id}
+                onClick={()=>setTemplate(t.id)}
+                style={{
+                  padding:'.35rem .8rem',
+                  fontSize:'.78rem',
+                  borderRadius:'2px',
+                  cursor:'pointer',
+                  border:'1px solid '+(template===t.id?'#5aafff':'var(--border)'),
+                  background: template===t.id?'rgba(90,175,255,0.12)':'transparent',
+                  color: template===t.id?'#5aafff':'inherit',
+                }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-grid" style={{marginBottom:'.6rem'}}>
+          <div className="form-group">
+            <label>From</label>
+            <select value={from} onChange={e=>setFrom(e.target.value)}>
+              <option value="jobs@theartyst.co.uk">jobs@theartyst.co.uk</option>
+              <option value="hello@theartyst.co.uk">hello@theartyst.co.uk</option>
+              <option value="events@theartyst.co.uk">events@theartyst.co.uk</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Your name (optional)</label>
+            <input value={sentBy} onChange={e=>setSentBy(e.target.value)} placeholder="e.g. Matthew"/>
+          </div>
+        </div>
+
+        <div className="form-group" style={{marginBottom:'.6rem'}}>
+          <label>Subject</label>
+          <input value={subject} onChange={e=>setSubject(e.target.value)}/>
+        </div>
+
+        <div className="form-group" style={{marginBottom:'.6rem'}}>
+          <label>Message</label>
+          <textarea value={body} onChange={e=>setBody(e.target.value)} rows={14} style={{minHeight:'260px',fontFamily:'inherit',fontSize:'.92rem',lineHeight:1.5}}/>
+        </div>
+
+        {err && <div className="error" style={{marginBottom:'.6rem'}}>{err}</div>}
+
+        <div style={{display:'flex',gap:'.5rem',justifyContent:'flex-end',marginTop:'.5rem'}}>
+          <button className="btn btn-secondary" onClick={onClose} disabled={sending}>Cancel</button>
+          <button className="btn btn-primary" onClick={send} disabled={sending}>
+            {sending?'Sending…':'Send reply'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 function JobOverview({codes,applications,scanEvents,distributions,opportunityStatuses,onRefresh,onDistribute,isAdmin}){
   // Build the list of selectable jobs from QR codes that are linked to opportunities
   const oppCodes = (codes||[]).filter(c=>c.type==='opportunity');
