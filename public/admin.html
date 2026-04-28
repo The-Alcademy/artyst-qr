@@ -1937,6 +1937,7 @@ function Reports({codes,scanEvents}){
 }
 
 function Applications({applications,onRefresh}){
+  const [replyTarget,setReplyTarget]=useState(null);
   const [filterStatus,setFilterStatus]=useState('all');
   const [filterSlug,setFilterSlug]=useState('all');
   const [updating,setUpdating]=useState(null);
@@ -2020,12 +2021,23 @@ function Applications({applications,onRefresh}){
                     ))}
                   </div>
                 </div>
+                <div style={{marginTop:'1rem',borderTop:'1px solid #1e1e1e',paddingTop:'1rem'}}>
+                  <button className="btn btn-primary btn-small" onClick={()=>setReplyTarget(a)}>
+                    ✉ Reply to applicant
+                  </button>
+                </div>
                 <AppAutoReply application={a}/>
               </div>
             )}
-          </div>
+</div>
         ))}
       </div>
+      {replyTarget && (
+        <ReplyModal
+          application={replyTarget}
+          onClose={()=>setReplyTarget(null)}
+          onSent={onRefresh}/>
+      )}
     </div>
   );
 }
