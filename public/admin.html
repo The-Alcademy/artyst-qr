@@ -1298,9 +1298,9 @@ function ReplyModal({application,onClose,onSent,defaultSentBy}){
                   fontSize:'.78rem',
                   borderRadius:'2px',
                   cursor:'pointer',
-                  border:'1px solid '+(template===t.id?'#5aafff':'var(--border)'),
-                  background: template===t.id?'rgba(90,175,255,0.12)':'transparent',
-                  color: template===t.id?'#5aafff':'inherit',
+                  border:'1px solid '+(template===t.id?'#5aafff':'#666'),
+                  background: template===t.id?'rgba(90,175,255,0.12)':'#2a2a2a',
+                  color: template===t.id?'#5aafff':'#ddd',
                 }}>
                 {t.label}
               </button>
