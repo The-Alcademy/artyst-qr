@@ -1040,8 +1040,7 @@ function PrintQueue({queue,templates,designs,onRemove,onClear,onSaved}){
   return(<div className="card"><h2>Print Queue ({queue.length})</h2>{!queue.length&&<div className="empty" style={{padding:'1.5rem'}}>No codes in queue — add from the Library</div>}{queue.map(c=>(<div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.8rem',border:'1px solid #2a2a2a',borderRadius:'2px',marginBottom:'.5rem'}}><div style={{display:'flex',flexDirection:'column',gap:'.2rem'}}><strong>{c.label}</strong><span className="slug-display">/e/{c.slug}</span></div><div className="actions"><button className="btn btn-secondary btn-small" onClick={()=>setEditing(c)}>Edit Poster</button><button className="btn btn-secondary btn-small" onClick={()=>onRemove(c.id)}>Remove</button></div></div>))}{queue.length>0&&<div style={{display:'flex',gap:'.5rem',marginTop:'1rem',justifyContent:'flex-end'}}><button className="btn btn-secondary" onClick={onClear}>Clear Queue</button></div>}</div>);
 }
 
-function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin,sortField,setSortField,sortDir,setSortDir,newCodeId,activeTask}){
-  const toggleActive=async(code)=>{await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`,'PATCH',{active:!code.active});onRefresh();}
+function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin,sortField,setSortField,sortDir,setSortDir,newCodeId,activeTask,opportunityStatuses}){  const toggleActive=async(code)=>{await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`,'PATCH',{active:!code.active});onRefresh();}
 
   const setJobStatus=async(code,status)=>{
     if(!code.slug) return;
@@ -1067,7 +1066,8 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
 
   // Look up the linked opportunity so we know whether status is 'open' or 'closed'.
   // We rely on qr_codes.opportunity_status which is mirrored when the status changes.
-  const getOppStatus=(code)=>code.opportunity_status||'open';
+  const oppStatusBySlug=new Map((opportunityStatuses||[]).map(o=>[o.slug,o.status]));
+  const getOppStatus=(code)=>oppStatusBySlug.get(code.slug)||'open';
 
   function handleSort(field){
     if(sortField===field){setSortDir(d=>d==='asc'?'desc':'asc');}
@@ -4113,8 +4113,7 @@ function App(){
       <TabNav tab={tab} setTab={setTab} codes={codes} templates={templates} designs={designs} newApplications={newApplications} printQueue={printQueue} isAdmin={isAdmin} showStats={showStats} setShowStats={setShowStats}/>
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
-        {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId} activeTask={activeTask}/>}
-        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
+{tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId} activeTask={activeTask} opportunityStatuses={opportunityStatuses}/>}        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
         {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
         {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
