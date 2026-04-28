@@ -4068,6 +4068,7 @@ const SECTIONS=[
   ]},
   {id:'manage',label:'Manage',desc:'Keep your codes and destinations organised.',tabs:[
     {id:'library',label:'Library',desc:'All your QR codes in one place. See scan counts, edit, deactivate, or make a poster for any code.',adminOnly:false},
+    {id:'hire',label:'Hire',desc:'One screen per role: scan stats by channel, applicant funnel, quick actions. The whole hire lifecycle in one place.',adminOnly:false},
     {id:'destinations',label:'Destinations',desc:'The URLs your QR codes point to. Update a destination here and every code pointing to it updates automatically.',adminOnly:false},
     {id:'groups',label:'Groups',desc:'Mailing and WhatsApp lists used when distributing codes. Add contacts and organise by audience.',adminOnly:true},
     {id:'templates',label:'Templates',desc:'Saved poster designs you can reuse across codes. Saves time when promoting recurring events.',adminOnly:true},
@@ -4365,6 +4366,7 @@ function App(){
       {loading&&<div className="empty">Loading...</div>}
       {!loading&&<>
 {tab==='library'&&<Library codes={codes} destinations={destinations} onRefresh={loadAll} onAddToPrintQueue={addToPrintQueue} onDistribute={handleDistribute} isAdmin={isAdmin} sortField={sortField} setSortField={setSortField} sortDir={sortDir} setSortDir={setSortDir} newCodeId={newCodeId} activeTask={activeTask} opportunityStatuses={opportunityStatuses}/>}        {tab==='create'&&isAdmin&&<CreateForm destinations={destinations} onCreate={(id,meta)=>{loadAll();setTab('library');if(id){setNewCodeId(id);if(meta){setEventMetaMap(m=>({...m,[id]:meta}));}}}}/>}
+  {tab==='hire'&&<JobOverview codes={codes} applications={applications} scanEvents={scanEvents} distributions={distributions} opportunityStatuses={opportunityStatuses} onRefresh={loadAll} onDistribute={handleDistribute} isAdmin={isAdmin}/>}
         {tab==='print'&&<PrintQueue queue={printQueue} templates={templates} designs={designs} onRemove={id=>setPrintQueue(q=>q.filter(c=>c.id!==id))} onClear={()=>setPrintQueue([])} onSaved={loadAll}/>}
         {tab==='distribute'&&isAdmin&&<Distribute codes={codes} groups={groups} staffList={staffList} onStaffCreated={loadAll} onDistributed={loadAll} initialCode={distributeCode}/>}
         {tab==='screens'&&<Screens codes={codes} zones={zones} assignments={assignments} onRefresh={loadAll} isAdmin={isAdmin}/>}
