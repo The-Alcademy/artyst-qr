@@ -1195,6 +1195,257 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
   );
 }
 
+function JobOverview({codes,applications,scanEvents,distributions,opportunityStatuses,onRefresh,onDistribute,isAdmin}){
+  // Build the list of selectable jobs from QR codes that are linked to opportunities
+  const oppCodes = (codes||[]).filter(c=>c.type==='opportunity');
+  const oppStatusBySlug = new Map((opportunityStatuses||[]).map(o=>[o.slug,o.status]));
+
+  // Default selection: most recent active opportunity (status open + qr active)
+  const [selectedSlug,setSelectedSlug] = useState(()=>{
+    const recent = [...oppCodes]
+      .filter(c=>c.active && oppStatusBySlug.get(c.slug)==='open')
+      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
+    return recent?.slug || '';
+  });
+  const [filterStatus,setFilterStatus] = useState('all');
+  const [expanded,setExpanded] = useState(null);
+
+  // If no opportunities at all
+  if(!oppCodes.length){
+    return(
+      <div className="card" style={{textAlign:'center',padding:'3rem 1rem'}}>
+        <h2 style={{margin:'0 0 .5rem'}}>No jobs yet</h2>
+        <p style={{color:'var(--text-2)',margin:'0 0 1.5rem'}}>You haven't created any opportunities. Once you do, this is where you'll come to manage them end-to-end.</p>
+        <a href="/job-engine.html" target="_blank" rel="noopener"
+           className="btn btn-primary"
+           style={{display:'inline-block',textDecoration:'none'}}>Write a new job description →</a>
+      </div>
+    );
+  }
+
+  const selectedCode = oppCodes.find(c=>c.slug===selectedSlug) || oppCodes[0];
+  const slug = selectedCode.slug;
+  const oppStatus = oppStatusBySlug.get(slug) || 'open';
+
+  // Applications filtered to this slug
+  const jobApps = (applications||[]).filter(a=>a.opportunity_slug===slug);
+  const counts = {
+    new:         jobApps.filter(a=>a.status==='new').length,
+    reviewed:    jobApps.filter(a=>a.status==='reviewed').length,
+    shortlisted: jobApps.filter(a=>a.status==='shortlisted').length,
+    rejected:    jobApps.filter(a=>a.status==='rejected').length,
+  };
+  const filteredApps = filterStatus==='all'
+    ? jobApps
+    : jobApps.filter(a=>a.status===filterStatus);
+
+  // Scan events for this code
+  const scans = (scanEvents||[]).filter(e=>e.qr_code_id===selectedCode.id);
+  const byPlacement = scans.reduce((acc,e)=>{
+    const k = e.placement || 'other';
+    acc[k]=(acc[k]||0)+1;
+    return acc;
+  },{});
+  const placementMax = Math.max(1, ...Object.values(byPlacement));
+
+  // Distributions for this code
+  const dists = (distributions||[]).filter(d=>d.qr_code_id===selectedCode.id);
+  const byChannel = dists.reduce((acc,d)=>{
+    (d.channels||[]).forEach(ch=>{ acc[ch]=(acc[ch]||0)+1; });
+    return acc;
+  },{});
+  const channelMax = Math.max(1, ...Object.values(byChannel));
+
+  // Helpers
+  const updateAppStatus = async (id,status)=>{
+    await supabase('/rest/v1/applications?id=eq.'+id,'PATCH',{status});
+    await onRefresh();
+  };
+  const setJobStatus = async (newStatus)=>{
+    if(!window.confirm(`Set "${selectedCode.label}" to ${newStatus}?`)) return;
+    const r = await fetch('/api/set-job-status',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({slug,status:newStatus})
+    });
+    if(!r.ok){const d=await r.json().catch(()=>({}));alert('Could not update: '+(d.error||r.status));return;}
+    await onRefresh();
+  };
+  const toggleActive = async ()=>{
+    await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode.id}`,'PATCH',{active:!selectedCode.active});
+    await onRefresh();
+  };
+
+  const STATUS_BG={new:'#1a3a5c',reviewed:'#2a2a1a',shortlisted:'#1a3a1a',rejected:'#3a1a1a'};
+  const STATUS_FG={new:'#5aafff',reviewed:'#ffee5a',shortlisted:'#5aff7a',rejected:'#ff5a5a'};
+
+  function daysAgo(iso){
+    if(!iso) return '';
+    const ms = Date.now() - new Date(iso).getTime();
+    const d = Math.floor(ms/(1000*60*60*24));
+    if(d<=0) return 'today';
+    if(d===1) return 'yesterday';
+    return d+' days ago';
+  }
+
+  return(
+    <div>
+      {/* ── Job picker ─────────────────────────────── */}
+      <div className="card" style={{padding:'1rem 1.2rem',marginBottom:'1rem'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'1rem',flexWrap:'wrap'}}>
+          <span style={{fontSize:'.72rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--text-2)'}}>Job</span>
+          <select value={selectedSlug} onChange={e=>{setSelectedSlug(e.target.value);setExpanded(null);setFilterStatus('all');}} style={{flex:1,minWidth:220}}>
+            {oppCodes.map(c=>{
+              const s = oppStatusBySlug.get(c.slug)||'open';
+              const flags = [];
+              if(s==='filled')      flags.push('filled');
+              if(s==='suspended')   flags.push('suspended');
+              if(!c.active)         flags.push('inactive');
+              const flagStr = flags.length ? ' ('+flags.join(', ')+')' : '';
+              return <option key={c.id} value={c.slug}>{c.label}{flagStr}</option>;
+            })}
+          </select>
+          <a href="/job-engine.html" target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>+ New job</a>
+        </div>
+      </div>
+
+      {/* ── Header strip ───────────────────────────── */}
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'1rem',flexWrap:'wrap',marginBottom:'.7rem'}}>
+          <div style={{minWidth:0,flex:1}}>
+            <h2 style={{margin:'0 0 .3rem',fontSize:'1.3rem'}}>{selectedCode.label}</h2>
+            <div style={{fontSize:'.85rem',color:'var(--text-2)'}}>
+              <span className="slug-display">/e/{slug}</span>
+              <span style={{marginLeft:'.7rem'}}>Posted {daysAgo(selectedCode.created_at)}</span>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+            <span className={`badge badge-${selectedCode.active?'active':'inactive'}`}>{selectedCode.active?'active':'inactive'}</span>
+            <span className="badge" style={{background:oppStatus==='open'?'#1a3a1a':'#3a1a1a',color:oppStatus==='open'?'#5aff7a':'#ff8a8a'}}>{oppStatus}</span>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap'}}>
+          <a href={`/job-engine.html#${encodeURIComponent(slug)}`} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>Edit job</a>
+          <a href={`https://go.theartyst.co.uk/opportunity/${slug}?cb=${Date.now()}`} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>View public page ↗</a>
+          {isAdmin&&<button className="btn btn-small" style={{background:'#1a5c1a',color:'#5aff7a',border:'1px solid #2a7a2a'}} onClick={()=>onDistribute(selectedCode)}>Distribute →</button>}
+          {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>setJobStatus(oppStatus==='filled'?'open':'filled')}>{oppStatus==='filled'?'Reopen':'Mark as filled'}</button>}
+          {isAdmin&&<button className="btn btn-secondary btn-small" onClick={toggleActive}>{selectedCode.active?'Deactivate':'Activate'}</button>}
+        </div>
+      </div>
+
+      {/* ── Distribution scorecard ─────────────────── */}
+      <div className="two-col" style={{marginBottom:'1rem'}}>
+        <div className="card">
+          <h2 style={{fontSize:'1rem',margin:'0 0 .8rem'}}>Distribution</h2>
+          <div style={{display:'flex',gap:'1.5rem',flexWrap:'wrap',marginBottom:'1rem'}}>
+            <div>
+              <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-2)',marginBottom:'.2rem'}}>Total scans</div>
+              <div style={{fontSize:'1.6rem',fontWeight:700}}>{selectedCode.scan_count||0}</div>
+            </div>
+            <div>
+              <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-2)',marginBottom:'.2rem'}}>Sends</div>
+              <div style={{fontSize:'1.6rem',fontWeight:700}}>{dists.length}</div>
+            </div>
+          </div>
+
+          <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-2)',marginBottom:'.4rem'}}>Scans by placement</div>
+          {Object.keys(byPlacement).length===0
+            ? <div style={{fontSize:'.82rem',color:'var(--text-2)',fontStyle:'italic'}}>No scans tracked yet</div>
+            : Object.entries(byPlacement).sort((a,b)=>b[1]-a[1]).map(([p,n])=>(
+                <div key={p} className="report-row">
+                  <div className="report-label"><span>{p}</span><span>{n}</span></div>
+                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:`${(n/placementMax)*100}%`}}/></div>
+                </div>
+              ))}
+        </div>
+
+        <div className="card">
+          <h2 style={{fontSize:'1rem',margin:'0 0 .8rem'}}>Sends by channel</h2>
+          {Object.keys(byChannel).length===0
+            ? <div style={{fontSize:'.82rem',color:'var(--text-2)',fontStyle:'italic'}}>Nothing distributed yet — use the Distribute button above</div>
+            : Object.entries(byChannel).sort((a,b)=>b[1]-a[1]).map(([ch,n])=>(
+                <div key={ch} className="report-row">
+                  <div className="report-label"><span>{(typeof CHANNELS!=='undefined' && CHANNELS[ch]?.label)||ch}</span><span>{n}</span></div>
+                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:`${(n/channelMax)*100}%`}}/></div>
+                </div>
+              ))}
+        </div>
+      </div>
+
+      {/* ── Applications funnel ───────────────────── */}
+      <div className="stats-grid" style={{marginBottom:'1rem'}}>
+        {['new','reviewed','shortlisted','rejected'].map(s=>(
+          <div key={s}
+               className="stat"
+               style={{cursor:'pointer',borderColor:filterStatus===s?STATUS_BG[s]:undefined}}
+               onClick={()=>setFilterStatus(filterStatus===s?'all':s)}>
+            <div className="number" style={{color:counts[s]?STATUS_FG[s]:undefined}}>{counts[s]}</div>
+            <div className="label" style={{textTransform:'capitalize'}}>{s}</div>
+          </div>
+        ))}
+      </div>
+      {filterStatus!=='all' && <div style={{fontSize:'.82rem',color:'var(--text-2)',marginBottom:'.6rem'}}>Showing {filterStatus} only · <a href="#" onClick={e=>{e.preventDefault();setFilterStatus('all');}}>show all</a></div>}
+
+      {/* ── Applications list ───────────────────── */}
+      <div className="card">
+        <h2 style={{fontSize:'1rem',margin:'0 0 .8rem'}}>Applications</h2>
+        {!filteredApps.length && <div className="empty" style={{padding:'1.5rem'}}>{jobApps.length===0 ? 'No applications yet for this role.' : 'No applications match this filter.'}</div>}
+        {filteredApps.map(a=>(
+          <div key={a.id} style={{border:'1px solid var(--border)',borderRadius:'2px',marginBottom:'.5rem',overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.7rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}>
+              <div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:600,fontSize:'.92rem'}}>{a.name}</div>
+                  <div style={{fontSize:'.78rem',opacity:.6,marginTop:'.1rem'}}>{new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+                </div>
+                <span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span>
+              </div>
+              <span style={{fontSize:'.8rem',marginLeft:'1rem',opacity:.5}}>{expanded===a.id?'▲':'▼'}</span>
+            </div>
+            {expanded===a.id&&(
+              <div style={{borderTop:'1px solid var(--border)',padding:'1rem'}}>
+                <div className="form-grid" style={{marginBottom:'1rem'}}>
+                  <div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Email</div>
+                    <a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a>
+                  </div>
+                  {a.phone&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Phone</div>
+                    <div style={{fontSize:'.88rem'}}>{a.phone}</div>
+                  </div>}
+                  {a.cv_url&&<div>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>CV</div>
+                    <a href={a.cv_url} target="_blank" rel="noopener" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a>
+                  </div>}
+                </div>
+                {a.message&&(
+                  <div style={{marginBottom:'1rem'}}>
+                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Message</div>
+                    <div style={{border:'1px solid var(--border)',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',opacity:.85,lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div>
+                  </div>
+                )}
+                <div>
+                  <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Update Status</div>
+                  <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+                    {['new','reviewed','shortlisted','rejected'].map(s=>(
+                      <button key={s} className="btn btn-small"
+                        style={{background:a.status===s?STATUS_BG[s]:'inherit',color:a.status===s?STATUS_FG[s]:'inherit',border:'1px solid '+(a.status===s?STATUS_BG[s]:'var(--border)')}}
+                        disabled={a.status===s}
+                        onClick={()=>updateAppStatus(a.id,s)}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CreateForm({destinations,onCreate}){
   const [form,setForm]=useState({label:'',type:'event',destination_id:'',custom_url:'',placement:'',slug:''});
   const [useCustom,setUseCustom]=useState(false);
