@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,6 +20,7 @@
     --muted: #7a6e5f;
     --danger: #c84040;
     --success: #4a8c5c;
+    --info: #5a8ac8;
   }
 
   body { background: var(--bg); color: var(--cream); font-family: 'Crimson Pro', Georgia, serif; min-height: 100vh; padding: 0; }
@@ -32,6 +32,41 @@
 
   .main { padding: 32px; max-width: 1100px; margin: 0 auto; }
 
+  /* ── Mode picker bar ─────────────────────────────────────────── */
+  .mode-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .mode-bar-label {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .mode-bar select {
+    flex: 1;
+    min-width: 220px;
+    background: var(--surface2);
+  }
+  .mode-bar .mode-state {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .mode-bar .mode-state.is-edit {
+    color: var(--info);
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .fg-full { grid-column: 1 / -1; }
   .fg { display: flex; flex-direction: column; gap: 6px; }
@@ -42,7 +77,8 @@
   select option { background: #1d1a16; }
   textarea { resize: vertical; min-height: 80px; }
 
-  .form-actions { grid-column: 1/-1; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; }
+  .form-actions { grid-column: 1/-1; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .form-actions-spacer { flex: 1; }
   .btn { border: 1px solid var(--border); background: transparent; color: var(--cream); padding: 11px 24px; font-family: 'Crimson Pro', serif; font-size: 15px; cursor: pointer; border-radius: 3px; transition: background 0.15s, border-color 0.15s; letter-spacing: 0.05em; }
   .btn:hover { background: var(--surface2); border-color: var(--muted); }
   .btn-primary { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 600; }
@@ -51,7 +87,11 @@
   .btn-publish { background: var(--success); color: #fff; border-color: var(--success); font-weight: 600; }
   .btn-publish:hover { background: #5aaa70; border-color: #5aaa70; }
   .btn-publish:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-info { background: var(--info); color: #fff; border-color: var(--info); font-weight: 600; }
+  .btn-info:hover { background: #6a9ad8; border-color: #6a9ad8; }
+  .btn-info:disabled { opacity: 0.4; cursor: not-allowed; }
   .err { font-size: 14px; color: var(--danger); }
+  .info-msg { font-size: 13px; color: var(--info); font-style: italic; }
 
   .generating { text-align: center; padding: 80px 0; }
   .gen-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold); margin-bottom: 12px; }
@@ -73,6 +113,35 @@
   .jd-section ul { list-style: none; padding: 0; }
   .jd-section li { padding-left: 22px; position: relative; font-size: 16px; line-height: 1.65; color: #c8c0b0; margin-bottom: 6px; }
   .jd-section li::before { content: '—'; position: absolute; left: 0; color: var(--gold); }
+
+  /* JD edit textarea */
+  .jd-edit-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .jd-edit-toggle {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+  }
+  .jd-edit-toggle:hover { color: var(--gold); border-color: var(--gold-dim); }
+  .jd-edit-toggle.is-active { color: var(--gold); border-color: var(--gold); background: rgba(200,169,110,0.08); }
+  .jd-textarea {
+    min-height: 480px;
+    font-family: 'Crimson Pro', monospace, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #0a0908;
+  }
 
   /* Poster panel */
   .poster-sticky { position: sticky; top: 24px; }
@@ -119,30 +188,18 @@
 
   @media print {
     @page { size: A4 portrait; margin: 0; }
-
     html, body { margin: 0; padding: 0; background: white; width: 210mm; height: 297mm; }
-
-    .header, #st-form, #st-gen, .preview-actions, .qr-note, .poster-label,
-    .published-banner, .jd-panel, #pub-err { display: none !important; }
-
+    .header, .mode-bar, #st-form, #st-gen, .preview-actions, .qr-note, .poster-label,
+    .published-banner, .jd-panel, #pub-err, .jd-edit-toolbar { display: none !important; }
     .main { padding: 0; max-width: 100%; margin: 0; }
     .preview-layout { display: block; width: 210mm; height: 297mm; }
     .poster-sticky { position: static; width: 210mm; height: 297mm; }
-
     .poster {
-      width: 210mm;
-      height: 297mm;
-      border: none !important;
-      border-radius: 0 !important;
-      padding: 18mm 16mm !important;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      page-break-inside: avoid;
+      width: 210mm; height: 297mm; border: none !important; border-radius: 0 !important;
+      padding: 18mm 16mm !important; display: flex; flex-direction: column;
+      justify-content: space-between; page-break-inside: avoid;
     }
     .poster::before { display: none; }
-
-    /* Scale up all poster elements to fill the page */
     .pp-prop    { font-size: 13px !important; letter-spacing: 0.5em !important; margin-bottom: 10px !important; }
     .pp-rule    { margin: 10px 0 !important; }
     .pp-seek    { font-size: 15px !important; margin-bottom: 10px !important; }
@@ -178,10 +235,19 @@
 <div class="header">
   <span class="header-ca">CA-025</span>
   <span class="header-title">Job Description Engine</span>
-  <span class="header-sub">Fill in the role · Claude writes the description · Publish to CA-022</span>
+  <span class="header-sub" id="header-sub">Fill in the role · Claude writes the description · Publish to CA-022</span>
 </div>
 
 <div class="main">
+
+  <!-- ── Mode picker bar ── -->
+  <div class="mode-bar" id="mode-bar">
+    <span class="mode-bar-label">Working on</span>
+    <select id="job-picker">
+      <option value="">+ New job from scratch</option>
+    </select>
+    <span class="mode-state" id="mode-state">Creating a new job</span>
+  </div>
 
   <!-- ── FORM ── -->
   <div id="st-form">
@@ -215,11 +281,11 @@
         <label>Pay / rate</label>
         <input type="text" id="f-pay" placeholder="e.g. £12.50/hr">
       </div>
-      <div class="fg fg-full">
+      <div class="fg fg-full" id="brief-fields">
         <label>Key responsibilities *</label>
         <textarea id="f-resp" rows="4" placeholder="What will they actually do? A few lines or bullet points is fine."></textarea>
       </div>
-      <div class="fg fg-full">
+      <div class="fg fg-full" id="brief-fields-2">
         <label>What we're looking for</label>
         <textarea id="f-req" rows="3" placeholder="Skills, experience, qualities."></textarea>
       </div>
@@ -233,7 +299,10 @@
       </div>
       <div class="form-actions">
         <span class="err" id="f-err"></span>
-        <button class="btn btn-primary" onclick="generate()">Generate description →</button>
+        <span class="form-actions-spacer"></span>
+        <button class="btn" id="btn-discard" onclick="discardChanges()" style="display:none">Discard changes</button>
+        <button class="btn btn-info" id="btn-save" onclick="saveOnly()" style="display:none">Save changes</button>
+        <button class="btn btn-primary" id="btn-generate" onclick="generate()">Generate description →</button>
       </div>
     </div>
   </div>
@@ -241,7 +310,7 @@
   <!-- ── GENERATING ── -->
   <div id="st-gen" class="hidden">
     <div class="generating">
-      <div class="gen-title">Writing your job description…</div>
+      <div class="gen-title" id="gen-title">Writing your job description…</div>
       <div class="spinner"></div>
       <div class="gen-sub">Claude is drafting something worth reading.</div>
     </div>
@@ -256,7 +325,12 @@
         <div class="jd-role" id="p-role"></div>
         <div class="jd-property" id="p-prop"></div>
         <div class="jd-meta" id="p-meta"></div>
+
+        <div class="jd-edit-toolbar">
+          <button class="jd-edit-toggle" id="jd-edit-toggle" onclick="toggleJDEdit()">Edit text</button>
+        </div>
         <div id="p-body"></div>
+        <textarea class="jd-textarea hidden" id="p-edit"></textarea>
       </div>
 
       <!-- Poster + actions -->
@@ -284,19 +358,20 @@
         </div>
 
         <div class="preview-actions">
-          <button class="btn" onclick="backToForm()">← Edit</button>
+          <button class="btn" onclick="backToForm()">← Edit brief</button>
           <button class="btn" onclick="copyJD(event)">Copy JD</button>
           <button class="btn" onclick="window.print()">Print poster</button>
+          <button class="btn" onclick="previewPublic()" id="preview-btn">Preview public page ↗</button>
           <button class="btn btn-publish" id="publish-btn" onclick="publish()">Publish to CA-022 →</button>
         </div>
         <div class="qr-note" id="qr-note"></div>
 
         <!-- Published confirmation -->
         <div class="published-banner hidden" id="pub-banner">
-          <div class="pub-title">Published to CA-022 ✓</div>
+          <div class="pub-title" id="pub-title">Published to CA-022 ✓</div>
           <div class="pub-row"><span class="pub-label">Live page</span><a id="pub-page-url" href="#" target="_blank"></a></div>
           <div class="pub-row"><span class="pub-label">QR redirect</span><span id="pub-redirect-url" style="color:var(--muted);font-size:13px;font-family:'Courier New',monospace;word-break:break-all;"></span></div>
-          <div class="pub-row" style="margin-top:8px;font-size:13px;font-style:italic;">The QR code and distribution options are now available in the CA-022 admin library.</div>
+          <div class="pub-row" style="margin-top:8px;font-size:13px;font-style:italic;">The QR code and distribution options are available in the CA-022 admin library.</div>
         </div>
         <div class="err" id="pub-err" style="margin-top:8px;text-align:center;"></div>
 
@@ -308,9 +383,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  let JD = '';
-  let currentSlug = '';
+  let JD = '';                  // current job description text
+  let currentSlug = '';         // slug of the job currently in scope
   let published = false;
+  let editMode = false;         // true if editing an existing job
+  let originalSlug = '';        // for edit mode — the slug we loaded from
+  let jdEditOpen = false;       // whether the inline JD textarea is showing
 
   function show(id) {
     ['st-form','st-gen','st-prev'].forEach(s => {
@@ -323,16 +401,219 @@
     return { id: parts[0], name: parts[1], url: parts[2] };
   }
 
+  function findPropOption(propertyName) {
+    // The select options are keyed by "slug|Name|domain" — find the right one
+    const sel = document.getElementById('f-prop');
+    for (const opt of sel.options) {
+      if (opt.value.split('|')[1] === propertyName) return opt.value;
+    }
+    return sel.options[0].value; // fall back to The Artyst
+  }
+
   function toSlug(s) {
     return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
 
+  // ── Job picker (populates on load) ───────────────────────────────────
+  async function loadJobList() {
+    try {
+      const res = await fetch('/api/list-jobs');
+      if (!res.ok) return;
+      const { opportunities = [] } = await res.json();
+      const sel = document.getElementById('job-picker');
+      // Preserve the "+ New" option
+      sel.innerHTML = '<option value="">+ New job from scratch</option>';
+      for (const o of opportunities) {
+        const opt = document.createElement('option');
+        opt.value = o.slug;
+        const flags = [];
+        if (!o.active)        flags.push('inactive');
+        if (o.share_disabled) flags.push('hidden');
+        if (o.status !== 'open') flags.push(o.status);
+        const flagStr = flags.length ? ' (' + flags.join(', ') + ')' : '';
+        opt.textContent = `${o.title} — ${o.property}${flagStr}`;
+        sel.appendChild(opt);
+      }
+    } catch (e) {
+      console.error('Failed to load job list:', e);
+    }
+  }
+
+  document.getElementById('job-picker').addEventListener('change', async (e) => {
+    const slug = e.target.value;
+    if (!slug) {
+      enterCreateMode();
+      return;
+    }
+    await enterEditMode(slug);
+  });
+
+  function enterCreateMode() {
+    editMode = false;
+    originalSlug = '';
+    currentSlug = '';
+    JD = '';
+    published = false;
+
+    document.getElementById('header-sub').textContent =
+      'Fill in the role · Claude writes the description · Publish to CA-022';
+    document.getElementById('mode-state').textContent = 'Creating a new job';
+    document.getElementById('mode-state').className = 'mode-state';
+
+    // Reset form fields
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-hours').value = '';
+    document.getElementById('f-pay').value = '';
+    document.getElementById('f-resp').value = '';
+    document.getElementById('f-req').value = '';
+    document.getElementById('f-email').value = 'jobs@theartyst.co.uk';
+    document.getElementById('f-ctx').value = '';
+    document.getElementById('f-prop').value = findPropOption('The Artyst');
+    document.getElementById('f-type').value = 'Part-time';
+    document.getElementById('f-err').textContent = '';
+    document.getElementById('pub-banner').classList.add('hidden');
+    document.getElementById('pub-err').textContent = '';
+
+    // Toggle button visibility
+    document.getElementById('btn-save').style.display     = 'none';
+    document.getElementById('btn-discard').style.display  = 'none';
+    document.getElementById('btn-generate').textContent   = 'Generate description →';
+
+    show('st-form');
+  }
+
+  async function enterEditMode(slug) {
+    editMode = true;
+    originalSlug = slug;
+    currentSlug = slug;
+    published = false;
+
+    document.getElementById('mode-state').textContent = 'Editing: ' + slug;
+    document.getElementById('mode-state').className = 'mode-state is-edit';
+    document.getElementById('header-sub').textContent =
+      'Editing an existing job — save changes or regenerate';
+
+    document.getElementById('f-err').textContent = 'Loading…';
+    try {
+      const res = await fetch('/api/get-job?slug=' + encodeURIComponent(slug));
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || ('HTTP ' + res.status));
+      }
+      const job = await res.json();
+
+      document.getElementById('f-title').value  = job.title || '';
+      document.getElementById('f-hours').value  = job.hours || '';
+      document.getElementById('f-pay').value    = job.pay || '';
+      document.getElementById('f-email').value  = job.apply_email || 'jobs@theartyst.co.uk';
+      document.getElementById('f-prop').value   = findPropOption(job.property || 'The Artyst');
+      document.getElementById('f-type').value   = job.employment_type || 'Part-time';
+      // Keep the brief fields blank — they're for regeneration prompts.
+      // The existing description is preserved in JD and editable on the preview screen.
+      document.getElementById('f-resp').value = '';
+      document.getElementById('f-req').value  = '';
+      document.getElementById('f-ctx').value  = '';
+
+      JD = job.description || '';
+      document.getElementById('f-err').textContent = '';
+
+      // Toggle button visibility
+      document.getElementById('btn-save').style.display     = '';
+      document.getElementById('btn-discard').style.display  = '';
+      document.getElementById('btn-generate').textContent   = 'Regenerate description →';
+
+      // Jump straight to the preview so the user sees current text immediately
+      const prop = getProp();
+      renderPreview(job.title || '', prop, job.employment_type || '', job.hours || '', job.pay || '');
+
+    } catch (e) {
+      console.error(e);
+      document.getElementById('f-err').textContent = 'Could not load: ' + (e.message || 'unknown error');
+    }
+  }
+
+  function discardChanges() {
+    if (originalSlug) enterEditMode(originalSlug);
+  }
+
+  // ── Save without regenerating (manual edit path) ─────────────────────
+  async function saveOnly() {
+    if (!editMode) return;
+
+    // Pull the latest JD text — if the inline textarea is open, use that
+    if (jdEditOpen) {
+      JD = document.getElementById('p-edit').value;
+    }
+
+    const btn   = document.getElementById('btn-save');
+    const errEl = document.getElementById('f-err');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    errEl.textContent = '';
+
+    const prop = getProp();
+    try {
+      const res = await fetch('/api/publish-opportunity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title:           document.getElementById('f-title').value.trim(),
+          slug:            originalSlug,
+          property:        prop.name,
+          employment_type: document.getElementById('f-type').value,
+          hours:           document.getElementById('f-hours').value.trim(),
+          pay:             document.getElementById('f-pay').value.trim(),
+          description:     JD,
+          apply_email:     document.getElementById('f-email').value.trim(),
+          ca025_opportunity_id: null
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data.success) throw new Error('not ok');
+
+      btn.textContent = 'Saved ✓';
+      published = true;
+
+      const banner = document.getElementById('pub-banner');
+      document.getElementById('pub-title').textContent = 'Saved ✓';
+      document.getElementById('pub-page-url').textContent = data.destination_url;
+      document.getElementById('pub-page-url').href        = data.destination_url;
+      document.getElementById('pub-redirect-url').textContent = data.redirect_url;
+      banner.classList.remove('hidden');
+
+      // Refresh the picker so any title change is reflected
+      loadJobList();
+
+      setTimeout(() => {
+        btn.textContent = 'Save changes';
+        btn.disabled = false;
+      }, 2000);
+    } catch (e) {
+      console.error(e);
+      errEl.textContent = 'Save failed — please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Save changes';
+    }
+  }
+
+  // ── Generate (or regenerate, when in edit mode) ──────────────────────
   async function generate() {
     const title = document.getElementById('f-title').value.trim();
     const resp  = document.getElementById('f-resp').value.trim();
     const errEl = document.getElementById('f-err');
+
     if (!title) { errEl.textContent = 'Please enter a role title.'; return; }
-    if (!resp)  { errEl.textContent = 'Please add some responsibilities.'; return; }
+    if (!editMode && !resp) {
+      errEl.textContent = 'Please add some responsibilities.';
+      return;
+    }
+    if (editMode && !resp) {
+      // In edit mode, blank brief = "I just changed metadata, don't regenerate."
+      // Steer the user toward Save changes instead.
+      errEl.textContent = 'To regenerate, add new responsibilities. To save metadata only, use Save changes.';
+      return;
+    }
     errEl.textContent = '';
     published = false;
     document.getElementById('pub-banner').classList.add('hidden');
@@ -346,6 +627,8 @@
     const email = document.getElementById('f-email').value.trim();
     const ctx   = document.getElementById('f-ctx').value.trim();
 
+    document.getElementById('gen-title').textContent =
+      editMode ? 'Regenerating…' : 'Writing your job description…';
     show('st-gen');
 
     try {
@@ -358,11 +641,12 @@
           requirements: req, apply_email: email, context: ctx
         })
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       JD = data.description || '';
       if (!JD) throw new Error('empty');
-      currentSlug = toSlug(title);
+      // In edit mode keep the original slug so the QR code & history persist.
+      if (!editMode) currentSlug = toSlug(title);
       renderPreview(title, prop, type, hours, pay);
     } catch (e) {
       document.getElementById('f-err').textContent = 'Generation failed — please try again.';
@@ -411,9 +695,18 @@
       bodyHtml += '</div>';
     }
     document.getElementById('p-body').innerHTML = bodyHtml;
+    document.getElementById('p-edit').value = JD;
+
+    // Reset edit toggle each time we re-render
+    jdEditOpen = false;
+    document.getElementById('p-edit').classList.add('hidden');
+    document.getElementById('p-body').classList.remove('hidden');
+    const tog = document.getElementById('jd-edit-toggle');
+    tog.classList.remove('is-active');
+    tog.textContent = 'Edit text';
 
     // Poster — QR points to CA-022 redirect
-    const redirectUrl = `https://artyst-qr.vercel.app/e/${currentSlug}`;
+    const redirectUrl = 'https://go.theartyst.co.uk/e/' + currentSlug;
     document.getElementById('pp-prop').textContent  = prop.name.toUpperCase();
     document.getElementById('pp-title').textContent = title;
     document.getElementById('pp-type').textContent  = type;
@@ -439,7 +732,7 @@
     }
 
     document.getElementById('pp-url').textContent  = redirectUrl;
-    document.getElementById('qr-note').textContent = `QR → ${redirectUrl}`;
+    document.getElementById('qr-note').textContent = 'QR → ' + redirectUrl;
 
     const qrcEl = document.getElementById('qrc');
     qrcEl.innerHTML = '';
@@ -458,18 +751,52 @@
     show('st-prev');
   }
 
+  // ── Inline JD editor toggle ──────────────────────────────────────────
+  function toggleJDEdit() {
+    const ta  = document.getElementById('p-edit');
+    const ro  = document.getElementById('p-body');
+    const tog = document.getElementById('jd-edit-toggle');
+    if (jdEditOpen) {
+      // Close — pull text out of textarea, re-render
+      JD = ta.value;
+      const title = document.getElementById('p-role').textContent;
+      const prop  = getProp();
+      const type  = document.getElementById('f-type').value;
+      const hours = document.getElementById('f-hours').value.trim();
+      const pay   = document.getElementById('f-pay').value.trim();
+      renderPreview(title, prop, type, hours, pay);
+    } else {
+      // Open
+      ta.classList.remove('hidden');
+      ro.classList.add('hidden');
+      tog.classList.add('is-active');
+      tog.textContent = 'Done';
+      jdEditOpen = true;
+    }
+  }
+
+  function previewPublic() {
+    if (!currentSlug) return;
+    window.open('https://go.theartyst.co.uk/opportunity/' + currentSlug + '?cb=' + Date.now(),
+                '_blank', 'noopener');
+  }
+
   async function publish() {
     if (published) return;
+    // Pull latest JD if inline editor is open
+    if (jdEditOpen) JD = document.getElementById('p-edit').value;
+
     const btn    = document.getElementById('publish-btn');
     const errEl  = document.getElementById('pub-err');
     const banner = document.getElementById('pub-banner');
     btn.disabled = true;
-    btn.textContent = 'Publishing…';
+    btn.textContent = editMode ? 'Updating…' : 'Publishing…';
     errEl.textContent = '';
 
     const prop  = getProp();
     const type  = document.getElementById('f-type').value;
     const title = document.getElementById('p-role').textContent;
+    const slug  = editMode ? originalSlug : currentSlug;
 
     try {
       const res = await fetch('/api/publish-opportunity', {
@@ -477,45 +804,43 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          slug:                currentSlug,
-          property:            prop.name,
-          employment_type:     type,
-          hours:               document.getElementById('f-hours').value.trim(),
-          pay:                 document.getElementById('f-pay').value.trim(),
-          description:         JD,
-          apply_email:         document.getElementById('f-email').value.trim(),
+          slug:                 slug,
+          property:             prop.name,
+          employment_type:      type,
+          hours:                document.getElementById('f-hours').value.trim(),
+          pay:                  document.getElementById('f-pay').value.trim(),
+          description:          JD,
+          apply_email:          document.getElementById('f-email').value.trim(),
           ca025_opportunity_id: null
         })
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (!data.success) throw new Error('not ok');
 
       published = true;
-      btn.textContent = 'Published ✓';
+      btn.textContent = editMode ? 'Updated ✓' : 'Published ✓';
+      document.getElementById('pub-title').textContent =
+        editMode ? 'Updated in CA-022 ✓' : 'Published to CA-022 ✓';
 
       document.getElementById('pub-page-url').textContent = data.destination_url;
       document.getElementById('pub-page-url').href        = data.destination_url;
       document.getElementById('pub-redirect-url').textContent = data.redirect_url;
       banner.classList.remove('hidden');
 
+      loadJobList();
     } catch (e) {
-      errEl.textContent = 'Publish failed — check the console or try again.';
+      errEl.textContent = (editMode ? 'Update' : 'Publish') + ' failed — check the console or try again.';
       btn.disabled = false;
-      btn.textContent = 'Publish to CA-022 →';
+      btn.textContent = editMode ? 'Update CA-022 →' : 'Publish to CA-022 →';
     }
   }
 
-  function backToForm() {
-    published = false;
-    document.getElementById('pub-banner').classList.add('hidden');
-    document.getElementById('publish-btn').disabled = false;
-    document.getElementById('publish-btn').textContent = 'Publish to CA-022 →';
-    show('st-form');
-  }
+  function backToForm() { show('st-form'); }
 
   function copyJD(e) {
+    if (jdEditOpen) JD = document.getElementById('p-edit').value;
     const btn  = e.target;
     const done = () => { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = 'Copy JD', 2000); };
     if (navigator.clipboard) { navigator.clipboard.writeText(JD).then(done); }
@@ -526,6 +851,10 @@
       document.body.removeChild(ta); done();
     }
   }
+
+  // ── Init ─────────────────────────────────────────────────────────────
+  loadJobList();
+  enterCreateMode();
 </script>
 
 </body>
