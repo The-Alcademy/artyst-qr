@@ -1178,6 +1178,10 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
                         {isNew&&nextTaskStep==='distribute'?'Distribute →':'Distribute'}
                       </button>}
                       {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>toggleActive(c)}>{c.active?'Deactivate':'Activate'}</button>}
+                      {isAdmin&&c.type==='opportunity'&&(()=>{const s=getOppStatus(c);return(<>
+                        <button className="btn btn-secondary btn-small" onClick={()=>setJobStatus(c,s==='closed'?'open':'closed')}>{s==='closed'?'Reopen':'Close as filled'}</button>
+                        <button className="btn btn-secondary btn-small" onClick={()=>duplicateJob(c)}>Duplicate</button>
+                      </>);})()}
                     </div>
                   </td>
                 </tr>
