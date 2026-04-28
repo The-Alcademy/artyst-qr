@@ -49,8 +49,8 @@ export default async function handler(req: any, res: any) {
   const status = typeof body.status === "string" ? body.status.trim() : "";
 
   if (!slug)                               { res.status(400).json({ error: "Missing slug" }); return; }
-  if (status !== "open" && status !== "closed") {
-    res.status(400).json({ error: "status must be 'open' or 'closed'" });
+ if (status !== "open" && status !== "filled") {
+    res.status(400).json({ error: "status must be 'open' or 'filled'" });
     return;
   }
 
