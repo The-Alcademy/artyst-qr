@@ -1268,7 +1268,7 @@ function ReplyModal({application,onClose,onSent,defaultSentBy}){
   }
 
   return(
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}
          onClick={e=>{if(e.target===e.currentTarget&&!sending)onClose();}}>
       <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'620px',maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.2)'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1rem'}}>
