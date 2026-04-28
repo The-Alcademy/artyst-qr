@@ -1043,6 +1043,32 @@ function PrintQueue({queue,templates,designs,onRemove,onClear,onSaved}){
 function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,isAdmin,sortField,setSortField,sortDir,setSortDir,newCodeId,activeTask}){
   const toggleActive=async(code)=>{await supabase(`/rest/v1/qr_codes?id=eq.${code.id}`,'PATCH',{active:!code.active});onRefresh();}
 
+  const setJobStatus=async(code,status)=>{
+    if(!code.slug) return;
+    const verb=status==='closed'?'close':'reopen';
+    if(!window.confirm(`Are you sure you want to ${verb} "${code.label}"? The page stays up — only the status changes.`)) return;
+    const res=await fetch('/api/set-job-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:code.slug,status})});
+    if(!res.ok){const d=await res.json().catch(()=>({}));alert('Could not update status: '+(d.error||res.status));return;}
+    onRefresh();
+  }
+
+  const duplicateJob=async(code)=>{
+    if(!code.slug) return;
+    if(!window.confirm(`Duplicate "${code.label}" as a new draft? You'll be able to edit it before publishing.`)) return;
+    const res=await fetch('/api/duplicate-job',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_slug:code.slug})});
+    if(!res.ok){const d=await res.json().catch(()=>({}));alert('Could not duplicate: '+(d.error||res.status));return;}
+    const data=await res.json();
+    const newSlug=data?.opportunity?.slug;
+    onRefresh();
+    if(newSlug&&window.confirm('Duplicated as "'+newSlug+'". Open it in the Job Engine to edit?')){
+      window.open('/job-engine.html#'+encodeURIComponent(newSlug),'_blank','noopener');
+    }
+  }
+
+  // Look up the linked opportunity so we know whether status is 'open' or 'closed'.
+  // We rely on qr_codes.opportunity_status which is mirrored when the status changes.
+  const getOppStatus=(code)=>code.opportunity_status||'open';
+
   function handleSort(field){
     if(sortField===field){setSortDir(d=>d==='asc'?'desc':'asc');}
     else{setSortField(field);setSortDir('asc');}
