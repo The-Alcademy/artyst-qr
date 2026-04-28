@@ -245,7 +245,7 @@ function baseCSS(): string {
 function renderPage(opp: any): string {
   const title       = opp.title || opp.slug;
   const property    = opp.property || "The Artyst";
-  const isClosed    = opp.status === "closed";
+const isClosed    = opp.status === "filled" || opp.status === "suspended";
   const cleanedDesc = stripPosterLine(opp.description || "");
   const bodyHtml    = renderMarkdown(cleanedDesc);
   const excerpt     = deriveExcerpt(opp);
