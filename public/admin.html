@@ -1527,31 +1527,18 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
         return;
       }
       const data = await r.json();
-      await onRefresh(); // reload everything so status badge updates
       setHiring(false);
-      // Open the bulk-reject modal next, with hire context
+      // Open the bulk-reject modal FIRST so it survives the refresh
       setHireResult({
         opportunity_slug: data.opportunity_slug,
         role_label:       data.role_label,
         other_applicants: data.other_applicants || [],
       });
+      onRefresh(); // reload in background — don't await, so modal stays mounted
     }catch(e){
       alert('Network error during hire.');
       setHiring(false);
     }
-  }
-
-  // If no opportunities at all
-  if(!oppCodes.length){
-    return(
-      <div className="card" style={{textAlign:'center',padding:'3rem 1rem'}}>
-        <h2 style={{margin:'0 0 .5rem'}}>No jobs yet</h2>
-        <p style={{color:'var(--text-2)',margin:'0 0 1.5rem'}}>You haven't created any opportunities. Once you do, this is where you'll come to manage them end-to-end.</p>
-        <a href="/job-engine.html" target="_blank" rel="noopener"
-           className="btn btn-primary"
-           style={{display:'inline-block',textDecoration:'none'}}>Write a new job description →</a>
-      </div>
-    );
   }
 
   const selectedCode = oppCodes.find(c=>c.slug===selectedSlug) || oppCodes[0];
