@@ -1194,7 +1194,153 @@ function Library({codes,destinations,onRefresh,onAddToPrintQueue,onDistribute,is
     </div>
   );
 }
-function ReplyModal({application,onClose,onSent,defaultSentBy}){
+function BulkRejectModal({hireResult,onClose,onDone}){
+  const role = hireResult?.role_label || 'the role';
+  const recipients = hireResult?.other_applicants || [];
+  const [from,setFrom] = React.useState('jobs@theartyst.co.uk');
+  const [subject,setSubject] = React.useState('Update on your application — '+role);
+  const [bodyTemplate,setBodyTemplate] = React.useState(
+`Hi {name},
+
+Thanks again for taking the time to apply for the ${role} role at The Artyst.
+
+After careful consideration, we have decided to go with another candidate this time. The decision was a difficult one — we had a lot of strong applications and yours stood out, but in the end we are moving forward with someone whose experience aligned more closely with what we are building right now.
+
+We would love to keep your details on file and get in touch if a more suitable role comes up. And do keep an eye on theartyst.co.uk for what is next.
+
+All the best,
+The Artyst team`
+  );
+  const [sentBy,setSentBy] = React.useState('');
+  const [sending,setSending] = React.useState(false);
+  const [err,setErr] = React.useState('');
+  const [confirmed,setConfirmed] = React.useState(false);
+
+  if(!hireResult) return null;
+
+  // Empty case — no other applicants to notify
+  if(recipients.length===0){
+    return(
+      <div style={{position:'fixed',inset:0,background:'#1a1a1a',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+        <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'440px',color:'#ddd',textAlign:'center'}}>
+          <h3 style={{margin:'0 0 .8rem',fontSize:'1.1rem',color:'#5aff7a'}}>Hire complete ✓</h3>
+          <p style={{margin:'0 0 1rem',fontSize:'.9rem',lineHeight:1.5}}>The role is now closed and the candidate has been marked as hired.</p>
+          <p style={{margin:'0 0 1.4rem',fontSize:'.85rem',color:'#aaa'}}>No other applicants to notify.</p>
+          <button className="btn btn-primary" onClick={onClose}>Done</button>
+        </div>
+      </div>
+    );
+  }
+
+  async function send(silent){
+    if(!silent){
+      if(!subject.trim())      { setErr('Subject required.');       return; }
+      if(!bodyTemplate.trim()) { setErr('Message required.');       return; }
+      // Confirmation gate — never auto-send bulk
+      if(!confirmed){
+        const ok = window.confirm(`Send rejection email to ${recipients.length} applicant${recipients.length===1?'':'s'}?\n\nThis cannot be undone.`);
+        if(!ok) return;
+        setConfirmed(true);
+      }
+    }
+    setErr(''); setSending(true);
+    try{
+      const r = await fetch('/api/bulk-reject-applicants',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          application_ids: recipients.map(a=>a.id),
+          from_email:      from,
+          subject:         subject.trim(),
+          body_template:   bodyTemplate,
+          role_label:      role,
+          sent_by:         sentBy.trim() || null,
+          silent:          !!silent,
+        })
+      });
+      if(!r.ok){
+        const d = await r.json().catch(()=>({}));
+        setErr(d.error || ('HTTP '+r.status));
+        setSending(false);
+        return;
+      }
+      const result = await r.json();
+      setSending(false);
+      if(onDone) onDone(result);
+      onClose();
+      const summary = silent
+        ? `Marked ${result.skipped} applicant${result.skipped===1?'':'s'} as rejected (no email sent).`
+        : `Sent ${result.sent} email${result.sent===1?'':'s'}${result.failed?`, ${result.failed} failed`:''}${result.skipped?`, ${result.skipped} skipped (no email)`:''}.`;
+      alert(summary);
+    }catch(e){
+      setErr('Network error. Please try again.');
+      setSending(false);
+    }
+  }
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'#1a1a1a',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}
+         onClick={e=>{if(e.target===e.currentTarget&&!sending)onClose();}}>
+      <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'620px',maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.2)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1rem'}}>
+          <div>
+            <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'#5aff7a',marginBottom:'.2rem'}}>Hire complete ✓</div>
+            <h3 style={{margin:0,fontSize:'1.1rem',color:'#ddd'}}>Notify the other {recipients.length} applicant{recipients.length===1?'':'s'}?</h3>
+          </div>
+          <button onClick={onClose} disabled={sending} style={{background:'none',border:'none',cursor:'pointer',fontSize:'1.4rem',color:'#aaa',lineHeight:1}}>&times;</button>
+        </div>
+
+        <div style={{marginBottom:'.8rem',padding:'.6rem .8rem',background:'#2a2a2a',border:'1px solid #444',borderRadius:'2px',fontSize:'.82rem',color:'#ddd',maxHeight:'120px',overflowY:'auto'}}>
+          {recipients.map(a=>(
+            <div key={a.id} style={{padding:'.2rem 0',borderBottom:'1px solid #333',display:'flex',justifyContent:'space-between'}}>
+              <span><strong>{a.name}</strong> · <span style={{color:'#5aafff'}}>{a.email}</span></span>
+              <span style={{color:'#aaa',fontSize:'.78rem'}}>{a.status}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="form-grid" style={{marginBottom:'.6rem'}}>
+          <div className="form-group">
+            <label>From</label>
+            <select value={from} onChange={e=>setFrom(e.target.value)}>
+              <option value="jobs@theartyst.co.uk">jobs@theartyst.co.uk</option>
+              <option value="hello@theartyst.co.uk">hello@theartyst.co.uk</option>
+              <option value="events@theartyst.co.uk">events@theartyst.co.uk</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Your name (optional)</label>
+            <input value={sentBy} onChange={e=>setSentBy(e.target.value)} placeholder="e.g. Matthew"/>
+          </div>
+        </div>
+
+        <div className="form-group" style={{marginBottom:'.6rem'}}>
+          <label>Subject</label>
+          <input value={subject} onChange={e=>setSubject(e.target.value)}/>
+        </div>
+
+        <div className="form-group" style={{marginBottom:'.6rem'}}>
+          <label>Message · use {'{name}'} for first name, {'{role}'} for the role title</label>
+          <textarea value={bodyTemplate} onChange={e=>setBodyTemplate(e.target.value)} rows={12} style={{minHeight:'220px',fontFamily:'inherit',fontSize:'.92rem',lineHeight:1.5}}/>
+        </div>
+
+        {err && <div className="error" style={{marginBottom:'.6rem'}}>{err}</div>}
+
+        <div style={{display:'flex',gap:'.5rem',justifyContent:'space-between',marginTop:'.5rem',flexWrap:'wrap'}}>
+          <button className="btn btn-secondary btn-small" onClick={()=>send(true)} disabled={sending} title="Mark all as rejected without sending email">
+            Skip — mark rejected silently
+          </button>
+          <div style={{display:'flex',gap:'.5rem'}}>
+            <button className="btn btn-secondary" onClick={onClose} disabled={sending}>Cancel</button>
+            <button className="btn btn-primary" onClick={()=>send(false)} disabled={sending}>
+              {sending?'Sending…':`Send to ${recipients.length}`}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}function ReplyModal({application,onClose,onSent,defaultSentBy}){
   const [from,setFrom]   = React.useState('jobs@theartyst.co.uk');
   const [subject,setSubject] = React.useState('');
   const [body,setBody]   = React.useState('');
@@ -1361,6 +1507,39 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   const [filterStatus,setFilterStatus] = useState('all');
   const [expanded,setExpanded] = useState(null);
   const [replyTarget,setReplyTarget] = useState(null);
+  const [hireResult,setHireResult] = useState(null); // {opportunity_slug, role_label, other_applicants}
+  const [hiring,setHiring] = useState(false);
+
+  async function hireApplicant(application){
+    const msg = `Hire ${application.name}?\n\nThis will:\n• Mark them as hired\n• Close the role (status → filled)\n• Show a list of other applicants you can choose to notify`;
+    if(!window.confirm(msg)) return;
+    setHiring(true);
+    try{
+      const r = await fetch('/api/hire-applicant',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({application_id: application.id})
+      });
+      if(!r.ok){
+        const d = await r.json().catch(()=>({}));
+        alert('Hire failed: ' + (d.error || ('HTTP '+r.status)));
+        setHiring(false);
+        return;
+      }
+      const data = await r.json();
+      await onRefresh(); // reload everything so status badge updates
+      setHiring(false);
+      // Open the bulk-reject modal next, with hire context
+      setHireResult({
+        opportunity_slug: data.opportunity_slug,
+        role_label:       data.role_label,
+        other_applicants: data.other_applicants || [],
+      });
+    }catch(e){
+      alert('Network error during hire.');
+      setHiring(false);
+    }
+  }
 
   // If no opportunities at all
   if(!oppCodes.length){
@@ -1590,9 +1769,17 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
                </div>
                 </div>
                 <div style={{marginTop:'1rem',borderTop:'1px solid var(--border)',paddingTop:'1rem'}}>
-                  <button className="btn btn-primary btn-small" onClick={()=>setReplyTarget(a)}>
+                <button className="btn btn-primary btn-small" onClick={()=>setReplyTarget(a)} style={{marginRight:'.4rem'}}>
                     ✉ Reply to applicant
                   </button>
+                  {a.status!=='hired' && a.status!=='rejected' && (
+                    <button className="btn btn-small"
+                      onClick={()=>hireApplicant(a)}
+                      disabled={hiring}
+                      style={{background:'#1a5c1a',color:'#5aff7a',border:'1px solid #2a7a2a',fontWeight:600}}>
+                      {hiring?'Hiring…':'✓ Hire'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -1604,6 +1791,12 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
           application={replyTarget}
           onClose={()=>setReplyTarget(null)}
           onSent={onRefresh}/>
+      )}
+      {hireResult && (
+        <BulkRejectModal
+          hireResult={hireResult}
+          onClose={()=>setHireResult(null)}
+          onDone={onRefresh}/>
       )}
     </div>
   );
