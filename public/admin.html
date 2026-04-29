@@ -1495,7 +1495,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   // Default selection: most recent active opportunity (status open + qr active)
   const [selectedSlug,setSelectedSlug] = useState(()=>{
     const recent = [...oppCodes]
-      .filter(c=>c.active && oppStatusBySlug.get(c.slug)==='open')
+      .filter(c=>c.active)
       .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
     return recent?.slug || '';
   });
