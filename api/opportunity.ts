@@ -137,7 +137,18 @@ function render404(slug: string): string {
 }
 
 // ─── Page CSS ────────────────────────────────────────────────────
-function baseCSS(): string {
+<fieldset class="consent-field">
+          <legend>Stay in touch (optional)</legend>
+          <div class="consent-row">
+            <input type="checkbox" id="apply-consent-jobs" />
+            <label for="apply-consent-jobs">Tell me about <strong>future jobs and opportunities</strong> at The Artyst</label>
+          </div>
+          <div class="consent-row">
+            <input type="checkbox" id="apply-consent-general" />
+            <label for="apply-consent-general">Tell me about <strong>events, workshops, and what we're up to</strong> at The Artyst</label>
+          </div>
+          <p class="consent-help">Unsubscribe anytime. We'll never share your details.</p>
+        </fieldset>
   return `
     :root {
       --bg:        #faf9f7;
@@ -198,7 +209,6 @@ function baseCSS(): string {
     .body { margin-bottom: 56px; }
     .body h3 { margin-top: 28px; }
     .body p { color: var(--ink); }
-
     .apply-card {
       background: var(--paper); border: 1px solid var(--line);
       border-radius: 4px; padding: 32px 28px; margin-top: 24px;
@@ -219,6 +229,30 @@ function baseCSS(): string {
     }
     .field textarea { min-height: 140px; resize: vertical; }
     .field-help { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
+    .consent-field {
+      border: 1px solid var(--line); padding: 16px 18px; margin: 0 0 18px;
+      border-radius: 3px;
+    }
+    .consent-field legend {
+      font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-faint); padding: 0 6px;
+    }
+    .consent-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin: 8px 0;
+    }
+    .consent-row input[type="checkbox"] {
+      margin: 4px 0 0; flex-shrink: 0;
+      width: 16px; height: 16px;
+    }
+    .consent-row label {
+      font: inherit; font-size: 14px; line-height: 1.5;
+      color: var(--ink); letter-spacing: 0; text-transform: none;
+      cursor: pointer; margin: 0; flex: 1;
+    }
+    .consent-help {
+      font-size: 12px; color: var(--ink-faint); margin: 10px 0 0;
+    }
     .submit {
       background: var(--ink); color: #fff; border: 0; padding: 12px 24px;
       font: inherit; font-size: 15px; letter-spacing: 0.06em;
@@ -229,7 +263,6 @@ function baseCSS(): string {
     .form-status { margin-top: 14px; padding: 10px 14px; border-radius: 3px; font-size: 14px; }
     .form-status.is-success { background: #eef7ee; color: #1d5b1d; border: 1px solid #c6e2c6; }
     .form-status.is-error   { background: #fbecec; color: #8a1f1f; border: 1px solid #e8c2c2; }
-
     .footer {
       margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line);
       font-size: 13px; color: var(--ink-faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
@@ -239,9 +272,7 @@ function baseCSS(): string {
     .not-found { text-align: center; padding: 80px 0; }
     .not-found h1 { font-size: 32px; }
   `;
-}
-
-// ─── Main render ─────────────────────────────────────────────────
+}// ─── Main render ─────────────────────────────────────────────────
 function renderPage(opp: any): string {
   const title       = opp.title || opp.slug;
   const property    = opp.property || "The Artyst";
@@ -320,20 +351,18 @@ const isClosed    = opp.status === "filled" || opp.status === "suspended";
           <input type="file" id="apply-cv" name="cv" accept=".pdf,.doc,.docx,.txt,.rtf" />
           <div class="field-help">PDF, Word, or plain text. Max ~5MB.</div>
         </div>
-        <div class="field">
-          <label style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;display:block;">Stay in touch (optional)</label>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer;line-height:1.4;font-family:inherit;">
-              <input type="checkbox" id="apply-consent-jobs" style="margin-top:3px;flex-shrink:0;" />
-              <span>Tell me about <strong>future jobs and opportunities</strong> at The Artyst</span>
-            </label>
-            <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer;line-height:1.4;font-family:inherit;">
-              <input type="checkbox" id="apply-consent-general" style="margin-top:3px;flex-shrink:0;" />
-              <span>Tell me about <strong>events, workshops, and what we're up to</strong> at The Artyst</span>
-            </label>
+        <fieldset class="consent-field">
+          <legend>Stay in touch (optional)</legend>
+          <div class="consent-row">
+            <input type="checkbox" id="apply-consent-jobs" />
+            <label for="apply-consent-jobs">Tell me about <strong>future jobs and opportunities</strong> at The Artyst</label>
           </div>
-          <div class="field-help" style="margin-top:8px;">Unsubscribe anytime. We'll never share your details.</div>
-        </div>
+          <div class="consent-row">
+            <input type="checkbox" id="apply-consent-general" />
+            <label for="apply-consent-general">Tell me about <strong>events, workshops, and what we're up to</strong> at The Artyst</label>
+          </div>
+          <p class="consent-help">Unsubscribe anytime. We'll never share your details.</p>
+        </fieldset>
         <button type="submit" class="submit" id="apply-submit">Send application</button>
         <div class="form-status" id="apply-status" hidden></div>
       </form>
