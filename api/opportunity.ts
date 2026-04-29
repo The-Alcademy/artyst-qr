@@ -4,8 +4,9 @@
 // Public HTML page at /opportunity/[slug] (via vercel.json rewrite).
 // Renders the opportunity as a branded job listing with apply form.
 //
-// Replaces the previous version of this file that mistakenly returned
-// the JSON list of all opportunities.
+// Includes the two opt-in checkboxes for marketing consent (general
+// updates and future jobs). When ticked, api/apply.ts subscribes the
+// person via the subscribers table.
 // ─────────────────────────────────────────────────────────────────
 
 import { createClient } from "@supabase/supabase-js";
@@ -26,8 +27,6 @@ function esc(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// Tiny markdown renderer — handles headings, bullets, bold, italic, paragraphs.
-// Deliberately minimal; the content is admin-controlled, not user-supplied.
 function renderMarkdown(md: string): string {
   if (!md) return "";
 
@@ -68,7 +67,7 @@ function renderMarkdown(md: string): string {
     if (h) {
       flushPara();
       closeUL();
-      const lvl = Math.min(6, h[1].length + 1); // ## becomes h3 to keep h1 for the page
+      const lvl = Math.min(6, h[1].length + 1);
       out.push(`<h${lvl}>${inline(h[2])}</h${lvl}>`);
       continue;
     }
@@ -86,8 +85,6 @@ function renderMarkdown(md: string): string {
   return out.join("\n");
 }
 
-// Strip the "## Poster Line\n…" tail so it doesn't appear in the public page.
-// (Tracked as a Phase 1.5 fix to do this in CA-025 at write time instead.)
 function stripPosterLine(md: string): string {
   if (!md) return "";
   const idx = md.search(/\n#{1,6}\s+poster\s+line\b/i);
@@ -137,18 +134,7 @@ function render404(slug: string): string {
 }
 
 // ─── Page CSS ────────────────────────────────────────────────────
-<fieldset class="consent-field">
-          <legend>Stay in touch (optional)</legend>
-          <div class="consent-row">
-            <input type="checkbox" id="apply-consent-jobs" />
-            <label for="apply-consent-jobs">Tell me about <strong>future jobs and opportunities</strong> at The Artyst</label>
-          </div>
-          <div class="consent-row">
-            <input type="checkbox" id="apply-consent-general" />
-            <label for="apply-consent-general">Tell me about <strong>events, workshops, and what we're up to</strong> at The Artyst</label>
-          </div>
-          <p class="consent-help">Unsubscribe anytime. We'll never share your details.</p>
-        </fieldset>
+function baseCSS(): string {
   return `
     :root {
       --bg:        #faf9f7;
@@ -271,14 +257,14 @@ function render404(slug: string): string {
     .footer a:hover { color: var(--accent); }
     .not-found { text-align: center; padding: 80px 0; }
     .not-found h1 { font-size: 32px; }
-`;
+  `;
 }
 
 // ─── Main render ─────────────────────────────────────────────────
 function renderPage(opp: any): string {
   const title       = opp.title || opp.slug;
   const property    = opp.property || "The Artyst";
-const isClosed    = opp.status === "filled" || opp.status === "suspended";
+  const isClosed    = opp.status === "filled" || opp.status === "suspended";
   const cleanedDesc = stripPosterLine(opp.description || "");
   const bodyHtml    = renderMarkdown(cleanedDesc);
   const excerpt     = deriveExcerpt(opp);
@@ -490,8 +476,6 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  // Match the JSON API's visibility floor: must be active, must not be share_disabled.
-  // Closed opportunities ARE rendered (with a banner) so direct links keep working.
   const { data, error } = await supabase
     .from("opportunities")
     .select("*")
