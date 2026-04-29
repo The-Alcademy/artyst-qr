@@ -115,8 +115,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { error: relErr } = await supabase.from('relationships').insert({
         person_id:         personId,
         relationship_type: 'job_applicant',
-        source:            'CA-022',
-        note:              noteParts.join(' · '),
+        domain_table:      'applications',
+        domain_id:         application.id,
+        notes:             noteParts.join(' · '),
+        created_by:        'CA-022',
       });
       if (relErr) {
         console.error('Relationship insert error:', relErr.message);
