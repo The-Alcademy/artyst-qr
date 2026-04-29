@@ -2068,7 +2068,7 @@ function Distribute({codes,groups,staffList,onStaffCreated,onDistributed,initial
     if(otherChannels.length>0){let staffId;const existing=staffList.find(s=>s.name.toLowerCase()===staffName.toLowerCase());if(existing){staffId=existing.id;}else{const res=await supabase('/rest/v1/staff','POST',{name:staffName},'return=representation');staffId=Array.isArray(res)?res[0]?.id:res?.id;if(staffId) onStaffCreated();}await supabase('/rest/v1/distributions','POST',{qr_code_id:selectedCode,staff_id:staffId,note:note||null,channels:otherChannels,groups:selectedGroups,status:'sent'});await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode}`,'PATCH',{last_distributed_at:new Date().toISOString()});}
     setLoading(false);
     if(errors.length>0){setStatus({type:'error',msg:errors.join(' · ')});setTimeout(()=>{window.scrollTo({top:0,behavior:'smooth'});},50);}
-    else{setStatus({type:'success',msg:'✓ Sent successfully.'});setConfirming(false);setTimeout(()=>{window.scrollTo({top:0,behavior:'smooth'});},50);setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');setReplyTo('jobs@theartyst.co.uk');onDistributed();}
+    else{setStatus({type:'success',msg:'✓ Sent successfully.'});setConfirming(false);alert('✓ Sent successfully.');setSelectedCode('');setSelectedChannels([]);setSelectedGroups([]);setNote('');setStaffName('');setReplyTo('jobs@theartyst.co.uk');onDistributed();}
   }
   const code=codes.find(c=>c.id===selectedCode);
   const needsGroups=selectedChannels.includes('email');
