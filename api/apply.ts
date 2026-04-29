@@ -105,9 +105,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       personId = pid as string;
 
       // Create the job_applicant relationship row.
-      // We don't need to check if one already exists — multiple applications
-      // from the same person mean multiple relationship rows, which is fine
-      // and useful (each one can carry the opportunity context as note).
+      // Schema for relationships table:
+      //   person_id, relationship_type, property, status, domain_table,
+      //   domain_id, started_at, ended_at, notes, created_by
       const noteParts: string[] = [];
       if (opportunitySlug) noteParts.push('Applied for: ' + opportunitySlug);
       noteParts.push('Application ID: ' + application.id);
