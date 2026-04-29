@@ -1492,7 +1492,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   const oppCodes = (codes||[]).filter(c=>c.type==='opportunity');
   const oppStatusBySlug = new Map((opportunityStatuses||[]).map(o=>[o.slug,o.status]));
 
-  // Default selection: most recent active opportunity (status open + qr active)
+  // Default selection: most recent active opportunity (any status, prefer most recent)
   const [selectedSlug,setSelectedSlug] = useState(()=>{
     const recent = [...oppCodes]
       .filter(c=>c.active)
@@ -1502,9 +1502,11 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   const [filterStatus,setFilterStatus] = useState('all');
   const [expanded,setExpanded] = useState(null);
   const [replyTarget,setReplyTarget] = useState(null);
-  const [hireResult,setHireResult] = useState(null); // {opportunity_slug, role_label, other_applicants}
+  const [hireResult,setHireResult] = useState(null);
   const [hiring,setHiring] = useState(false);
+  const [savingFields,setSavingFields] = useState(null); // application id currently being saved
 
+  // ── Hire flow with native dialogs ──────────────────────────────
   async function hireApplicant(application){
     const msg = 'Hire ' + application.name + '?\n\nThis will:\n- Mark them as hired\n- Close the role (status to filled)\n- Then offer to notify other applicants';
     if(!window.confirm(msg)) return;
@@ -1584,7 +1586,63 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
     }
   }
 
+  // ── Pipeline stage setter ─────────────────────────────────────
+  async function setPipelineStage(applicationId, stage){
+    setSavingFields(applicationId);
+    try{
+      const r = await fetch('/api/set-application-fields',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({application_id: applicationId, pipeline_stage: stage})
+      });
+      if(!r.ok){
+        const d = await r.json().catch(()=>({}));
+        alert('Could not update pipeline stage: ' + (d.error || ('HTTP '+r.status)));
+        setSavingFields(null);
+        return;
+      }
+      await onRefresh();
+    }catch(e){
+      alert('Network error updating pipeline stage.');
+    }
+    setSavingFields(null);
+  }
+
+  // ── Profile fields saver (engagement, suitability, notes) ─────
+  async function saveProfileFields(applicationId, fields){
+    setSavingFields(applicationId);
+    try{
+      const r = await fetch('/api/set-application-fields',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({application_id: applicationId, ...fields})
+      });
+      if(!r.ok){
+        const d = await r.json().catch(()=>({}));
+        alert('Could not save profile fields: ' + (d.error || ('HTTP '+r.status)));
+        setSavingFields(null);
+        return;
+      }
+      await onRefresh();
+      alert('Saved ✓');
+    }catch(e){
+      alert('Network error saving profile fields.');
+    }
+    setSavingFields(null);
+  }
+
   const selectedCode = oppCodes.find(c=>c.slug===selectedSlug) || oppCodes[0];
+
+  // Empty state — no opportunities at all
+  if (!selectedCode) {
+    return (
+      <div className="card" style={{padding:'2rem',textAlign:'center'}}>
+        <p>No job opportunities yet. Create one in the Job Engine to get started.</p>
+        <a href="/job-engine.html" target="_blank" rel="noopener" className="btn btn-primary" style={{textDecoration:'none'}}>+ New job</a>
+      </div>
+    );
+  }
+
   const slug = selectedCode.slug;
   const oppStatus = oppStatusBySlug.get(slug) || 'open';
 
@@ -1596,17 +1654,17 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
     shortlisted: jobApps.filter(a=>a.status==='shortlisted').length,
     rejected:    jobApps.filter(a=>a.status==='rejected').length,
   };
-    const filteredApps = filterStatus==='all'
-        ? jobApps
-            : jobApps.filter(a=>a.status===filterStatus);
-            
-              // Scan events for this code
-                const scans = (scanEvents||[]).filter(e=>e.qr_code_id===selectedCode.id);
-                  const byPlacement = scans.reduce((acc,e)=>{
-                      const k = e.placement || 'other';
-                          acc[k]=(acc[k]||0)+1;
-                              return acc;
-                                },{});
+  const filteredApps = filterStatus==='all'
+    ? jobApps
+    : jobApps.filter(a=>a.status===filterStatus);
+
+  // Scan events for this code
+  const scans = (scanEvents||[]).filter(e=>e.qr_code_id===selectedCode.id);
+  const byPlacement = scans.reduce((acc,e)=>{
+    const k = e.placement || 'other';
+    acc[k]=(acc[k]||0)+1;
+    return acc;
+  },{});
   const placementMax = Math.max(1, ...Object.values(byPlacement));
 
   // Distributions for this code
@@ -1623,7 +1681,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
     await onRefresh();
   };
   const setJobStatus = async (newStatus)=>{
-    if(!window.confirm(`Set "${selectedCode.label}" to ${newStatus}?`)) return;
+    if(!window.confirm('Set "'+selectedCode.label+'" to '+newStatus+'?')) return;
     const r = await fetch('/api/set-job-status',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -1633,12 +1691,34 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
     await onRefresh();
   };
   const toggleActive = async ()=>{
-    await supabase(`/rest/v1/qr_codes?id=eq.${selectedCode.id}`,'PATCH',{active:!selectedCode.active});
+    await supabase('/rest/v1/qr_codes?id=eq.'+selectedCode.id,'PATCH',{active:!selectedCode.active});
     await onRefresh();
   };
 
-  const STATUS_BG={new:'#1a3a5c',reviewed:'#2a2a1a',shortlisted:'#1a3a1a',rejected:'#3a1a1a'};
-  const STATUS_FG={new:'#5aafff',reviewed:'#ffee5a',shortlisted:'#5aff7a',rejected:'#ff5a5a'};
+  const STATUS_BG={new:'#1a3a5c',reviewed:'#2a2a1a',shortlisted:'#1a3a1a',rejected:'#3a1a1a',hired:'#0d3d1a'};
+  const STATUS_FG={new:'#5aafff',reviewed:'#ffee5a',shortlisted:'#5aff7a',rejected:'#ff5a5a',hired:'#7aff9a'};
+
+  // Pipeline stage display config — colours and labels
+  const PIPELINE_STAGES = [
+    {id:'invited',         label:'Invited',         bg:'#1a2f3a', fg:'#7ac4e6'},
+    {id:'interviewed',     label:'Interviewed',     bg:'#2a1a3a', fg:'#c47ae6'},
+    {id:'offer_made',      label:'Offer made',      bg:'#3a2f1a', fg:'#e6c47a'},
+    {id:'offer_accepted',  label:'Offer accepted',  bg:'#1a3a1a', fg:'#7ae67a'},
+    {id:'offer_declined',  label:'Offer declined',  bg:'#3a1a1a', fg:'#e6a07a'},
+  ];
+  const stageBy = id => PIPELINE_STAGES.find(s=>s.id===id);
+
+  const ENGAGEMENT_TYPES = [
+    {id:'',           label:'— not set —'},
+    {id:'full_time',  label:'Full-time'},
+    {id:'part_time',  label:'Part-time'},
+    {id:'volunteer',  label:'Volunteer'},
+    {id:'short_term', label:'Short-term'},
+    {id:'contractor', label:'Contractor'},
+    {id:'partner',    label:'Possible business partner'},
+    {id:'investor',   label:'Potential investor'},
+    {id:'other',      label:'Other'},
+  ];
 
   function daysAgo(iso){
     if(!iso) return '';
@@ -1681,15 +1761,15 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
             </div>
           </div>
           <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
-            <span className={`badge badge-${selectedCode.active?'active':'inactive'}`}>{selectedCode.active?'active':'inactive'}</span>
+            <span className={'badge badge-'+(selectedCode.active?'active':'inactive')}>{selectedCode.active?'active':'inactive'}</span>
             <span className="badge" style={{background:oppStatus==='open'?'#1a3a1a':'#3a1a1a',color:oppStatus==='open'?'#5aff7a':'#ff8a8a'}}>{oppStatus}</span>
           </div>
         </div>
 
         {/* Quick actions */}
         <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap'}}>
-          <a href={`/job-engine.html#${encodeURIComponent(slug)}`} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>Edit job</a>
-          <a href={`https://go.theartyst.co.uk/opportunity/${slug}?cb=${Date.now()}`} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>View public page ↗</a>
+          <a href={'/job-engine.html#'+encodeURIComponent(slug)} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>Edit job</a>
+          <a href={'https://go.theartyst.co.uk/opportunity/'+slug+'?cb='+Date.now()} target="_blank" rel="noopener" className="btn btn-secondary btn-small" style={{textDecoration:'none'}}>View public page ↗</a>
           {isAdmin&&<button className="btn btn-small" style={{background:'#1a5c1a',color:'#5aff7a',border:'1px solid #2a7a2a'}} onClick={()=>onDistribute(selectedCode)}>Distribute →</button>}
           {isAdmin&&<button className="btn btn-secondary btn-small" onClick={()=>setJobStatus(oppStatus==='filled'?'open':'filled')}>{oppStatus==='filled'?'Reopen':'Mark as filled'}</button>}
           {isAdmin&&<button className="btn btn-secondary btn-small" onClick={toggleActive}>{selectedCode.active?'Deactivate':'Activate'}</button>}
@@ -1717,7 +1797,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
             : Object.entries(byPlacement).sort((a,b)=>b[1]-a[1]).map(([p,n])=>(
                 <div key={p} className="report-row">
                   <div className="report-label"><span>{p}</span><span>{n}</span></div>
-                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:`${(n/placementMax)*100}%`}}/></div>
+                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:((n/placementMax)*100)+'%'}}/></div>
                 </div>
               ))}
         </div>
@@ -1729,7 +1809,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
             : Object.entries(byChannel).sort((a,b)=>b[1]-a[1]).map(([ch,n])=>(
                 <div key={ch} className="report-row">
                   <div className="report-label"><span>{(typeof CHANNELS!=='undefined' && CHANNELS[ch]?.label)||ch}</span><span>{n}</span></div>
-                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:`${(n/channelMax)*100}%`}}/></div>
+                  <div style={{background:'#222',borderRadius:'2px',height:'8px'}}><div className="report-bar" style={{width:((n/channelMax)*100)+'%'}}/></div>
                 </div>
               ))}
         </div>
@@ -1753,7 +1833,9 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
       <div className="card">
         <h2 style={{fontSize:'1rem',margin:'0 0 .8rem'}}>Applications</h2>
         {!filteredApps.length && <div className="empty" style={{padding:'1.5rem'}}>{jobApps.length===0 ? 'No applications yet for this role.' : 'No applications match this filter.'}</div>}
-        {filteredApps.map(a=>(
+        {filteredApps.map(a=>{
+          const stage = stageBy(a.pipeline_stage);
+          return (
           <div key={a.id} style={{border:'1px solid var(--border)',borderRadius:'2px',marginBottom:'.5rem',overflow:'hidden'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.7rem 1rem',cursor:'pointer'}} onClick={()=>setExpanded(expanded===a.id?null:a.id)}>
               <div style={{display:'flex',gap:'1rem',alignItems:'center',flex:1,minWidth:0}}>
@@ -1761,60 +1843,27 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
                   <div style={{fontWeight:600,fontSize:'.92rem'}}>{a.name}</div>
                   <div style={{fontSize:'.78rem',opacity:.6,marginTop:'.1rem'}}>{new Date(a.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
                 </div>
-                <span className="badge" style={{background:STATUS_BG[a.status],color:STATUS_FG[a.status],flexShrink:0}}>{a.status}</span>
+                {stage && <span className="badge" style={{background:stage.bg,color:stage.fg,flexShrink:0}}>{stage.label}</span>}
+                <span className="badge" style={{background:STATUS_BG[a.status]||'#222',color:STATUS_FG[a.status]||'#aaa',flexShrink:0}}>{a.status}</span>
               </div>
               <span style={{fontSize:'.8rem',marginLeft:'1rem',opacity:.5}}>{expanded===a.id?'▲':'▼'}</span>
             </div>
-            {expanded===a.id&&(
-              <div style={{borderTop:'1px solid var(--border)',padding:'1rem'}}>
-                <div className="form-grid" style={{marginBottom:'1rem'}}>
-                  <div>
-                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Email</div>
-                    <a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a>
-                  </div>
-                  {a.phone&&<div>
-                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Phone</div>
-                    <div style={{fontSize:'.88rem'}}>{a.phone}</div>
-                  </div>}
-                  {a.cv_url&&<div>
-                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>CV</div>
-                    <a href={a.cv_url} target="_blank" rel="noopener" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a>
-                  </div>}
-                </div>
-                {a.message&&(
-                  <div style={{marginBottom:'1rem'}}>
-                    <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Message</div>
-                    <div style={{border:'1px solid var(--border)',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',opacity:.85,lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div>
-                  </div>
-                )}
-                <div>
-                  <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Update Status</div>
-                  <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
-                    {['new','reviewed','shortlisted','rejected'].map(s=>(
-                      <button key={s} className="btn btn-small"
-                        style={{background:a.status===s?STATUS_BG[s]:'inherit',color:a.status===s?STATUS_FG[s]:'inherit',border:'1px solid '+(a.status===s?STATUS_BG[s]:'var(--border)')}}
-                        disabled={a.status===s}
-                        onClick={()=>updateAppStatus(a.id,s)}>{s}</button>
-                    ))}
-               </div>
-                </div>
-                <div style={{marginTop:'1rem',borderTop:'1px solid var(--border)',paddingTop:'1rem'}}>
-                <button className="btn btn-primary btn-small" onClick={()=>setReplyTarget(a)} style={{marginRight:'.4rem'}}>
-                    ✉ Reply to applicant
-                  </button>
-                  {a.status!=='hired' && a.status!=='rejected' && (
-                    <button className="btn btn-small"
-                      onClick={()=>hireApplicant(a)}
-                      disabled={hiring}
-                      style={{background:'#1a5c1a',color:'#5aff7a',border:'1px solid #2a7a2a',fontWeight:600}}>
-                      {hiring?'Hiring…':'✓ Hire'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+            {expanded===a.id && <ApplicationProfile
+              application={a}
+              onUpdateStatus={updateAppStatus}
+              onSetPipelineStage={setPipelineStage}
+              onSaveProfileFields={saveProfileFields}
+              onReply={()=>setReplyTarget(a)}
+              onHire={()=>hireApplicant(a)}
+              hiring={hiring}
+              saving={savingFields===a.id}
+              statusBg={STATUS_BG}
+              statusFg={STATUS_FG}
+              pipelineStages={PIPELINE_STAGES}
+              engagementTypes={ENGAGEMENT_TYPES}/>}
           </div>
-))}
+          );
+        })}
       </div>
       {replyTarget && (
         <ReplyModal
@@ -1832,7 +1881,135 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   );
 }
 
-function CreateForm({destinations,onCreate}){
+// ── Expanded application panel — pulled out so we can use local state ──
+function ApplicationProfile({application:a, onUpdateStatus, onSetPipelineStage, onSaveProfileFields, onReply, onHire, hiring, saving, statusBg, statusFg, pipelineStages, engagementTypes}){
+  // Local edit state, seeded from the application row
+  const [engagementType,    setEngagementType]    = useState(a.engagement_type || '');
+  const [otherSuitability,  setOtherSuitability]  = useState(a.other_role_suitability || '');
+  const [internalNotes,     setInternalNotes]     = useState(a.internal_notes || '');
+
+  // Detect dirty (any local edit not yet saved)
+  const dirty = (engagementType    !== (a.engagement_type        || '')) ||
+                (otherSuitability  !== (a.other_role_suitability || '')) ||
+                (internalNotes     !== (a.internal_notes         || ''));
+
+  const consentLabels = [];
+  if (a.marketing_consent_jobs)    consentLabels.push('Future jobs');
+  if (a.marketing_consent_general) consentLabels.push('General updates');
+
+  return (
+    <div style={{borderTop:'1px solid var(--border)',padding:'1rem'}}>
+      {/* ── Contact details ── */}
+      <div className="form-grid" style={{marginBottom:'1rem'}}>
+        <div>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Email</div>
+          <a href={'mailto:'+a.email} style={{color:'#5aafff',fontSize:'.88rem'}}>{a.email}</a>
+        </div>
+        {a.phone && <div>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Phone</div>
+          <div style={{fontSize:'.88rem'}}>{a.phone}</div>
+        </div>}
+        {a.cv_url && <div>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>CV</div>
+          <a href={a.cv_url} target="_blank" rel="noopener" style={{color:'#5aff7a',fontSize:'.88rem'}}>Download CV ↗</a>
+        </div>}
+        <div>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.3rem'}}>Marketing opt-in</div>
+          <div style={{fontSize:'.85rem',color:consentLabels.length?'#7aff9a':'var(--text-2)',fontStyle:consentLabels.length?'normal':'italic'}}>
+            {consentLabels.length ? '✓ ' + consentLabels.join(' + ') : 'No consent given'}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Applicant message ── */}
+      {a.message && (
+        <div style={{marginBottom:'1rem'}}>
+          <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Message</div>
+          <div style={{border:'1px solid var(--border)',borderRadius:'2px',padding:'.8rem 1rem',fontSize:'.88rem',opacity:.85,lineHeight:1.6,fontStyle:'italic',whiteSpace:'pre-wrap'}}>{a.message}</div>
+        </div>
+      )}
+
+      {/* ── Update status ── */}
+      <div style={{marginBottom:'1rem'}}>
+        <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Update Status</div>
+        <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+          {['new','reviewed','shortlisted','rejected'].map(s=>(
+            <button key={s} className="btn btn-small"
+              style={{background:a.status===s?statusBg[s]:'inherit',color:a.status===s?statusFg[s]:'inherit',border:'1px solid '+(a.status===s?statusBg[s]:'var(--border)')}}
+              disabled={a.status===s}
+              onClick={()=>onUpdateStatus(a.id,s)}>{s}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Pipeline stage ── */}
+      <div style={{marginBottom:'1rem'}}>
+        <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.06em',opacity:.5,marginBottom:'.5rem'}}>Pipeline stage</div>
+        <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap',alignItems:'center'}}>
+          {pipelineStages.map(s=>(
+            <button key={s.id} className="btn btn-small"
+              style={{background:a.pipeline_stage===s.id?s.bg:'inherit',color:a.pipeline_stage===s.id?s.fg:'inherit',border:'1px solid '+(a.pipeline_stage===s.id?s.bg:'var(--border)')}}
+              disabled={saving}
+              onClick={()=>onSetPipelineStage(a.id,s.id)}>{s.label}</button>
+          ))}
+          {a.pipeline_stage && (
+            <button className="btn btn-small"
+              style={{background:'inherit',color:'var(--text-2)',border:'1px dashed var(--border)',marginLeft:'.4rem'}}
+              disabled={saving}
+              onClick={()=>onSetPipelineStage(a.id,null)}>Clear stage</button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Person profile fields ── */}
+      <div style={{marginBottom:'1rem',padding:'.9rem 1rem',background:'#0d0d0d',border:'1px solid var(--border)',borderRadius:'3px'}}>
+        <div style={{fontSize:'.7rem',textTransform:'uppercase',letterSpacing:'.1em',opacity:.55,marginBottom:'.7rem'}}>Person profile · ready for migration to CA-024</div>
+        <div className="form-grid" style={{marginBottom:'.6rem'}}>
+          <div className="form-group">
+            <label>Engagement type</label>
+            <select value={engagementType} onChange={e=>setEngagementType(e.target.value)}>
+              {engagementTypes.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Could also suit</label>
+            <input type="text" value={otherSuitability} onChange={e=>setOtherSuitability(e.target.value)} placeholder="e.g. events host, tour guide"/>
+          </div>
+        </div>
+        <div className="form-group" style={{marginBottom:'.6rem'}}>
+          <label>Internal notes</label>
+          <textarea value={internalNotes} onChange={e=>setInternalNotes(e.target.value)} rows={3} placeholder="Anything worth remembering about this person — strengths, fit, follow-ups." style={{minHeight:'70px',fontFamily:'inherit',fontSize:'.9rem'}}/>
+        </div>
+        <div style={{display:'flex',gap:'.5rem',justifyContent:'flex-end'}}>
+          <button className="btn btn-primary btn-small"
+            disabled={saving || !dirty}
+            onClick={()=>onSaveProfileFields(a.id,{
+              engagement_type:        engagementType || null,
+              other_role_suitability: otherSuitability,
+              internal_notes:         internalNotes,
+            })}>
+            {saving ? 'Saving…' : (dirty ? 'Save profile' : 'Saved')}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Reply / Hire ── */}
+      <div style={{borderTop:'1px solid var(--border)',paddingTop:'1rem'}}>
+        <button className="btn btn-primary btn-small" onClick={onReply} style={{marginRight:'.4rem'}}>
+          ✉ Reply to applicant
+        </button>
+        {a.status!=='hired' && a.status!=='rejected' && (
+          <button className="btn btn-small"
+            onClick={onHire}
+            disabled={hiring}
+            style={{background:'#1a5c1a',color:'#5aff7a',border:'1px solid #2a7a2a',fontWeight:600}}>
+            {hiring ? 'Hiring…' : '✓ Hire'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}function CreateForm({destinations,onCreate}){
   const [form,setForm]=useState({label:'',type:'event',destination_id:'',custom_url:'',placement:'',slug:''});
   const [useCustom,setUseCustom]=useState(false);
   const [status,setStatus]=useState(null);
