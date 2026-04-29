@@ -1506,7 +1506,7 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
   const [hiring,setHiring] = useState(false);
 
   async function hireApplicant(application){
-    const msg = `Hire ${application.name}?\n\nThis will:\n• Mark them as hired\n• Close the role (status → filled)\n• Show a list of other applicants you can choose to notify`;
+    const msg = 'Hire ' + application.name + '?\n\nThis will:\n- Mark them as hired\n- Close the role (status to filled)\n- Then offer to notify other applicants';
     if(!window.confirm(msg)) return;
     setHiring(true);
     try{
@@ -1522,14 +1522,62 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
         return;
       }
       const data = await r.json();
-      setHiring(false);
-      // Open the bulk-reject modal FIRST so it survives the refresh
-      setHireResult({
-        opportunity_slug: data.opportunity_slug,
-        role_label:       data.role_label,
-        other_applicants: data.other_applicants || [],
+      const others = data.other_applicants || [];
+
+      if(others.length === 0){
+        alert('Hired ' + application.name + '. Role closed. No other applicants to notify.');
+        onRefresh();
+        setHiring(false);
+        return;
+      }
+
+      const others_summary = others.map(a => '- ' + a.name + ' (' + a.email + ')').join('\n');
+      const wantSend = window.confirm(
+        'Hired ' + application.name + ' and closed the role.\n\n' +
+        'Notify the other ' + others.length + ' applicant' + (others.length===1?'':'s') + ' with a polite decline?\n\n' +
+        others_summary + '\n\n' +
+        'OK = send rejection emails\nCancel = skip (mark them rejected silently with no email)'
+      );
+
+      const role = data.role_label || 'the role';
+      const bodyTemplate =
+        'Hi {name},\n\n' +
+        'Thanks again for taking the time to apply for the ' + role + ' role at The Artyst.\n\n' +
+        'After careful consideration, we have decided to go with another candidate this time. The decision was a difficult one - we had a lot of strong applications and yours stood out, but in the end we are moving forward with someone whose experience aligned more closely with what we are building right now.\n\n' +
+        'We would love to keep your details on file and get in touch if a more suitable role comes up. And do keep an eye on theartyst.co.uk for what is next.\n\n' +
+        'All the best,\nThe Artyst team';
+
+      const reject = await fetch('/api/bulk-reject-applicants',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          application_ids: others.map(a=>a.id),
+          from_email:      'jobs@theartyst.co.uk',
+          subject:         'Update on your application - ' + role,
+          body_template:   bodyTemplate,
+          role_label:      role,
+          silent:          !wantSend,
+        })
       });
-      onRefresh(); // reload in background — don't await, so modal stays mounted
+
+      if(!reject.ok){
+        const d = await reject.json().catch(()=>({}));
+        alert('Bulk action failed: ' + (d.error || ('HTTP '+reject.status)));
+        setHiring(false);
+        onRefresh();
+        return;
+      }
+
+      const result = await reject.json();
+      const summary = !wantSend
+        ? 'Marked ' + result.skipped + ' applicant' + (result.skipped===1?'':'s') + ' as rejected (no email sent).'
+        : 'Sent ' + result.sent + ' rejection email' + (result.sent===1?'':'s') +
+          (result.failed?(', ' + result.failed + ' failed'):'') +
+          (result.skipped?(', ' + result.skipped + ' skipped (no email on record)'):'') + '.';
+      alert(summary);
+
+      onRefresh();
+      setHiring(false);
     }catch(e){
       alert('Network error during hire.');
       setHiring(false);
