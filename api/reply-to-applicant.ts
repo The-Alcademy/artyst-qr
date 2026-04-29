@@ -158,11 +158,16 @@ export default async function handler(req: any, res: any) {
     // Don't fail the response — email did send. Just log a warning.
   }
 
-  // Auto-bump status from 'new' → 'reviewed' so you can see the funnel update
-  if (app.status === "new") {
+  // Auto-bump status from 'new' → 'reviewed' so you can see the funnel update.
+  // Also auto-set pipeline_stage='invited' if this was the "Invite to interview" template.
+  const updates: Record<string, any> = {};
+  if (app.status === "new")  updates.status = "reviewed";
+  if (template === "invite") updates.pipeline_stage = "invited";
+
+  if (Object.keys(updates).length > 0) {
     await supabase
       .from("applications")
-      .update({ status: "reviewed" })
+      .update(updates)
       .eq("id", application_id);
   }
 
@@ -172,6 +177,7 @@ export default async function handler(req: any, res: any) {
     to:       app.email,
     resend_id,
     new_status: app.status === "new" ? "reviewed" : app.status,
+    new_pipeline_stage: template === "invite" ? "invited" : null,
   });
 }
 

@@ -1596,17 +1596,17 @@ function JobOverview({codes,applications,scanEvents,distributions,opportunitySta
     shortlisted: jobApps.filter(a=>a.status==='shortlisted').length,
     rejected:    jobApps.filter(a=>a.status==='rejected').length,
   };
-  const filteredApps = filterStatus==='all'
-    ? jobApps
-    : jobApps.filter(a=>a.status===filterStatus);
-
-  // Scan events for this code
-  const scans = (scanEvents||[]).filter(e=>e.qr_code_id===selectedCode.id);
-  const byPlacement = scans.reduce((acc,e)=>{
-    const k = e.placement || 'other';
-    acc[k]=(acc[k]||0)+1;
-    return acc;
-  },{});
+    const filteredApps = filterStatus==='all'
+        ? jobApps
+            : jobApps.filter(a=>a.status===filterStatus);
+            
+              // Scan events for this code
+                const scans = (scanEvents||[]).filter(e=>e.qr_code_id===selectedCode.id);
+                  const byPlacement = scans.reduce((acc,e)=>{
+                      const k = e.placement || 'other';
+                          acc[k]=(acc[k]||0)+1;
+                              return acc;
+                                },{});
   const placementMax = Math.max(1, ...Object.values(byPlacement));
 
   // Distributions for this code

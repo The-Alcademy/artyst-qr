@@ -320,6 +320,20 @@ const isClosed    = opp.status === "filled" || opp.status === "suspended";
           <input type="file" id="apply-cv" name="cv" accept=".pdf,.doc,.docx,.txt,.rtf" />
           <div class="field-help">PDF, Word, or plain text. Max ~5MB.</div>
         </div>
+        <div class="field">
+          <label style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;display:block;">Stay in touch (optional)</label>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer;line-height:1.4;font-family:inherit;">
+              <input type="checkbox" id="apply-consent-jobs" style="margin-top:3px;flex-shrink:0;" />
+              <span>Tell me about <strong>future jobs and opportunities</strong> at The Artyst</span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:10px;font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer;line-height:1.4;font-family:inherit;">
+              <input type="checkbox" id="apply-consent-general" style="margin-top:3px;flex-shrink:0;" />
+              <span>Tell me about <strong>events, workshops, and what we're up to</strong> at The Artyst</span>
+            </label>
+          </div>
+          <div class="field-help" style="margin-top:8px;">Unsubscribe anytime. We'll never share your details.</div>
+        </div>
         <button type="submit" class="submit" id="apply-submit">Send application</button>
         <div class="form-status" id="apply-status" hidden></div>
       </form>
@@ -372,6 +386,8 @@ const isClosed    = opp.status === "filled" || opp.status === "suspended";
           email:   document.getElementById("apply-email").value.trim(),
           phone:   document.getElementById("apply-phone").value.trim(),
           message: document.getElementById("apply-message").value.trim(),
+          marketingConsentJobs:    document.getElementById("apply-consent-jobs").checked,
+          marketingConsentGeneral: document.getElementById("apply-consent-general").checked,
         };
 
         if (!data.name || !data.email || !data.message) {
