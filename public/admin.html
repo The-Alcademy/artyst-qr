@@ -1198,18 +1198,13 @@ function BulkRejectModal({hireResult,onClose,onDone}){
   const role = hireResult?.role_label || 'the role';
   const recipients = hireResult?.other_applicants || [];
   const [from,setFrom] = React.useState('jobs@theartyst.co.uk');
-  const [subject,setSubject] = React.useState('Update on your application — '+role);
+  const [subject,setSubject] = React.useState('Update on your application - '+role);
   const [bodyTemplate,setBodyTemplate] = React.useState(
-`Hi {name},
-
-Thanks again for taking the time to apply for the ${role} role at The Artyst.
-
-After careful consideration, we have decided to go with another candidate this time. The decision was a difficult one — we had a lot of strong applications and yours stood out, but in the end we are moving forward with someone whose experience aligned more closely with what we are building right now.
-
-We would love to keep your details on file and get in touch if a more suitable role comes up. And do keep an eye on theartyst.co.uk for what is next.
-
-All the best,
-The Artyst team`
+    'Hi {name},\n\n' +
+    'Thanks again for taking the time to apply for the ' + role + ' role at The Artyst.\n\n' +
+    'After careful consideration, we have decided to go with another candidate this time. The decision was a difficult one - we had a lot of strong applications and yours stood out, but in the end we are moving forward with someone whose experience aligned more closely with what we are building right now.\n\n' +
+    'We would love to keep your details on file and get in touch if a more suitable role comes up. And do keep an eye on theartyst.co.uk for what is next.\n\n' +
+    'All the best,\nThe Artyst team'
   );
   const [sentBy,setSentBy] = React.useState('');
   const [sending,setSending] = React.useState(false);
@@ -1218,12 +1213,11 @@ The Artyst team`
 
   if(!hireResult) return null;
 
-  // Empty case — no other applicants to notify
   if(recipients.length===0){
     return(
       <div style={{position:'fixed',inset:0,background:'#1a1a1a',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
         <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'440px',color:'#ddd',textAlign:'center'}}>
-          <h3 style={{margin:'0 0 .8rem',fontSize:'1.1rem',color:'#5aff7a'}}>Hire complete ✓</h3>
+          <h3 style={{margin:'0 0 .8rem',fontSize:'1.1rem',color:'#5aff7a'}}>Hire complete</h3>
           <p style={{margin:'0 0 1rem',fontSize:'.9rem',lineHeight:1.5}}>The role is now closed and the candidate has been marked as hired.</p>
           <p style={{margin:'0 0 1.4rem',fontSize:'.85rem',color:'#aaa'}}>No other applicants to notify.</p>
           <button className="btn btn-primary" onClick={onClose}>Done</button>
@@ -1234,11 +1228,10 @@ The Artyst team`
 
   async function send(silent){
     if(!silent){
-      if(!subject.trim())      { setErr('Subject required.');       return; }
-      if(!bodyTemplate.trim()) { setErr('Message required.');       return; }
-      // Confirmation gate — never auto-send bulk
+      if(!subject.trim())      { setErr('Subject required.'); return; }
+      if(!bodyTemplate.trim()) { setErr('Message required.'); return; }
       if(!confirmed){
-        const ok = window.confirm(`Send rejection email to ${recipients.length} applicant${recipients.length===1?'':'s'}?\n\nThis cannot be undone.`);
+        const ok = window.confirm('Send rejection email to '+recipients.length+' applicant'+(recipients.length===1?'':'s')+'?\n\nThis cannot be undone.');
         if(!ok) return;
         setConfirmed(true);
       }
@@ -1269,8 +1262,8 @@ The Artyst team`
       if(onDone) onDone(result);
       onClose();
       const summary = silent
-        ? `Marked ${result.skipped} applicant${result.skipped===1?'':'s'} as rejected (no email sent).`
-        : `Sent ${result.sent} email${result.sent===1?'':'s'}${result.failed?`, ${result.failed} failed`:''}${result.skipped?`, ${result.skipped} skipped (no email)`:''}.`;
+        ? 'Marked '+result.skipped+' applicant'+(result.skipped===1?'':'s')+' as rejected (no email sent).'
+        : 'Sent '+result.sent+' email'+(result.sent===1?'':'s')+(result.failed?', '+result.failed+' failed':'')+(result.skipped?', '+result.skipped+' skipped (no email)':'')+'.';
       alert(summary);
     }catch(e){
       setErr('Network error. Please try again.');
@@ -1284,7 +1277,7 @@ The Artyst team`
       <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',padding:'1.5rem',width:'100%',maxWidth:'620px',maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.2)'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1rem'}}>
           <div>
-            <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'#5aff7a',marginBottom:'.2rem'}}>Hire complete ✓</div>
+            <div style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'#5aff7a',marginBottom:'.2rem'}}>Hire complete</div>
             <h3 style={{margin:0,fontSize:'1.1rem',color:'#ddd'}}>Notify the other {recipients.length} applicant{recipients.length===1?'':'s'}?</h3>
           </div>
           <button onClick={onClose} disabled={sending} style={{background:'none',border:'none',cursor:'pointer',fontSize:'1.4rem',color:'#aaa',lineHeight:1}}>&times;</button>
@@ -1293,7 +1286,7 @@ The Artyst team`
         <div style={{marginBottom:'.8rem',padding:'.6rem .8rem',background:'#2a2a2a',border:'1px solid #444',borderRadius:'2px',fontSize:'.82rem',color:'#ddd',maxHeight:'120px',overflowY:'auto'}}>
           {recipients.map(a=>(
             <div key={a.id} style={{padding:'.2rem 0',borderBottom:'1px solid #333',display:'flex',justifyContent:'space-between'}}>
-              <span><strong>{a.name}</strong> · <span style={{color:'#5aafff'}}>{a.email}</span></span>
+              <span><strong>{a.name}</strong> &middot; <span style={{color:'#5aafff'}}>{a.email}</span></span>
               <span style={{color:'#aaa',fontSize:'.78rem'}}>{a.status}</span>
             </div>
           ))}
@@ -1320,7 +1313,7 @@ The Artyst team`
         </div>
 
         <div className="form-group" style={{marginBottom:'.6rem'}}>
-          <label>Message · use {'{name}'} for first name, {'{role}'} for the role title</label>
+          <label>Message - use &#123;name&#125; for first name, &#123;role&#125; for the role title</label>
           <textarea value={bodyTemplate} onChange={e=>setBodyTemplate(e.target.value)} rows={12} style={{minHeight:'220px',fontFamily:'inherit',fontSize:'.92rem',lineHeight:1.5}}/>
         </div>
 
@@ -1328,19 +1321,21 @@ The Artyst team`
 
         <div style={{display:'flex',gap:'.5rem',justifyContent:'space-between',marginTop:'.5rem',flexWrap:'wrap'}}>
           <button className="btn btn-secondary btn-small" onClick={()=>send(true)} disabled={sending} title="Mark all as rejected without sending email">
-            Skip — mark rejected silently
+            Skip - mark rejected silently
           </button>
           <div style={{display:'flex',gap:'.5rem'}}>
             <button className="btn btn-secondary" onClick={onClose} disabled={sending}>Cancel</button>
             <button className="btn btn-primary" onClick={()=>send(false)} disabled={sending}>
-              {sending?'Sending…':`Send to ${recipients.length}`}
+              {sending?'Sending...':('Send to '+recipients.length)}
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-}function ReplyModal({application,onClose,onSent,defaultSentBy}){
+}
+
+function ReplyModal({application,onClose,onSent,defaultSentBy}){
   const [from,setFrom]   = React.useState('jobs@theartyst.co.uk');
   const [subject,setSubject] = React.useState('');
   const [body,setBody]   = React.useState('');
