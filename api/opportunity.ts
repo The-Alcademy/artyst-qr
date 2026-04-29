@@ -271,8 +271,10 @@ function render404(slug: string): string {
     .footer a:hover { color: var(--accent); }
     .not-found { text-align: center; padding: 80px 0; }
     .not-found h1 { font-size: 32px; }
-  `;
-}// ─── Main render ─────────────────────────────────────────────────
+`;
+}
+
+// ─── Main render ─────────────────────────────────────────────────
 function renderPage(opp: any): string {
   const title       = opp.title || opp.slug;
   const property    = opp.property || "The Artyst";
