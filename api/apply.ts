@@ -93,11 +93,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let personId: string | null = null;
   try {
     const { data: pid, error: personErr } = await supabase.rpc('upsert_person', {
-      p_email:      cleanEmail,
-      p_name:       cleanName,
-      p_phone:      cleanPhone,
-      p_source:     'job_application',
-      p_first_seen: new Date().toISOString(),
+      p_email:     cleanEmail,
+      p_name:      cleanName,
+      p_phone:     cleanPhone,
+      p_source:    'job_application',
+      p_source_ca: 'CA-022',
     });
     if (personErr) {
       console.error('upsert_person error:', personErr.message);
