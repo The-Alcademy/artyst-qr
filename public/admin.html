@@ -4648,6 +4648,7 @@ const SECTIONS=[
     {id:'destinations',label:'Destinations',desc:'The URLs your QR codes point to. Update a destination here and every code pointing to it updates automatically.',adminOnly:false},
     {id:'groups',label:'Groups',desc:'Mailing and WhatsApp lists used when distributing codes. Add contacts and organise by audience.',adminOnly:true},
     {id:'templates',label:'Templates',desc:'Saved poster designs you can reuse across codes. Saves time when promoting recurring events.',adminOnly:true},
+    {id:'notices',label:'Notices',desc:'Post announcements that render to print posters, in-venue screens, the website, emails, and WhatsApp. Bilingual content supported.',adminOnly:true},
   ]},
   {id:'review',label:'Review',desc:'See what\'s happening.',tabs:[
     {id:'history',label:'History',desc:'A log of every distribution — who sent what, when, and to which channels.',adminOnly:false},
@@ -4747,6 +4748,9 @@ const TASKS = [
   // ─── COMMS ──────────────────────────────────────────────────────
   {id:'whatsapp-email', group:'comms',  label:'Send to WhatsApp or email',  desc:'Push a QR code to your subscriber lists', tab:'distribute', steps:['Distribute']},
   {id:'update-screens', group:'comms',  label:'Update a venue screen',      desc:'Change what QR codes show on the window, bar or wall screens', tab:'screens', steps:['Screens']},
+  {id:'create-notice', group:'comms',  label:'Create a notice',            desc:'Post an announcement that renders to print, screens, website, email and WhatsApp.', tab:'notices', steps:['Notices \u2192 Create']},
+  {id:'manage-notices',group:'comms',  label:'Manage existing notices',    desc:'Edit, deactivate, or check what is currently scheduled.', tab:'notices', steps:['Notices \u2192 List']},
+  {id:'notice-chinese',group:'comms',  label:'Post in Chinese (Xiaohongshu)', desc:'Coming when our Cambridge Mandarin editor is onboarded. The architecture is ready.', tab:'notices', comingSoon:'Editor pending', steps:['Notices \u2192 Create']},
 
   // ─── MENU ───────────────────────────────────────────────────────
   {id:'update-menu',      group:'menu', label:'Update the menu',            desc:'Edit caf\u00e9 and bar items, prices and availability', tab:'menu', anchor:'menu-jump-nav', steps:['Menu Editor']},
@@ -4827,6 +4831,343 @@ function TaskGuide({onSelectTask,open,setOpen}){
 }
 
 // ── APP ───────────────────────────────────────────────────
+
+// ── NOTICES TAB ───────────────────────────────────────────
+// CA-030 Notices — bilingual-ready from day one. Chinese fields visible
+// but disabled in v1 until our Cambridge Mandarin editor is onboarded.
+function NoticesTab({isAdmin}){
+  const [notices,setNotices]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [view,setView]=useState('list'); // 'list' | 'form'
+  const [editing,setEditing]=useState(null); // notice being edited, or null for new
+  const [filter,setFilter]=useState({property:'',active:'all'});
+  const [status,setStatus]=useState(null);
+ 
+  const blankNotice={
+    title:'',body:'',cta_label:'',cta_url:'',
+    title_zh:'',body_zh:'',cta_label_zh:'',
+    property:'artyst',priority:'info',
+    starts_at:'',ends_at:'',
+    show_on_print:false,show_on_screens:false,show_on_website:false,
+    show_in_emails:false,show_on_whatsapp:false,show_on_xiaohongshu:false,
+    website_style:'banner',
+  };
+  const [form,setForm]=useState(blankNotice);
+ 
+  const loadNotices=async()=>{
+    setLoading(true);
+    const params=[];
+    if(filter.property) params.push('property='+encodeURIComponent(filter.property));
+    if(filter.active==='active') params.push('active=true');
+    const qs=params.length?('?'+params.join('&')):'';
+    const r=await authFetch('/api/notices'+qs);
+    if(r.ok) setNotices(await r.json());
+    setLoading(false);
+  };
+  useEffect(()=>{loadNotices();},[filter.property,filter.active]);
+ 
+  function openCreate(){
+    setEditing(null);
+    setForm(blankNotice);
+    setStatus(null);
+    setView('form');
+  }
+  function openEdit(notice){
+    setEditing(notice);
+    setForm({
+      title:notice.title||'',
+      body:notice.body||'',
+      cta_label:notice.cta_label||'',
+      cta_url:notice.cta_url||'',
+      title_zh:notice.title_zh||'',
+      body_zh:notice.body_zh||'',
+      cta_label_zh:notice.cta_label_zh||'',
+      property:notice.property||'artyst',
+      priority:notice.priority||'info',
+      starts_at:notice.starts_at?notice.starts_at.slice(0,16):'',
+      ends_at:notice.ends_at?notice.ends_at.slice(0,16):'',
+      show_on_print:!!notice.show_on_print,
+      show_on_screens:!!notice.show_on_screens,
+      show_on_website:!!notice.show_on_website,
+      show_in_emails:!!notice.show_in_emails,
+      show_on_whatsapp:!!notice.show_on_whatsapp,
+      show_on_xiaohongshu:!!notice.show_on_xiaohongshu,
+      website_style:notice.website_style||'banner',
+    });
+    setStatus(null);
+    setView('form');
+  }
+  function backToList(){
+    setView('list');
+    setEditing(null);
+    setStatus(null);
+    loadNotices();
+  }
+ 
+  async function saveNotice(){
+    if(!form.title.trim()){setStatus({type:'error',msg:'Title is required.'});return;}
+    if(!form.body.trim()){setStatus({type:'error',msg:'Body is required.'});return;}
+ 
+    const payload={...form};
+    // empty strings → null for optional fields
+    ['cta_label','cta_url','title_zh','body_zh','cta_label_zh','starts_at','ends_at'].forEach(k=>{
+      if(!payload[k]) payload[k]=null;
+    });
+ 
+    const url=editing?('/api/notices?id='+editing.id):'/api/notices';
+    const method=editing?'PATCH':'POST';
+    const r=await authFetch(url,{method,body:JSON.stringify(payload)});
+    if(r.ok){
+      const data=await r.json();
+      setStatus({type:'success',msg:editing?'Notice updated.':'Notice created — '+data.slug});
+      setTimeout(backToList,1200);
+    } else {
+      const d=await r.json().catch(()=>({}));
+      setStatus({type:'error',msg:d.error||('Failed: HTTP '+r.status)});
+    }
+  }
+ 
+  async function deleteNotice(notice){
+    if(!window.confirm('Delete notice "'+notice.title+'"? This sets active=false; you can recover from Supabase if needed.')) return;
+    const r=await authFetch('/api/notices?id='+notice.id,{method:'DELETE'});
+    if(r.ok){loadNotices();setStatus({type:'success',msg:'Notice deactivated.'});}
+    else{const d=await r.json().catch(()=>({}));alert('Delete failed: '+(d.error||r.status));}
+  }
+ 
+  // Status helpers
+  function noticeStatus(n){
+    if(!n.active) return {label:'inactive',color:'#888'};
+    const now=Date.now();
+    const starts=n.starts_at?new Date(n.starts_at).getTime():null;
+    const ends=n.ends_at?new Date(n.ends_at).getTime():null;
+    if(starts&&starts>now) return {label:'upcoming',color:'#7ac4e6'};
+    if(ends&&ends<now) return {label:'expired',color:'#888'};
+    if(!starts&&!ends) return {label:'evergreen',color:'#7adcc4'};
+    return {label:'active',color:'#5aff7a'};
+  }
+  function dateLabel(iso){
+    if(!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  }
+ 
+  const PRIORITY_BG={info:'#1a3a3a',important:'#3a2f1a',urgent:'#3a1a1a'};
+  const PRIORITY_FG={info:'#7adcc4',important:'#e6c47a',urgent:'#e6a07a'};
+ 
+  // ── LIST VIEW ─────────────────────────────────────────
+  if(view==='list'){
+    return (
+      <div>
+        <div className="card" style={{marginBottom:'1rem'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'1rem',flexWrap:'wrap'}}>
+            <div>
+              <h2 style={{margin:'0 0 .3rem'}}>Notices</h2>
+              <div style={{fontSize:'.85rem',color:'var(--text-2)'}}>Post announcements that render across print, screens, website, email, WhatsApp — and (soon) Xiaohongshu.</div>
+            </div>
+            <button className="btn btn-primary" onClick={openCreate}>+ New notice</button>
+          </div>
+ 
+          <div style={{marginTop:'1rem',display:'flex',gap:'.7rem',flexWrap:'wrap',alignItems:'center'}}>
+            <span style={{fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-2)'}}>Filter:</span>
+            <select value={filter.property} onChange={e=>setFilter(f=>({...f,property:e.target.value}))} style={{width:'auto'}}>
+              <option value="">All properties</option>
+              <option value="artyst">Artyst</option>
+              <option value="alcademy">Alcademy</option>
+              <option value="ic">Invysible College</option>
+              <option value="bedegame">BedeGame</option>
+              <option value="othersyde">OtherSyde</option>
+            </select>
+            <select value={filter.active} onChange={e=>setFilter(f=>({...f,active:e.target.value}))} style={{width:'auto'}}>
+              <option value="all">All notices</option>
+              <option value="active">Active only</option>
+            </select>
+          </div>
+        </div>
+ 
+        {/* Multilingual hint banner */}
+        <div className="card" style={{marginBottom:'1rem',borderLeft:'3px solid #9A3A26',padding:'.7rem 1rem'}}>
+          <div style={{fontSize:'.85rem',color:'var(--text-2)',fontStyle:'italic'}}>
+            <span style={{color:'#9A3A26',fontWeight:'bold',marginRight:'.4rem'}}>ⓘ</span>
+            Chinese-language editing will be enabled when our Cambridge Mandarin editor is onboarded. The fields are visible in the form so the architecture is in place from day one.
+          </div>
+        </div>
+ 
+        {loading && <div className="empty" style={{padding:'2rem'}}>Loading...</div>}
+        {!loading && notices.length===0 && <div className="empty" style={{padding:'2rem'}}>No notices yet. Click <strong>+ New notice</strong> to create one.</div>}
+ 
+        {!loading && notices.map(n=>{
+          const st=noticeStatus(n);
+          const surfaces=[];
+          if(n.show_on_print)       surfaces.push('Print');
+          if(n.show_on_screens)     surfaces.push('Screens');
+          if(n.show_on_website)     surfaces.push('Website');
+          if(n.show_in_emails)      surfaces.push('Email');
+          if(n.show_on_whatsapp)    surfaces.push('WhatsApp');
+          if(n.show_on_xiaohongshu) surfaces.push('Xiaohongshu');
+          return (
+            <div key={n.id} className="card" style={{padding:'1rem',marginBottom:'.6rem',cursor:'pointer'}} onClick={()=>openEdit(n)}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'1rem',flexWrap:'wrap'}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:600,fontSize:'1rem',marginBottom:'.3rem'}}>{n.title}</div>
+                  <div style={{fontSize:'.8rem',color:'var(--text-2)',marginBottom:'.4rem'}}>{n.body && n.body.length>120 ? n.body.slice(0,120)+'…' : n.body}</div>
+                  <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap',alignItems:'center'}}>
+                    <span className="badge" style={{background:PRIORITY_BG[n.priority]||'#222',color:PRIORITY_FG[n.priority]||'#aaa'}}>{n.priority}</span>
+                    <span className="badge" style={{background:'#222',color:'#aaa'}}>{n.property}</span>
+                    <span className="badge" style={{background:'transparent',color:st.color,border:'1px solid '+st.color}}>{st.label}</span>
+                    {n.title_zh && <span className="badge" style={{background:'#1a3a3a',color:'#7adcc4'}}>中文</span>}
+                  </div>
+                  {surfaces.length>0 && <div style={{fontSize:'.75rem',color:'var(--text-2)',marginTop:'.4rem'}}>Surfaces: {surfaces.join(' · ')}</div>}
+                </div>
+                <div style={{textAlign:'right',fontSize:'.75rem',color:'var(--text-2)',whiteSpace:'nowrap'}}>
+                  <div>{dateLabel(n.starts_at)} → {dateLabel(n.ends_at)}</div>
+                  <div style={{marginTop:'.3rem'}}>/{n.slug}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+ 
+        {status && <div className={status.type==='error'?'error':'success'} style={{marginTop:'1rem'}}>{status.msg}</div>}
+      </div>
+    );
+  }
+ 
+  // ── FORM VIEW (create / edit) ─────────────────────────
+  return (
+    <div>
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem',flexWrap:'wrap'}}>
+          <div>
+            <h2 style={{margin:'0 0 .3rem'}}>{editing?'Edit notice':'New notice'}</h2>
+            {editing && <div style={{fontSize:'.8rem',color:'var(--text-2)'}}>Slug: /{editing.slug} · Created {dateLabel(editing.created_at)} by {editing.created_by||'—'}</div>}
+          </div>
+          <button className="btn btn-secondary btn-small" onClick={backToList}>← Back to list</button>
+        </div>
+      </div>
+ 
+      {status && <div className={status.type==='error'?'error':'success'} style={{marginBottom:'1rem'}}>{status.msg}</div>}
+ 
+      {/* English content */}
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <h3 style={{margin:'0 0 .8rem',fontSize:'.95rem'}}>English content</h3>
+        <div className="form-group">
+          <label>Title *</label>
+          <input type="text" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="e.g. Closed Sunday May 4 for private event"/>
+        </div>
+        <div className="form-group" style={{marginTop:'.6rem'}}>
+          <label>Body *</label>
+          <textarea rows={3} value={form.body} onChange={e=>setForm(f=>({...f,body:e.target.value}))} placeholder="A sentence or two of context. This is what visitors will read." style={{minHeight:'80px',fontFamily:'inherit',fontSize:'.9rem'}}/>
+        </div>
+        <div className="form-grid" style={{marginTop:'.6rem'}}>
+          <div className="form-group">
+            <label>Call-to-action label</label>
+            <input type="text" value={form.cta_label} onChange={e=>setForm(f=>({...f,cta_label:e.target.value}))} placeholder="e.g. See full details"/>
+          </div>
+          <div className="form-group">
+            <label>Call-to-action URL</label>
+            <input type="text" value={form.cta_url} onChange={e=>setForm(f=>({...f,cta_url:e.target.value}))} placeholder="https://..."/>
+          </div>
+        </div>
+      </div>
+ 
+      {/* Chinese content (disabled in v1) */}
+      <div className="card" style={{marginBottom:'1rem',opacity:0.7,position:'relative'}}>
+        <div style={{position:'absolute',top:'.6rem',right:'1rem',fontSize:'.7rem',background:'#9A3A26',color:'#fff',padding:'.15rem .5rem',borderRadius:'2px',letterSpacing:'.05em'}}>EDITOR PENDING</div>
+        <h3 style={{margin:'0 0 .8rem',fontSize:'.95rem'}}>中文内容 · Chinese content</h3>
+        <div className="form-group">
+          <label>Title (Chinese)</label>
+          <input type="text" value={form.title_zh} disabled placeholder="Available when our Cambridge Mandarin editor is onboarded"/>
+        </div>
+        <div className="form-group" style={{marginTop:'.6rem'}}>
+          <label>Body (Chinese)</label>
+          <textarea rows={3} value={form.body_zh} disabled placeholder="Bilingual editing scheduled for v2 — schema is ready" style={{minHeight:'80px',fontFamily:'inherit',fontSize:'.9rem'}}/>
+        </div>
+        <div className="form-group" style={{marginTop:'.6rem'}}>
+          <label>CTA label (Chinese)</label>
+          <input type="text" value={form.cta_label_zh} disabled/>
+        </div>
+      </div>
+ 
+      {/* Property + priority + dates */}
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <h3 style={{margin:'0 0 .8rem',fontSize:'.95rem'}}>Settings</h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Property</label>
+            <select value={form.property} onChange={e=>setForm(f=>({...f,property:e.target.value}))}>
+              <option value="artyst">Artyst</option>
+              <option value="alcademy">Alcademy</option>
+              <option value="ic">Invysible College</option>
+              <option value="bedegame">BedeGame</option>
+              <option value="othersyde">OtherSyde</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Priority</label>
+            <select value={form.priority} onChange={e=>setForm(f=>({...f,priority:e.target.value}))}>
+              <option value="info">Info — quiet</option>
+              <option value="important">Important — banner</option>
+              <option value="urgent">Urgent — modal</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-grid" style={{marginTop:'.6rem'}}>
+          <div className="form-group">
+            <label>Starts at (optional)</label>
+            <input type="datetime-local" value={form.starts_at} onChange={e=>setForm(f=>({...f,starts_at:e.target.value}))}/>
+          </div>
+          <div className="form-group">
+            <label>Ends at (optional)</label>
+            <input type="datetime-local" value={form.ends_at} onChange={e=>setForm(f=>({...f,ends_at:e.target.value}))}/>
+          </div>
+        </div>
+        <div style={{fontSize:'.75rem',color:'var(--text-2)',marginTop:'.4rem',fontStyle:'italic'}}>Leave both blank for an evergreen notice that runs until manually deactivated.</div>
+      </div>
+ 
+      {/* Surfaces */}
+      <div className="card" style={{marginBottom:'1rem'}}>
+        <h3 style={{margin:'0 0 .8rem',fontSize:'.95rem'}}>Where should this appear?</h3>
+        <div style={{display:'flex',flexDirection:'column',gap:'.5rem'}}>
+          <label style={{cursor:'pointer'}}>
+            <input type="checkbox" checked={form.show_on_print} onChange={e=>setForm(f=>({...f,show_on_print:e.target.checked}))}/>
+            {' '}<strong>Print</strong> — generate a printable poster with QR code
+          </label>
+          <label style={{cursor:'pointer'}}>
+            <input type="checkbox" checked={form.show_on_screens} onChange={e=>setForm(f=>({...f,show_on_screens:e.target.checked}))}/>
+            {' '}<strong>Screens</strong> — show on the in-venue rotation (window, POS, wall)
+          </label>
+          <label style={{cursor:'pointer'}}>
+            <input type="checkbox" checked={form.show_on_website} onChange={e=>setForm(f=>({...f,show_on_website:e.target.checked}))}/>
+            {' '}<strong>Website</strong> — banner on theartyst.co.uk / alcademy.co.uk
+          </label>
+          <label style={{cursor:'pointer'}}>
+            <input type="checkbox" checked={form.show_in_emails} onChange={e=>setForm(f=>({...f,show_in_emails:e.target.checked}))}/>
+            {' '}<strong>Email</strong> — included as a block in outgoing email sends
+          </label>
+          <label style={{cursor:'pointer'}}>
+            <input type="checkbox" checked={form.show_on_whatsapp} onChange={e=>setForm(f=>({...f,show_on_whatsapp:e.target.checked}))}/>
+            {' '}<strong>WhatsApp</strong> — push to WhatsApp distribution lists
+          </label>
+          <label style={{cursor:'not-allowed',opacity:0.5}} title="Available when our Cambridge Mandarin editor is onboarded">
+            <input type="checkbox" disabled/>
+            {' '}<strong>Xiaohongshu</strong> <span style={{fontSize:'.75rem'}}>— small-red-book post (editor pending)</span>
+          </label>
+        </div>
+      </div>
+ 
+      {/* Save row */}
+      <div style={{display:'flex',gap:'.5rem',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap'}}>
+        <div>
+          {editing && <button className="btn" style={{background:'#3a1a1a',color:'#ff8a8a',border:'1px solid #5a2a2a'}} onClick={()=>deleteNotice(editing)}>Delete (deactivate)</button>}
+        </div>
+        <div style={{display:'flex',gap:'.5rem'}}>
+          <button className="btn btn-secondary" onClick={backToList}>Cancel</button>
+          <button className="btn btn-primary" onClick={saveNotice}>{editing?'Save changes':'Create notice'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+ 
 function App(){
   const [user,setUser]=useState(null);
   const [authChecked,setAuthChecked]=useState(false);
@@ -4950,6 +5291,7 @@ function App(){
         {tab==='groups'&&isAdmin&&<Groups groups={groups} onRefresh={loadAll} isAdmin={isAdmin}/>}
         {tab==='destinations'&&<Destinations destinations={destinations} codes={codes} onRefresh={loadAll} isAdmin={isAdmin}/>}
         {tab==='templates'&&isAdmin&&<Templates templates={templates} designs={designs} codes={codes} onRefresh={loadAll} isAdmin={isAdmin}/>}
+        {tab==='notices'&&isAdmin&&<NoticesTab isAdmin={isAdmin}/>}
         {tab==='history'&&<History distributions={distributions} codes={codes} groups={groups} staff={staffList}/>}
         {tab==='reports'&&<Reports codes={codes} scanEvents={scanEvents}/>}
         {tab==='applications'&&<Applications applications={applications} onRefresh={loadAll}/>}
