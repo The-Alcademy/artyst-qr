@@ -80,6 +80,7 @@
     .badge-warning{background:#3a2a1a;color:#ffaa5a}
     .badge-admin{background:#3a1a5c;color:#c07aff}
     .badge-viewer{background:#2a2a2a;color:#888}
+    .badge-language_editor{background:#1a3a3a;color:#7adcc4}
     .scan-count{font-size:1.1rem;font-weight:bold;color:#fff}
     .slug-display{font-family:monospace;color:#888;font-size:.8rem}
     .actions{display:flex;gap:.4rem;flex-wrap:wrap}
@@ -513,7 +514,7 @@ function UsersTab(){
           <div className="form-group"><label>Name</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Display name"/></div>
           <div className="form-group"><label>Username</label><input value={form.username} onChange={e=>setForm(f=>({...f,username:e.target.value}))} placeholder="Login username"/></div>
           <div className="form-group"><label>Password</label><input type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/></div>
-          <div className="form-group"><label>Role</label><select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}><option value="viewer">Viewer — read only</option><option value="admin">Admin — full access</option></select></div>
+          <div className="form-group"><label>Role</label><select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}><option value="viewer">Viewer — read only</option><option value="admin">Admin — full access</option><option value="language_editor">Language Editor — translate notices</option></select></div>
           <div className="form-group full" style={{flexDirection:'row',justifyContent:'flex-end'}}><button className="btn btn-primary" onClick={createUser}>Add User</button></div>
         </div>
       </div>
@@ -525,7 +526,7 @@ function UsersTab(){
             <div className="user-info"><div className="user-name">{u.name}</div><div className="user-meta">@{u.username}</div></div>
             <div className="actions" style={{alignItems:'center',flexWrap:'wrap'}}>
               <span className={`badge badge-${u.role}`}>{u.role}</span>
-              <select value={u.role} onChange={e=>changeRole(u,e.target.value)} style={{width:'auto',fontSize:'.75rem',padding:'.3rem .5rem'}}><option value="admin">Admin</option><option value="viewer">Viewer</option></select>
+              <select value={u.role} onChange={e=>changeRole(u,e.target.value)} style={{width:'auto',fontSize:'.75rem',padding:'.3rem .5rem'}}><option value="admin">Admin</option><option value="viewer">Viewer</option><option value="language_editor">Language Editor</option></select>
               {resetId===u.id?(
                 <div style={{display:'flex',gap:'.3rem',alignItems:'center'}}>
                   <input type="password" value={resetPw} onChange={e=>setResetPw(e.target.value)} placeholder="New password" style={{width:'130px',fontSize:'.8rem',padding:'.3rem .5rem'}}/>
